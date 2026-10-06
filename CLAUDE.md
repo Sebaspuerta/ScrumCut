@@ -1,0 +1,39 @@
+# ScrumCut — reglas del repositorio
+
+ScrumCut by ScrumTech: SaaS de gestión para barberías, multi-barbería, 100 % web.
+Arquitectura completa: ver `docs/arquitectura.md`.
+
+## Reglas no negociables
+
+1. **No se copia código de MAGNUS v1.** Ni archivos, ni plantillas, ni imágenes, ni textos. Las reglas de negocio se reescriben desde la especificación. MAGNUS es de otro dueño.
+2. **Marca neutra.** Ningún nombre, logo o color de una barbería en el código. La identidad de cada barbería es dato en `tenancy.Barbershop`.
+3. **Toda tabla de negocio hereda de `TenantScopedModel`** y su migración termina con `EnableTenantRLS("<tabla>")`. Nunca se filtra por barbería a mano en una vista.
+4. **`Model.unscoped`** solo en tareas de plataforma, con comentario que explique por qué.
+5. **Autorización en el servidor:** `require_permission("modulo.accion")` en cada vista + filtro por dueño del objeto en los selectores (el barbero ve solo lo suyo). La matriz vive en `apps/tenancy/roles.py`.
+6. **Capas:** vistas delgadas → `services.py` (escrituras, `transaction.atomic`, `select_for_update` cuando se toca stock o caja) → `selectors.py` (lecturas).
+7. **Dinero:** `DecimalField(max_digits=14, decimal_places=2)`. Nunca `float`.
+8. **Fechas:** siempre con zona horaria (`timezone.now()`); nunca `datetime.utcnow()`.
+9. **Movimientos de caja, inventario, auditoría y aceptaciones legales son solo-agregar.** Catálogo, personal y clientes usan `SoftDeleteModel`.
+10. **Al cerrar una comanda se copian** precio, costo y comisión al ítem.
+11. **Secretos:** solo por variables de entorno vía `config.env.require`. Prohibido poner valores por defecto a un secreto.
+12. **Errores:** mensaje genérico al usuario; nunca `str(e)` en una respuesta.
+13. **Cookies:** solo esenciales en la app (sesión, CSRF, idioma). Sin rastreadores de terceros.
+
+## Diseño de interfaz
+
+- Prohibido: fuente Inter (y Geist, Space Grotesk), degradados violetas, glassmorphism, tarjetas dentro de tarjetas, emojis como íconos, el rojo-azul-blanco del poste de barbería.
+- Base negro y hueso con un solo acento metálico; el color de la barbería solo como acento.
+- Títulos en serif con carácter (Fraunces o Cormorant), texto en IBM Plex Sans, cifras tabulares.
+- Superficies planas separadas por líneas finas; radio único de 4 px; tablas densas para gerencia.
+- Todo estado de pantalla diseñado: vacío, cargando, error.
+
+## Antes de pedir revisión
+
+```bash
+pre-commit run --all-files
+pytest
+DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py check --deploy --fail-level WARNING
+```
+
+Luego: `deslop` y `/slop-check` (anti-slop) sobre el cambio, y veredicto de Thermos antes de fusionar a `main`.
+Cambios en permisos, pagos, migraciones o seguridad requieren aprobación humana.

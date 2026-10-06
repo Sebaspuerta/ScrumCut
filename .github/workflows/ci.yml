@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: scrumcut
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: scrumcut
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U scrumcut"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      SECRET_KEY: ci-only-not-a-real-secret-key-0123456789abcdefghijklmnopqrstuvwxyz
+      ALLOWED_HOSTS: localhost
+      DATABASE_URL: postgres://scrumcut:ci-only-password@localhost:5432/scrumcut
+      ADMIN_URL: ci-admin
+      CSRF_TRUSTED_ORIGINS: https://localhost
+      EMAIL_HOST: localhost
+      EMAIL_HOST_USER: ci
+      EMAIL_HOST_PASSWORD: ci
+      DEFAULT_FROM_EMAIL: ci@localhost
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements/dev.txt
+      - name: Lint
+        run: ruff check . && ruff format --check .
+      - name: Seguridad del código
+        run: bandit -c pyproject.toml -r apps config
+      - name: Dependencias vulnerables
+        run: pip-audit -r requirements/base.txt
+      - name: Secretos
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Migraciones al día
+        run: python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+      - name: Pruebas
+        run: pytest
+      - name: Configuración de despliegue
+        run: python manage.py check --deploy --fail-level WARNING
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
+          HSTS_SECONDS: "31536000"

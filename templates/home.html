@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Inicio · ScrumCut{% endblock %}
+{% block content %}
+  <h1>{% if request.barbershop %}{{ request.barbershop.trade_name }}{% else %}ScrumCut{% endif %}</h1>
+  <p>Fase 0: base segura lista. Los módulos operativos llegan en la fase 1.</p>
+{% endblock %}
