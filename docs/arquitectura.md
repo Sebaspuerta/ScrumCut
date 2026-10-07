@@ -12,6 +12,25 @@ Documento fuente (vivo): [ScrumCut v2 — Arquitectura y migración desde MAGNUS
 - Bloqueo por usuario + IP (axes) y límites de allauth en login, registro y recuperación.
 - La app no arranca si falta un secreto.
 
+## Hallazgos de seguridad de MAGNUS v1
+
+Patrones que no se repiten al portar (regla 1 de `CLAUDE.md`). Detalle y defectos funcionales en [migracion-magnus.md](migracion-magnus.md).
+
+| # | Hallazgo | Origen en MAGNUS | En ScrumCut |
+|---|---|---|---|
+| S1 | `SECRET_KEY` con valor por defecto en el código: cualquiera puede firmar tokens válidos | `config.py` | `config.env.require`, sin valores por defecto |
+| S2 | JWT en `localStorage`, 8 h de vida, sin revocación; cambiar la contraseña no invalida tokens | `utils/security.py`, frontend | Sesión en cookie `HttpOnly`/`Secure`; rotación al iniciar sesión |
+| S3 | Código maestro global que restablece la contraseña de cualquier usuario, incluido el administrador; su bloqueo también es global | `services/master_code_service.py` | Recuperación por correo verificado (allauth) |
+| S4 | Bloqueo de inicio de sesión solo por usuario (cualquiera bloquea cuentas ajenas) y mensaje distinto para usuario inactivo (revela que existe) | `security_service.authenticate_user` | axes por usuario + IP; mensaje único |
+| S5 | Autoridad de dueño decidida por nombre de usuario fijo (`mateo`, `admin`) | `utils/security.require_owner`, `barber_service.is_owner_barber`, `security_service.deactivate_user` | Rol Dueño en `Membership` |
+| S6 | `str(e)` devuelto al usuario | `order_service.close_order` | Mensaje genérico; detalle solo en logs |
+| S7 | Política de contraseñas inconsistente (6 caracteres al cambiarla, 8 en otros flujos) y sin lista de contraseñas comunes | `security_service.change_password` | Validadores de Django en todos los flujos |
+| S8 | Administrador inicial con usuario predecible (`admin`) y contraseña desde `.env` | `security_service.seed_initial_security` | Alta de barbería con dueño y correo verificado |
+| S9 | Sin filtro por dueño del objeto: un barbero lista y abre todas las comandas por id | `order_service.list_orders`, `get_order_by_id` | Selectores filtran por barbero (regla 5) |
+| S10 | Precio enviado por el cliente: el ítem de producto toma `unit_price` del payload y cualquier ítem se puede editar de precio | `order_service.add_order_item`, `update_order_item` | Precio siempre del catálogo; cambio de precio con permiso propio y auditoría |
+| S11 | Escrituras protegidas con un permiso de lectura (`alertas.ver` crea y marca alertas) | `routes/alerts_routes.py` | Una acción por permiso en `roles.py` |
+| S12 | `python-jose` para JWT, librería poco mantenida con avisos de seguridad publicados | `backend/requirements.txt` | No se usan JWT |
+
 ## Fases
 
 0. Fundaciones (este repositorio hoy)

@@ -5,7 +5,7 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 
 ## Reglas no negociables
 
-1. **No se copia código de MAGNUS v1.** Ni archivos, ni plantillas, ni imágenes, ni textos. Las reglas de negocio se reescriben desde la especificación. MAGNUS es de otro dueño.
+1. MAGNUS v1 (../MAGNUS-PROJECTO) es la base funcional de ScrumCut. Su lógica de negocio se porta a Django módulo por módulo, adaptada a multi-barbería (TenantScopedModel) y a la estructura services/selectors. Nunca se copian: la marca Magnus (nombre, logos, colores, eslogan, créditos AvanzaTech), el código maestro de recuperación, tokens en localStorage, usuarios fijos por nombre (mateo/admin), el frontend HTML/JS de MAGNUS, ni ningún patrón de los hallazgos de seguridad listados en docs/arquitectura.md.
 2. **Marca neutra.** Ningún nombre, logo o color de una barbería en el código. La identidad de cada barbería es dato en `tenancy.Barbershop`.
 3. **Toda tabla de negocio hereda de `TenantScopedModel`** y su migración termina con `EnableTenantRLS("<tabla>")`. Nunca se filtra por barbería a mano en una vista.
 4. **`Model.unscoped`** solo en tareas de plataforma, con comentario que explique por qué.
