@@ -86,15 +86,26 @@ def test_desvincular_libera_la_membresia(owner, member, in_shop):
     assert _create(owner, name="Beto", membership=login.public_id).membership == login
 
 
-def test_un_barbero_borrado_conserva_su_membresia(owner, member, in_shop):
+def test_borrar_un_barbero_libera_su_membresia_y_lo_audita(owner, member, in_shop):
     login = member(Role.BARBER, in_shop)
     ana = _create(owner, name="Ana", membership=login.public_id)
     services.soft_delete_barber(owner, ana.public_id)
-    with pytest.raises(ValidationError):
-        _create(owner, name="Beto", membership=login.public_id)
+
+    ana.refresh_from_db()
+    assert ana.membership is None
+    log = AuditLog.objects.get(action="barbero.eliminar")
+    assert log.before["membership"] == str(login.public_id)
+    assert log.after["unlinked_membership"] == str(login.public_id)
+    assert _create(owner, name="Beto", membership=login.public_id).membership == login
 
 
-@pytest.mark.parametrize("case", ["otra_barberia", "inactiva", "rol_cajero"])
+@pytest.mark.parametrize("role", [Role.BARBER, Role.OWNER, Role.ADMIN])
+def test_se_vinculan_los_roles_que_cortan(owner, member, in_shop, role):
+    login = member(role, in_shop, email=f"corta-{role}@a.test")
+    assert _create(owner, membership=login.public_id).membership == login
+
+
+@pytest.mark.parametrize("case", ["otra_barberia", "inactiva", "rol_cajero", "rol_consultor"])
 def test_membresias_que_no_se_pueden_vincular(owner, member, in_shop, other_shop, case):
     if case == "otra_barberia":
         login = member(Role.BARBER, other_shop)
@@ -102,8 +113,10 @@ def test_membresias_que_no_se_pueden_vincular(owner, member, in_shop, other_shop
         login = member(Role.BARBER, in_shop)
         login.is_active = False
         login.save()
-    else:
+    elif case == "rol_cajero":
         login = member(Role.CASHIER, in_shop)
+    else:
+        login = member(Role.VIEWER, in_shop)
     with pytest.raises(ValidationError):
         _create(owner, membership=login.public_id)
 
@@ -111,16 +124,14 @@ def test_membresias_que_no_se_pueden_vincular(owner, member, in_shop, other_shop
 # ── Regla 42: el barbero del dueño no se borra ───────────────────────────────
 
 
-def test_no_se_borra_el_barbero_vinculado_al_dueno(owner, member, in_shop):
-    login = member(Role.BARBER, in_shop)
-    barber = _create(owner, membership=login.public_id)
-    login.role = Role.OWNER
-    login.save()
+def test_no_se_borra_el_barbero_vinculado_al_dueno(owner):
+    barber = _create(owner, membership=owner.public_id)
 
     with pytest.raises(ValidationError):
         services.soft_delete_barber(owner, barber.public_id)
     barber.refresh_from_db()
     assert not barber.is_deleted
+    assert barber.membership == owner
 
 
 def test_el_dueno_borra_un_barbero_y_desaparece(owner):

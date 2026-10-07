@@ -10,7 +10,7 @@ from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from apps.core.models import SoftDeleteModel, TenantManager, TenantQuerySet, TenantScopedModel
+from apps.core.models import AppendOnlyModel, SoftDeleteModel, TenantScopedModel
 
 
 class Barber(TenantScopedModel, SoftDeleteModel):
@@ -36,15 +36,7 @@ class CommissionType(models.TextChoices):
     FIXED = "fixed", "Monto fijo"
 
 
-class AppendOnlyQuerySet(TenantQuerySet):
-    def update(self, **kwargs):
-        raise PermissionError("Tabla solo-agregar: no se modifica.")
-
-    def delete(self):
-        raise PermissionError("Tabla solo-agregar: no se borra.")
-
-
-class CommissionRule(TenantScopedModel):
+class CommissionRule(AppendOnlyModel):
     """Comisión de un barbero vigente desde `valid_from`. Solo-agregar.
 
     Decisión 3: el porcentaje aplica al precio neto de cada línea de servicio; el
@@ -60,11 +52,9 @@ class CommissionRule(TenantScopedModel):
     value = models.DecimalField("valor", max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
     valid_from = models.DateTimeField("vigente desde")
 
-    objects = TenantManager.from_queryset(AppendOnlyQuerySet)()
-
     class Meta:
-        # Redefinir `objects` lo deja después de `unscoped` (heredado): sin esto, el
-        # manager por defecto sería el que no filtra por barbería.
+        # Django toma por defecto el primer manager declarado en el propio modelo. Se fija
+        # por nombre para que agregar otro manager aquí no cambie cuál filtra por barbería.
         default_manager_name = "objects"
         constraints = [
             models.CheckConstraint(
@@ -81,11 +71,3 @@ class CommissionRule(TenantScopedModel):
 
     def __str__(self) -> str:
         return f"{self.barber} · {self.get_commission_type_display()} {self.value}"
-
-    def save(self, *args, **kwargs) -> None:
-        if self.pk is not None:
-            raise PermissionError("Una regla de comisión no se modifica: crea una nueva.")
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        raise PermissionError("Una regla de comisión no se borra.")

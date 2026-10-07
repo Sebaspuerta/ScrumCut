@@ -1,8 +1,14 @@
+from decimal import Decimal
+
 from django.conf import settings
-from django.core.validators import RegexValidator
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.validators import ArrayMinLengthValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
+from apps.cash.choices import PaymentMethod, all_payment_methods
 from apps.core.models import TenantScopedModel, TimeStampedModel
+from apps.core.tenant_context import tenant_context
 from apps.tenancy.roles import Role
 
 hex_color = RegexValidator(r"^#[0-9A-Fa-f]{6}$", "Usa un color hexadecimal, por ejemplo #B08D57.")
@@ -31,9 +37,47 @@ class Barbershop(TimeStampedModel):
     def __str__(self) -> str:
         return self.trade_name
 
+    def save(self, *args, **kwargs) -> None:
+        creating = self._state.adding
+        super().save(*args, **kwargs)
+        if creating:
+            # RLS exige fijar la barbería para insertar su configuración.
+            with tenant_context(self.pk):
+                BarbershopSettings.objects.create(barbershop=self)
+
     @property
     def is_operational(self) -> bool:
         return self.status in {self.Status.TRIAL, self.Status.ACTIVE}
+
+
+class BarbershopSettings(TenantScopedModel):
+    """Configuración de negocio de una barbería. Se crea junto con ella."""
+
+    barbershop = models.OneToOneField(Barbershop, on_delete=models.PROTECT, related_name="settings")
+    # Decisión 5: umbrales del estado del cliente; por defecto, los de MAGNUS v1.
+    vip_min_spent = models.DecimalField(
+        "gasto mínimo VIP",
+        max_digits=14,
+        decimal_places=2,
+        default=Decimal("200000"),
+        validators=[MinValueValidator(Decimal("0"))],
+    )
+    vip_min_visits = models.PositiveIntegerField("visitas mínimas VIP", default=10)
+    frequent_min_visits = models.PositiveIntegerField("visitas mínimas frecuente", default=3)
+    inactive_after_days = models.PositiveIntegerField("días sin visita para inactivo", default=90)
+    # Decisión 4: la barbería activa los métodos que usa; por defecto, todos.
+    enabled_payment_methods = ArrayField(
+        models.CharField(max_length=20, choices=PaymentMethod.choices),
+        default=all_payment_methods,
+        validators=[ArrayMinLengthValidator(1)],
+        verbose_name="métodos de pago habilitados",
+    )
+
+    class Meta:
+        verbose_name = "configuración de barbería"
+
+    def __str__(self) -> str:
+        return f"Configuración · {self.barbershop}"
 
 
 class Branch(TenantScopedModel):

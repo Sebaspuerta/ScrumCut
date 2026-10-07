@@ -30,6 +30,8 @@ _CENTS = Decimal("0.01")
 _TEXT_FIELDS = ("display_name", "alias", "phone", "notes")
 
 MEMBERSHIP_TAKEN = "Esa membresía ya está vinculada a otro barbero."
+# El dueño o el administrador que también corta es lo normal; cajero y consultor no atienden.
+LINKABLE_ROLES = frozenset({Role.BARBER, Role.OWNER, Role.ADMIN})
 
 
 class BarberData(TypedDict, total=False):
@@ -99,7 +101,7 @@ def _resolve_service(public_id: UUID | str | None) -> Service | None:
 
 
 def _resolve_membership(public_id: UUID | str | None, barber: Barber) -> Membership | None:
-    """Regla 41: membresía activa, de esta barbería, con rol Barbero y sin otro barbero."""
+    """Regla 41: membresía activa, de esta barbería, con rol que corta y sin otro barbero."""
     if public_id is None:
         return None
     # Membership no es TenantScopedModel (se lee al iniciar sesión, antes de fijar la
@@ -110,8 +112,8 @@ def _resolve_membership(public_id: UUID | str | None, barber: Barber) -> Members
         raise ValidationError({"membership": "La membresía no existe."}) from exc
     if membership.pk == barber.membership_id:
         return membership
-    if not membership.is_active or membership.role != Role.BARBER:
-        raise ValidationError({"membership": "La membresía debe estar activa y tener rol Barbero."})
+    if not membership.is_active or membership.role not in LINKABLE_ROLES:
+        raise ValidationError({"membership": "La membresía debe estar activa y ser de Barbero, Dueño o Administrador."})
     if Barber.objects.filter(membership=membership).exclude(pk=barber.pk).exists():
         raise ValidationError({"membership": MEMBERSHIP_TAKEN})
     return membership
@@ -209,15 +211,22 @@ def activate_barber(membership_actor: Membership, public_id: UUID | str) -> Barb
 
 
 def soft_delete_barber(membership_actor: Membership, public_id: UUID | str) -> Barber:
-    """Borrado lógico; las comandas y comisiones ya registradas quedan intactas."""
+    """Borrado lógico; las comandas y comisiones ya registradas quedan intactas.
+
+    Desvincula la membresía para que la persona pueda volver a vincularse a otro
+    barbero; la auditoría guarda cuál era.
+    """
     ensure_permission(membership_actor, "barberos.eliminar")
     with transaction.atomic():
         barber = _live_barber_for_update(public_id)
         if barber.membership_id and barber.membership.role == Role.OWNER:
             raise ValidationError("No se puede eliminar al barbero vinculado al dueño de la barbería.")
         before = _barber_snapshot(barber)
+        barber.membership = None
+        barber.save(update_fields=["membership", "updated_at"])
         barber.soft_delete(by=membership_actor.user)
-        _audit(membership_actor, "barbero.eliminar", barber, before=before, after=_barber_snapshot(barber))
+        after = {**_barber_snapshot(barber), "unlinked_membership": before["membership"]}
+        _audit(membership_actor, "barbero.eliminar", barber, before=before, after=after)
     return barber
 
 

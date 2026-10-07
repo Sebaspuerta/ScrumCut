@@ -21,7 +21,7 @@ MODULE_ACTIONS: dict[str, tuple[str, ...]] = {
     "barberia": ("ver", "editar"),
     "usuarios": ("ver", "crear", "editar", "eliminar"),
     "barberos": ("ver", "crear", "editar", "eliminar"),
-    "clientes": ("ver", "crear", "editar", "eliminar"),
+    "clientes": ("ver", "crear", "editar", "eliminar", "anonimizar"),
     "servicios": ("ver", "crear", "editar", "eliminar"),
     "inventario": ("ver", "crear", "editar", "eliminar", "ajustar"),
     "agenda": ("ver", "crear", "editar", "cancelar"),
@@ -44,6 +44,7 @@ _OWNER_ONLY = frozenset(
         "servicios.eliminar",
         "inventario.eliminar",
         "clientes.eliminar",
+        "clientes.anonimizar",
     }
 )
 

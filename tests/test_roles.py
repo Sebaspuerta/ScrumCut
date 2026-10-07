@@ -7,7 +7,9 @@ def test_el_dueno_tiene_todos_los_permisos():
     assert ROLE_PERMISSIONS[Role.OWNER] == ALL_PERMISSIONS
 
 
-@pytest.mark.parametrize("code", ["barberos.eliminar", "servicios.eliminar", "usuarios.eliminar", "barberia.editar"])
+@pytest.mark.parametrize(
+    "code", ["barberos.eliminar", "servicios.eliminar", "usuarios.eliminar", "barberia.editar", "clientes.anonimizar"]
+)
 def test_eliminar_catalogo_y_personal_es_exclusivo_del_dueno(code):
     assert role_has_permission(Role.OWNER, code)
     assert not role_has_permission(Role.ADMIN, code)

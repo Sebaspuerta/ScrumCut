@@ -10,6 +10,9 @@ from config import env
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 SECRET_KEY = env.require("SECRET_KEY")
+# Cifrado de datos personales (apps/core/crypto.py). Rotarlas exige recifrar.
+FIELD_ENCRYPTION_KEY = env.require("FIELD_ENCRYPTION_KEY")
+FIELD_HASH_KEY = env.require("FIELD_HASH_KEY")
 DEBUG = False
 ALLOWED_HOSTS = env.as_list("ALLOWED_HOSTS")
 
@@ -20,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     "allauth",
     "allauth.account",
     "allauth.mfa",
@@ -31,6 +35,9 @@ INSTALLED_APPS = [
     "apps.legal",
     "apps.catalog",
     "apps.staff",
+    "apps.clients",
+    "apps.inventory",
+    "apps.cash",
 ]
 
 MIDDLEWARE = [
@@ -166,6 +173,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Fotos de productos. En producción las sirve Nginx o un almacenamiento externo, nunca Django.
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 ADMIN_URL = env.require("ADMIN_URL")

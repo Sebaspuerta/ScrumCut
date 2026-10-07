@@ -24,6 +24,8 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       SECRET_KEY: ci-only-not-a-real-secret-key-0123456789abcdefghijklmnopqrstuvwxyz
+      FIELD_HASH_KEY: ci-only-not-a-real-hash-key
+      # FIELD_ENCRYPTION_KEY se genera en cada ejecución (paso "Clave de cifrado descartable").
       ALLOWED_HOSTS: localhost
       DATABASE_URL: postgres://scrumcut:ci-only-password@localhost:5432/scrumcut
       ADMIN_URL: ci-admin
@@ -40,6 +42,9 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install -r requirements/dev.txt
+      - name: Clave de cifrado descartable
+        # Una clave Fernet fija en el repositorio la detecta gitleaks; esta vive solo en esta ejecución.
+        run: echo "FIELD_ENCRYPTION_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_ENV"
       - name: Lint
         run: ruff check . && ruff format --check .
       - name: Seguridad del código

@@ -79,3 +79,31 @@ class SoftDeleteModel(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Borrado físico deshabilitado: usa soft_delete().")
+
+
+class AppendOnlyQuerySet(TenantQuerySet):
+    def update(self, **kwargs):
+        raise PermissionError("Tabla solo-agregar: no se modifica.")
+
+    def delete(self):
+        raise PermissionError("Tabla solo-agregar: no se borra.")
+
+
+class AppendOnlyModel(TenantScopedModel):
+    """Libros de movimientos (comisiones, inventario, caja): se agregan, nunca se editan ni se borran.
+
+    Una corrección es un movimiento nuevo que compensa al anterior.
+    """
+
+    objects = TenantManager.from_queryset(AppendOnlyQuerySet)()
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs) -> None:
+        if self.pk is not None:
+            raise PermissionError(f"{self._meta.verbose_name} no se modifica: registra un movimiento nuevo.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError(f"{self._meta.verbose_name} no se borra.")
