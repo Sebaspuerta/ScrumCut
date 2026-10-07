@@ -12,30 +12,20 @@ inválidos lanzan `ValidationError`.
 from decimal import Decimal
 from uuid import UUID
 
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.audit.models import record
 from apps.catalog.models import Service, ServiceCategory
-from apps.core.tenant_context import get_current_barbershop_id
 from apps.tenancy.models import Membership
-from apps.tenancy.roles import role_has_permission
+from apps.tenancy.permissions import ensure_permission
 
 _UNSET = object()
 _CENTS = Decimal("0.01")
 
 DUPLICATE_SERVICE = "Ya existe un servicio con ese nombre."
 DUPLICATE_CATEGORY = "Ya existe una categoría con ese nombre."
-
-
-def _authorize(membership: Membership, code: str) -> None:
-    if (
-        not membership.is_active
-        or membership.barbershop_id != get_current_barbershop_id()
-        or not role_has_permission(membership.role, code)
-    ):
-        raise PermissionDenied
 
 
 def _save_validated(obj, duplicate_message: str) -> None:
@@ -110,7 +100,7 @@ def create_service(
     category: UUID | str | None = None,
     description: str = "",
 ) -> Service:
-    _authorize(membership, "servicios.crear")
+    ensure_permission(membership, "servicios.crear")
     with transaction.atomic():
         service = Service(
             barbershop_id=membership.barbershop_id,
@@ -136,7 +126,7 @@ def update_service(
     description=_UNSET,
 ) -> Service:
     """Solo cambia los campos recibidos. `category=None` deja el servicio sin categoría."""
-    _authorize(membership, "servicios.editar")
+    ensure_permission(membership, "servicios.editar")
     with transaction.atomic():
         service = _live_service_for_update(public_id)
         before = _service_snapshot(service)
@@ -158,7 +148,7 @@ def update_service(
 
 
 def _set_service_active(membership: Membership, public_id: UUID | str, *, active: bool) -> Service:
-    _authorize(membership, "servicios.editar")
+    ensure_permission(membership, "servicios.editar")
     with transaction.atomic():
         service = _live_service_for_update(public_id)
         if service.is_active == active:
@@ -182,7 +172,7 @@ def activate_service(membership: Membership, public_id: UUID | str) -> Service:
 
 def soft_delete_service(membership: Membership, public_id: UUID | str) -> Service:
     """Regla 39: borrado lógico. El historial lo conserva y el nombre queda libre."""
-    _authorize(membership, "servicios.eliminar")
+    ensure_permission(membership, "servicios.eliminar")
     with transaction.atomic():
         service = _live_service_for_update(public_id)
         before = _service_snapshot(service)
@@ -195,7 +185,7 @@ def soft_delete_service(membership: Membership, public_id: UUID | str) -> Servic
 
 
 def create_category(membership: Membership, *, name: str) -> ServiceCategory:
-    _authorize(membership, "servicios.crear")
+    ensure_permission(membership, "servicios.crear")
     with transaction.atomic():
         category = ServiceCategory(barbershop_id=membership.barbershop_id, name=name.strip())
         _save_validated(category, DUPLICATE_CATEGORY)
@@ -204,7 +194,7 @@ def create_category(membership: Membership, *, name: str) -> ServiceCategory:
 
 
 def update_category(membership: Membership, public_id: UUID | str, *, name: str) -> ServiceCategory:
-    _authorize(membership, "servicios.editar")
+    ensure_permission(membership, "servicios.editar")
     with transaction.atomic():
         category = _live_category_for_update(public_id)
         before = _category_snapshot(category)
@@ -218,7 +208,7 @@ def update_category(membership: Membership, public_id: UUID | str, *, name: str)
 
 def soft_delete_category(membership: Membership, public_id: UUID | str) -> ServiceCategory:
     """Borrado lógico. Los servicios vivos de la categoría quedan sin categoría."""
-    _authorize(membership, "servicios.eliminar")
+    ensure_permission(membership, "servicios.eliminar")
     with transaction.atomic():
         category = _live_category_for_update(public_id)
         before = _category_snapshot(category)
