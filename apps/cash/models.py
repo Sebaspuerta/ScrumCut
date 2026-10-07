@@ -85,6 +85,7 @@ class MovementKind(models.TextChoices):
     EXPENSE = "gasto", "Gasto"
     WITHDRAWAL = "retiro", "Retiro"
     ADJUSTMENT = "ajuste", "Ajuste"
+    REFUND = "devolucion", "Devolución"
 
 
 class Direction(models.TextChoices):
@@ -93,7 +94,7 @@ class Direction(models.TextChoices):
 
 
 INCOME_KINDS = (MovementKind.SALE, MovementKind.RECEIVABLE_PAYMENT, MovementKind.MANUAL_INCOME)
-OUTFLOW_KINDS = (MovementKind.EXPENSE, MovementKind.WITHDRAWAL)
+OUTFLOW_KINDS = (MovementKind.EXPENSE, MovementKind.WITHDRAWAL, MovementKind.REFUND)
 
 
 class CashMovement(AppendOnlyModel):
@@ -113,7 +114,7 @@ class CashMovement(AppendOnlyModel):
             models.CheckConstraint(
                 condition=models.Q(payment_method__in=PaymentMethod.values), name="ck_cashmovement_method_valid"
             ),
-            # Ventas, abonos e ingresos entran; gastos y retiros salen; un ajuste puede ir en ambos sentidos.
+            # Ventas, abonos e ingresos entran; gastos, retiros y devoluciones salen; un ajuste, en ambos sentidos.
             models.CheckConstraint(
                 condition=models.Q(kind__in=INCOME_KINDS, direction=Direction.IN)
                 | models.Q(kind__in=OUTFLOW_KINDS, direction=Direction.OUT)

@@ -153,6 +153,7 @@ def apply_stock_movement(
     reason: str,
     actor: Membership,
     unit_cost: Decimal | None = None,
+    reference: str = "",
 ) -> StockMovement:
     """Única forma de cambiar `current_stock`. La usan entradas, ajustes y sales.
 
@@ -182,6 +183,7 @@ def apply_stock_movement(
             stock_after=stock_after,
             unit_cost=locked.purchase_cost if unit_cost is None else unit_cost,
             reason=reason,
+            reference=reference,
             created_by=actor.user,
         )
         movement.full_clean()

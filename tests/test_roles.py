@@ -32,3 +32,19 @@ def test_ningun_rol_tiene_permisos_inexistentes():
 def test_un_permiso_mal_escrito_falla_ruidosamente():
     with pytest.raises(ValueError):
         role_has_permission(Role.OWNER, "caja.borrar")
+
+
+@pytest.mark.parametrize(
+    ("role", "allowed"),
+    [(Role.OWNER, True), (Role.ADMIN, True), (Role.CASHIER, True), (Role.BARBER, False), (Role.VIEWER, False)],
+)
+def test_descontar_en_comandas(role, allowed):
+    assert role_has_permission(role, "comandas.descontar") is allowed
+
+
+@pytest.mark.parametrize(
+    ("role", "allowed"),
+    [(Role.OWNER, True), (Role.ADMIN, True), (Role.CASHIER, False), (Role.BARBER, False), (Role.VIEWER, False)],
+)
+def test_anular_fiados_es_de_dueno_y_administrador(role, allowed):
+    assert role_has_permission(role, "fiados.anular") is allowed

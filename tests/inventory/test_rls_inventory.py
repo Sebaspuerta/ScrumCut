@@ -30,8 +30,8 @@ INSERTS = {
     ),
     "inventory_stockmovement": (
         "INSERT INTO inventory_stockmovement (public_id, created_at, updated_at, barbershop_id, product_id, "
-        "movement_type, quantity, stock_before, stock_after, unit_cost, reason, created_by_id) "
-        "VALUES (gen_random_uuid(), now(), now(), %s, %s, 'entrada', 1, 0, 1, 0, 'x', %s)",
+        "movement_type, quantity, stock_before, stock_after, unit_cost, reason, reference, created_by_id) "
+        "VALUES (gen_random_uuid(), now(), now(), %s, %s, 'entrada', 1, 0, 1, 0, 'x', '', %s)",
         lambda shop, rows: [shop.pk, rows[shop.pk]["product"].pk, rows["user"].pk],
     ),
     "inventory_serviceconsumable": (

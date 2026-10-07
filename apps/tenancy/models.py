@@ -72,6 +72,17 @@ class BarbershopSettings(TenantScopedModel):
         validators=[ArrayMinLengthValidator(1)],
         verbose_name="métodos de pago habilitados",
     )
+    # Consecutivo de comandas: sales lo lee y lo incrementa con select_for_update.
+    next_order_number = models.PositiveIntegerField("siguiente número de comanda", default=1)
+    # Tope de deuda viva por cliente. Nulo: sin límite.
+    max_credit_per_client = models.DecimalField(
+        "crédito máximo por cliente",
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0"))],
+    )
 
     class Meta:
         verbose_name = "configuración de barbería"

@@ -1,7 +1,7 @@
 """Lecturas de clientes. Los managers ya filtran por la barbería activa.
 
-El perfil completo de la regla 47 (visitas, gasto, saldo) espera a sales y
-receivables; aquí queda solo `client_status`, la regla pura que lo clasifica.
+El perfil de la regla 47 (`client_profile`) lee comandas cerradas y fiados;
+`client_status` es la regla pura que lo clasifica con los umbrales de la barbería.
 """
 
 import re
@@ -10,13 +10,15 @@ from decimal import Decimal
 from uuid import UUID
 
 from django.db import models
-from django.db.models import Q, QuerySet
-from django.db.models.functions import Lower
+from django.db.models import Count, DecimalField, Max, Q, QuerySet, Sum, Value
+from django.db.models.functions import Coalesce, Lower
 from django.utils import timezone
 
 from apps.clients.models import Client
 from apps.clients.normalization import normalize_document, normalize_phone
 from apps.core import crypto
+from apps.receivables.selectors import client_balance
+from apps.sales.models import Order, OrderStatus
 from apps.tenancy.models import BarbershopSettings, Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -67,6 +69,27 @@ def find_duplicate(phone: str | None, document: str | None, *, exclude: Client |
     if exclude is not None:
         candidates = candidates.exclude(pk=exclude.pk)
     return candidates.order_by("pk").first()
+
+
+def client_profile(membership: Membership, public_id: UUID | str) -> dict:
+    """Regla 47: visitas, gasto, última visita y saldo, leídos de comandas cerradas y fiados."""
+    ensure_permission(membership, "clientes.ver")
+    client = Client.objects.get(public_id=public_id, deleted_at__isnull=True)
+    history = Order.objects.filter(client=client, status=OrderStatus.CLOSED).aggregate(
+        visits=Count("pk"),
+        spent=Coalesce(
+            Sum("total"), Value(Decimal("0.00")), output_field=DecimalField(max_digits=14, decimal_places=2)
+        ),
+        last_visit=Max("closed_at"),
+    )
+    balance = client_balance(client)
+    settings = BarbershopSettings.objects.get()
+    return {
+        "client": client,
+        **history,
+        "balance": balance,
+        "status": client_status(history["visits"], history["spent"], history["last_visit"], balance, settings),
+    }
 
 
 def client_status(

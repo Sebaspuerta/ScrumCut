@@ -100,6 +100,8 @@ class StockMovement(AppendOnlyModel):
     stock_after = models.IntegerField("stock después")
     unit_cost = models.DecimalField("costo unitario", **_MONEY)
     reason = models.TextField("motivo")
+    # Origen del movimiento ("order:<public_id>"), para revertirlo exacto sin que inventario dependa de sales.
+    reference = models.CharField("referencia", max_length=64, blank=True, db_index=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
 
     class Meta:
