@@ -37,3 +37,9 @@ DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py check --deploy --fa
 
 Luego: `deslop` y `/slop-check` (anti-slop) sobre el cambio, y veredicto de Thermos antes de fusionar a `main`.
 Cambios en permisos, pagos, migraciones o seguridad requieren aprobación humana.
+
+## Git
+
+- Nunca ejecutar `git commit`, `git push`, `git tag` ni nada que cree o suba historial. Tampoco `git add`.
+- No agregar "Co-Authored-By", "Generated with Claude" ni ninguna mención a Claude o IA en archivos, comentarios, mensajes o documentación.
+- Al terminar cada tarea, entregar solo la lista de archivos cambiados y un mensaje de commit sugerido en español, sin atribuciones. El commit y el push los hace una persona.
