@@ -17,7 +17,8 @@ Convenciones de ScrumCut que aplican a todas las tablas portadas, salvo que la t
 
 | Tabla MAGNUS | App ScrumCut | Modelo | Qué cambia | Qué se agrega |
 |---|---|---|---|---|
-| `services` | catalog | `Service` | `category` texto libre → se decide si pasa a FK o se elimina; `uses_internal_consumables` se elimina (no se usa al descontar: lo decide la existencia de consumibles) | Convenciones; `UniqueConstraint(barbershop, lower(name))` entre no borrados |
+| (sin tabla; `services.category` era texto libre) | catalog | `ServiceCategory` | — | Convenciones; `UniqueConstraint(barbershop, lower(name))` entre no borradas |
+| `services` | catalog | `Service` | `category` texto libre → FK opcional a `ServiceCategory` (`PROTECT`); `estimated_duration_minutes` opcional → `duration_minutes` obligatorio y > 0 (lo usa la agenda); `uses_internal_consumables` se elimina (no se usa al descontar: lo decide la existencia de consumibles) | Convenciones; `UniqueConstraint(barbershop, lower(name))` entre no borrados, incluidos los desactivados; `CheckConstraint(price >= 0)` |
 | `service_consumables` | inventory | `ServiceConsumable` | Borrado físico → se conserva físico (es configuración, no historial), pero con `PROTECT` hacia `Product` | `barbershop`; `UniqueConstraint(service, product)`; `CheckConstraint(quantity > 0)` |
 | `categories` | inventory | `ProductCategory` | Índice único parcial por nombre → por barbería y sin distinguir mayúsculas | Convenciones |
 | `products` | inventory | `Product` | `category` (texto heredado) se descarta; `product_type` → `TextChoices` (venta, consumible interno, perecedero); `photo_filename` → `ImageField` con almacenamiento por barbería | Convenciones; `CheckConstraint(current_stock >= 0)` |
@@ -38,13 +39,14 @@ Convenciones de ScrumCut que aplican a todas las tablas portadas, salvo que la t
 | `master_code_config` | — | — | No se porta | — |
 | (sin tabla) reportes y dashboard | reports | solo `selectors.py` | Consultas agregadas sin N+1 | Exportación a Excel con marca de la barbería (dato), no fija |
 
-**Decisiones abiertas** (necesitan respuesta antes del módulo correspondiente):
+**Decisiones tomadas:**
 
-1. ¿Stock por barbería o por sede (`Branch`)? MAGNUS no tiene sedes.
-2. ¿Una caja abierta por barbería o por sede?
-3. Base de la comisión. MAGNUS la calcula sobre el total de la comanda (incluye productos y fiados no cobrados) o como monto fijo por comanda. Falta definir si es por servicio, si incluye productos y si se calcula antes o después del descuento.
-4. Métodos de pago: ¿lista fija o configurable por barbería? MAGNUS menciona efectivo, Nequi, Daviplata, tarjeta, transferencia, cortesía y combinado.
-5. Umbrales del estado del cliente (VIP, Frecuente, Inactivo): ¿fijos o configurables por barbería?
+1. Stock por barbería. Si llega el multi-sede, se agrega una tabla de stock por sede.
+2. Caja por sede: `UniqueConstraint(barbershop, branch)` con condición `closed_at IS NULL`.
+3. La comisión se calcula **solo sobre líneas de servicio**, nunca sobre productos. Porcentaje: sobre el precio neto de la línea, después de repartir el descuento de la comanda en proporción al subtotal. Monto fijo: por unidad de servicio, no por comanda. Se calcula y se copia en `OrderItem` al cerrar.
+4. Métodos de pago: `TextChoices` fijos (`efectivo`, `nequi`, `daviplata`, `tarjeta`, `transferencia`, `bre_b`); cada barbería activa en su configuración los que usa. "Combinado" son varios `Payment`. "Cortesía" no es un método: es un descuento del 100 % con motivo obligatorio.
+5. Los umbrales del estado del cliente son configurables por barbería. Valores por defecto (los de MAGNUS): VIP con ≥ 200 000 de gasto o ≥ 10 visitas, Frecuente con ≥ 3 visitas, Inactivo con más de 90 días sin visita y sin deuda.
+6. (Defecto 11) Una comanda **no** se cierra con saldo: se paga completa o se convierte en fiado, con cliente obligatorio.
 
 ## b) Reglas de negocio
 
@@ -166,7 +168,7 @@ Origen como `archivo.función` dentro de `services/`, salvo que se indique otro 
 
 1. **La comisión se calcula con la configuración actual del barbero**, no con la vigente al cerrar: si cambia su porcentaje, cambian las comisiones ya pagadas. — `barber_service.get_barber_performance`, `reports_service.sales_by_barber`, `excel_report_service._build_comisiones_sheet` → copiar `commission_type`, `commission_rate` y `commission_amount` en `OrderItem` al cerrar (regla 10).
 2. **El costo de venta usa el `purchase_cost` actual del producto**: cambiar el costo reescribe la utilidad de meses pasados. — `excel_report_service._build_ventas_sheet` → copiar `unit_cost` y el costo de consumibles al cerrar.
-3. **Base de comisión ambigua**: porcentaje sobre `Order.total` (incluye productos y fiados no cobrados) y monto fijo por comanda, no por servicio. — `barber_service.get_barber_performance`, `reports_service.sales_by_barber` → decisión abierta 3.
+3. **Base de comisión ambigua**: porcentaje sobre `Order.total` (incluye productos y fiados no cobrados) y monto fijo por comanda, no por servicio. — `barber_service.get_barber_performance`, `reports_service.sales_by_barber` → decisión 3.
 4. **Dinero en `float`**: la base guarda `Numeric`, pero todo se convierte a `float` para sumar y comparar (con tolerancia de 0,01). — en todos los services → `Decimal` de punta a punta.
 5. **Descuento sin validar**: uno negativo sube el total y uno mayor que el subtotal se recorta a 0 en silencio. — `schemas/order.OrderCreate.discount`, `order_service._recalculate_order_totals`
 
@@ -177,7 +179,7 @@ Origen como `archivo.función` dentro de `services/`, salvo que se indique otro 
 8. **`item_type` es texto libre**: cualquier valor distinto de `servicio` se trata como producto, y un "producto" sin `product_id` es una línea libre con precio libre. — `order_service.add_order_item`
 9. **`mark_order_pending` no valida el estado**: una comanda cerrada vuelve a `pendiente`, se edita y se cierra otra vez, lo que descuenta inventario y cobra de nuevo. — `order_service.mark_order_pending`
 10. **Cierre sin bloqueo de la comanda**: dos solicitudes simultáneas (doble clic) pasan el chequeo de estado y la cierran dos veces. — `order_service.close_order` → `select_for_update` sobre la comanda.
-11. **Una comanda no fiada se cierra con pago parcial y el saldo desaparece**: queda `parcial`, sin fiado, porque `_sync_accounts_receivable_for_order` solo se llama si `is_fiado`. — `order_service.close_order` → exigir pago completo o convertir a fiado.
+11. **Una comanda no fiada se cierra con pago parcial y el saldo desaparece**: queda `parcial`, sin fiado, porque `_sync_accounts_receivable_for_order` solo se llama si `is_fiado`. — `order_service.close_order` → decisión 6: se paga completa o se convierte en fiado.
 12. **Cancelar no revierte los pagos** ya registrados ni sus movimientos de caja. — `order_service.cancel_order`
 13. **`str(e)` devuelto al usuario** (S6). — `order_service.close_order`
 
@@ -234,4 +236,4 @@ Ya existen `core`, `tenancy` (Barbershop, Branch, Membership), `accounts`, `audi
 | 8 | alerts | inventory, receivables | `Alert` y la generación como tarea programada |
 | 9 | reports | todas las anteriores | Selectores de ventas, comisiones, top de productos, fiados, cierres, tablero y exportación |
 
-Los pasos 1 a 7 son la fase 1 (operación diaria) y los pasos 8 y 9 la fase 2 (gerencia) de `docs/arquitectura.md`. Cada paso responde antes su decisión abierta: la 1 en el paso 4, la 2 en el 5, la 3 en el 2 y el 6, la 4 en el 5 y la 5 en el 3.
+Los pasos 1 a 7 son la fase 1 (operación diaria) y los pasos 8 y 9 la fase 2 (gerencia) de `docs/arquitectura.md`. Decisiones que aplica cada paso: la 1 en el paso 4; la 2 y la 4 en el 5; la 3 en el 2 y el 6; la 5 en el 3; la 6 en el 6 y el 7.
