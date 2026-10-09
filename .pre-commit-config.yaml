@@ -13,12 +13,15 @@ repos:
     rev: 1.8.6
     hooks:
       - id: bandit
-        args: [-c, pyproject.toml]
+        args: [-c, backend/pyproject.toml]
         additional_dependencies: ["bandit[toml]"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: detect-private-key
+      # Librerías minificadas y licencias de terceros: se guardan tal como vienen.
       - id: end-of-file-fixer
+        exclude: ^frontend/static/(vendor|fonts)/
       - id: trailing-whitespace
+        exclude: ^frontend/static/(vendor|fonts)/

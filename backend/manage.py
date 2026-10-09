@@ -2,16 +2,13 @@
 import os
 import sys
 
+from config.env import load_local_dotenv
+
 
 def _load_dotenv_outside_prod() -> None:
     """Carga .env solo con settings de desarrollo o pruebas; producción usa el entorno real."""
-    if not os.environ["DJANGO_SETTINGS_MODULE"].endswith((".dev", ".test")):
-        return
-    try:
-        from dotenv import load_dotenv
-    except ImportError:
-        return
-    load_dotenv(override=False)
+    if os.environ["DJANGO_SETTINGS_MODULE"].endswith((".dev", ".test")):
+        load_local_dotenv()
 
 
 def main() -> None:

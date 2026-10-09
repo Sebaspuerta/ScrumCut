@@ -7,7 +7,9 @@ import dj_database_url
 
 from config import env
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[2]  # backend/
+REPO_DIR = BASE_DIR.parent
+FRONTEND_DIR = REPO_DIR / "frontend"
 
 SECRET_KEY = env.require("SECRET_KEY")
 # Cifrado de datos personales (apps/core/crypto.py). Rotarlas exige recifrar.
@@ -65,7 +67,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [FRONTEND_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -179,7 +181,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Fotos de productos. En producción las sirve Nginx o un almacenamiento externo, nunca Django.
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [FRONTEND_DIR / "static"]
 
 ADMIN_URL = env.require("ADMIN_URL")
 

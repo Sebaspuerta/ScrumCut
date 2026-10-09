@@ -140,7 +140,7 @@ Origen como `archivo.función` dentro de `services/`, salvo que se indique otro 
 ### Seguridad (ya cubierta por ScrumCut; solo referencia)
 
 56. Bloqueo tras 5 intentos fallidos durante 15 minutos. — `security_service.authenticate_user` → axes
-57. Matriz de permisos `modulo.accion` por rol. — `security_service.seed_initial_security` → `apps/tenancy/roles.py`. En MAGNUS el Barbero puede abrir caja; la matriz de ScrumCut decide.
+57. Matriz de permisos `modulo.accion` por rol. — `security_service.seed_initial_security` → `backend/apps/tenancy/roles.py`. En MAGNUS el Barbero puede abrir caja; la matriz de ScrumCut decide.
 58. Toda escritura deja auditoría con usuario, módulo y acción. — `security_service.create_audit_log` → `audit.AuditLog`
 
 ## c) No se porta

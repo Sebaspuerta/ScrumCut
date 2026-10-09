@@ -34,6 +34,10 @@ jobs:
       EMAIL_HOST_USER: ci
       EMAIL_HOST_PASSWORD: ci
       DEFAULT_FROM_EMAIL: ci@localhost
+    # Los pasos de Python corren en backend/; gitleaks (una acción, no un run) revisa todo el repositorio.
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
         with:

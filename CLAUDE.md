@@ -9,7 +9,7 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 2. **Marca neutra.** Ningún nombre, logo o color de una barbería en el código. La identidad de cada barbería es dato en `tenancy.Barbershop`.
 3. **Toda tabla de negocio hereda de `TenantScopedModel`** y su migración termina con `EnableTenantRLS("<tabla>")`. Nunca se filtra por barbería a mano en una vista.
 4. **`Model.unscoped`** solo en tareas de plataforma, con comentario que explique por qué.
-5. **Autorización en el servidor:** `require_permission("modulo.accion")` en cada vista + filtro por dueño del objeto en los selectores (el barbero ve solo lo suyo). La matriz vive en `apps/tenancy/roles.py`.
+5. **Autorización en el servidor:** `require_permission("modulo.accion")` en cada vista + filtro por dueño del objeto en los selectores (el barbero ve solo lo suyo). La matriz vive en `backend/apps/tenancy/roles.py`.
 6. **Capas:** vistas delgadas → `services.py` (escrituras, `transaction.atomic`, `select_for_update` cuando se toca stock o caja) → `selectors.py` (lecturas).
 7. **Dinero:** `DecimalField(max_digits=14, decimal_places=2)`. Nunca `float`.
 8. **Fechas:** siempre con zona horaria (`timezone.now()`); nunca `datetime.utcnow()`.
@@ -27,10 +27,21 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 - Superficies planas separadas por líneas finas; radio único de 4 px; tablas densas para gerencia.
 - Todo estado de pantalla diseñado: vacío, cargando, error.
 
+## Frontend
+
+- Django genera las vistas; todo lo visual vive en frontend/. Nada de HTML, CSS o JS dentro de backend/.
+- HTML: plantillas de Django con partials ({% partialdef %}), una subcarpeta por módulo en frontend/templates/.
+- Interacción con el servidor: HTMX. Interacción en pantalla: Alpine.js en su versión CSP (@alpinejs/csp).
+- JavaScript propio: vanilla, ES modules, sin compilación, en frontend/static/js/ con core/, components/ y modules/.
+- CSS propio con variables de diseño (tokens.css, base.css, components/, modules/). Sin Bootstrap ni Tailwind.
+- Gráficas: Chart.js. Íconos: Lucide. Librerías de terceros descargadas en frontend/static/vendor/ con su licencia; sin CDN.
+- Nada de <script> dentro de las plantillas ni atributos onclick: todo el JS en archivos .js (compatible con CSP estricta).
+
 ## Antes de pedir revisión
 
 ```bash
 pre-commit run --all-files
+cd backend
 pytest
 DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py check --deploy --fail-level WARNING
 ```
