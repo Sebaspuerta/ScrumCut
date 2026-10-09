@@ -48,3 +48,11 @@ def test_descontar_en_comandas(role, allowed):
 )
 def test_anular_fiados_es_de_dueno_y_administrador(role, allowed):
     assert role_has_permission(role, "fiados.anular") is allowed
+
+
+@pytest.mark.parametrize(
+    ("role", "allowed"),
+    [(Role.OWNER, True), (Role.ADMIN, True), (Role.CASHIER, True), (Role.BARBER, False), (Role.VIEWER, False)],
+)
+def test_marcar_alertas(role, allowed):
+    assert role_has_permission(role, "alertas.marcar") is allowed

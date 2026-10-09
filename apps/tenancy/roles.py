@@ -28,7 +28,7 @@ MODULE_ACTIONS: dict[str, tuple[str, ...]] = {
     "comandas": ("ver", "crear", "editar", "cerrar", "anular", "descontar"),
     "caja": ("ver", "abrir", "cerrar", "movimiento"),
     "fiados": ("ver", "crear", "abonar", "anular"),
-    "alertas": ("ver",),
+    "alertas": ("ver", "marcar"),
     "reportes": ("ver", "exportar"),
     "auditoria": ("ver",),
 }
@@ -75,6 +75,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[str]] = {
             "fiados.crear",
             "fiados.abonar",
             "alertas.ver",
+            "alertas.marcar",
             "reportes.ver",
         }
     ),
