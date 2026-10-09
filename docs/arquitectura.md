@@ -1,7 +1,5 @@
 # Arquitectura
 
-Documento fuente (vivo): [ScrumCut v2 — Arquitectura y migración desde MAGNUS v1](https://claude.ai/code/artifact/d09db44f-1673-41f6-83a3-5e4b4bde921a).
-
 ## Resumen de decisiones
 
 - Monolito modular en Django; reglas en `services.py`, lecturas en `selectors.py`.
@@ -14,7 +12,7 @@ Documento fuente (vivo): [ScrumCut v2 — Arquitectura y migración desde MAGNUS
 
 ## Hallazgos de seguridad de MAGNUS v1
 
-Patrones que no se repiten al portar (regla 1 de `CLAUDE.md`). Detalle y defectos funcionales en [migracion-magnus.md](migracion-magnus.md).
+Patrones que no se repiten al portar (regla 1 de `AGENTS.md`). Detalle y defectos funcionales en [migracion-magnus.md](migracion-magnus.md).
 
 | # | Hallazgo | Origen en MAGNUS | En ScrumCut |
 |---|---|---|---|
@@ -33,9 +31,24 @@ Patrones que no se repiten al portar (regla 1 de `CLAUDE.md`). Detalle y defecto
 
 ## Fases
 
-0. Fundaciones (este repositorio hoy)
-1. Operación diaria: catálogo, personal, clientes, comandas, caja, inventario, fiados
-2. Gerencia: reportes, alertas programadas
-3. Agenda y reservas públicas
-4. Producción: dominio, despliegue, pentest
-v3. Pagos en línea
+0. Fundaciones — completa.
+1. Operación diaria: catálogo, personal, clientes, comandas, caja, inventario, fiados — lógica de dominio completa (pasos 1 a 7 de la migración de MAGNUS); falta la interfaz y los pendientes de seguridad de la fase 1.
+2. Gerencia: reportes, alertas programadas — lógica de dominio completa (pasos 8 y 9 de la migración de MAGNUS); falta la interfaz.
+3. Agenda y reservas públicas — sin empezar.
+4. Producción: dominio, despliegue, pentest — sin empezar.
+v3. Pagos en línea — sin empezar.
+
+## Pendientes de seguridad
+
+| Pendiente | Fase |
+|---|---|
+| Botón "cerrar sesión en todos los dispositivos", con prueba | 1 |
+| Honeypot en registro y recuperación de contraseña | 1 |
+| Prueba de que el logout invalida la sesión en el servidor | 1 |
+| Textos legales redactados, aprobados y publicados; aceptación al registrarse | 1 |
+| Meta títulos y descripciones, datos estructurados (schema.org), sitemap y robots.txt en páginas públicas | Frontend |
+| Favicon completo (.ico, apple-touch-icon, 192 y 512 px) con el logo definitivo | Frontend |
+| Honeypot en reservas públicas | 3 |
+| Usuario de base de datos de la app sin BYPASSRLS ni dueño de las tablas, con prueba | 4 |
+| HSTS de 1 día a 1 año | 4 |
+| Ficha de Google Business de ScrumTech | Fuera del código |

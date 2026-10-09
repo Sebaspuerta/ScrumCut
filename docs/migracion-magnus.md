@@ -156,7 +156,7 @@ Estado de resultados en ScrumCut: como gasto solo restan los movimientos de caja
 | Dueño identificado por nombre de usuario (`mateo`, `admin`) | `utils/security.OWNER_USERNAME(S)`, `require_owner`, `barber_service.is_owner_barber`, `security_service.deactivate_user` | El dueño es un rol (S5) |
 | Administrador inicial desde `ADMIN_PASSWORD` | `security_service.seed_initial_security` | Alta de barbería con dueño verificado (S8) |
 | Cambio y validación de contraseña propios | `security_service.change_password`, `barber_service._validate_password` | allauth + validadores de Django (S7) |
-| Frontend HTML/JS y su montaje con `StaticFiles` | `frontend/`, `main.py` | Regla 1; la interfaz se diseña con las pautas de `CLAUDE.md` |
+| Frontend HTML/JS y su montaje con `StaticFiles` | `frontend/`, `main.py` | Regla 1; la interfaz se diseña con las pautas de `AGENTS.md` |
 | `system_config` clave-valor | `models/system_config.py`, `system_config_service` | Sin tipos ni validación; se reemplaza por campos tipados de la barbería |
 | `quick_pin_hash` del barbero | `models/barber.py` | Se guarda pero ningún flujo lo usa |
 | `Product.category` (texto libre heredado) | `models/inventory.py` | Reemplazado por FK a categoría |

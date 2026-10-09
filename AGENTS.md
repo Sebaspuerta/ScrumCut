@@ -37,6 +37,36 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 - Gráficas: Chart.js. Íconos: Lucide. Librerías de terceros descargadas en frontend/static/vendor/ con su licencia; sin CDN.
 - Nada de <script> dentro de las plantillas ni atributos onclick: todo el JS en archivos .js (compatible con CSP estricta).
 
+## Seguridad y legal
+
+Aplican a toda vista, formulario, plantilla y endpoint. Complementan las reglas 5, 11, 12 y 13.
+
+Sesión y autenticación
+- La sesión vive solo en la cookie HttpOnly/Secure del servidor. Prohibido guardar tokens, ids de sesión o datos de usuario en localStorage, sessionStorage o cookies legibles por JS.
+- Cerrar sesión siempre es por POST y borra la sesión en el servidor. Debe existir "cerrar sesión en todos los dispositivos".
+- Correo verificado obligatorio; 2FA obligatorio para Dueño, Administrador y equipo de plataforma. No se desactivan ni se saltan en ningún flujo.
+- Login, registro, recuperación y confirmación de correo siempre con límite de intentos (allauth + axes). Ningún endpoint de autenticación nuevo sin límite.
+
+Autorización y confianza
+- El servidor nunca confía en el navegador: todo permiso se valida con require_permission y todo objeto se filtra por barbería y por dueño. Ocultar un botón no es seguridad.
+- Precios, totales, comisiones, roles y barbería activa los calcula el servidor; nunca se toman del formulario.
+- Ningún secreto llega al navegador: ni en plantillas, ni en JS, ni en atributos data-. Solo variables de entorno del servidor.
+
+Formularios y entradas
+- Todo formulario usa un Form de Django validado en el servidor; la validación del navegador es solo ayuda visual.
+- Los formularios públicos (registro, recuperación, contacto, reservas) llevan honeypot y límite por IP contra spam.
+- Mensajes de error genéricos (regla 12): nunca revelan si un correo o usuario existe.
+
+Navegador
+- Siempre HTTPS en producción, con HSTS. CSP estricta: sin <script> en línea, sin onclick, sin eval, sin CDN.
+- Las páginas privadas llevan noindex y no aparecen en el sitemap.
+
+Legal (Colombia, Ley 1581 de 2012)
+- Los textos legales viven en apps/legal como documentos versionados: política de tratamiento de datos, aviso de privacidad, términos y condiciones y política de cookies. Toda aceptación queda registrada con su versión.
+- Ningún dato personal se recolecta sin la autorización previa del titular, registrada en legal.
+- Solo cookies esenciales (regla 13), por eso no hay banner de consentimiento. Cualquier cookie no esencial (analítica, publicidad) exige primero aprobación de Sebastián y un banner que pida consentimiento antes de cargarla.
+- Ningún texto legal se redacta como definitivo sin aprobación de Sebastián.
+
 ## Antes de pedir revisión
 
 ```bash
@@ -50,7 +80,6 @@ Luego: `deslop` y `/slop-check` (anti-slop) sobre el cambio, y veredicto de Ther
 Cambios en permisos, pagos, migraciones o seguridad requieren aprobación humana.
 
 ## Git
-
-- Nunca ejecutar `git commit`, `git push`, `git tag` ni nada que cree o suba historial. Tampoco `git add`.
-- No agregar "Co-Authored-By", "Generated with Claude" ni ninguna mención a Claude o IA en archivos, comentarios, mensajes o documentación.
-- Al terminar cada tarea, entregar solo la lista de archivos cambiados y un mensaje de commit sugerido en español, sin atribuciones. El commit y el push los hace una persona.
+- Los agentes de código nunca ejecutan git commit, git push, git tag ni nada que cree o suba historial, ni git add.
+- Ningún commit, archivo, comentario, mensaje o documento lleva atribución a herramientas de IA (Co-Authored-By, Session, "Generated with" ni similares).
+- Al terminar cada tarea se entrega solo la lista de archivos cambiados y un mensaje de commit sugerido en español, sin atribuciones. El commit y el push los hace una persona.

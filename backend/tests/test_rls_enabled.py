@@ -1,6 +1,6 @@
 """Toda tabla de negocio tiene Row-Level Security activado, forzado y con su política.
 
-Regla 3 de `CLAUDE.md`: cada migración de una tabla de negocio termina con
+Regla 3 de `AGENTS.md`: cada migración de una tabla de negocio termina con
 `EnableTenantRLS`. Si alguien la olvida, la tabla queda abierta entre barberías y
 nada más lo detectaría; esta prueba lee el catálogo de PostgreSQL.
 """

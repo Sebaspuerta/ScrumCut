@@ -55,4 +55,4 @@ docs/              arquitectura y decisiones
 
 `frontend/static/brand/icon.svg` es provisional. Faltan `favicon.ico` (32 px), `apple-touch-icon.png` (180 px) e íconos de 192 y 512 px cuando exista el logo definitivo.
 
-Reglas de trabajo: ver [CLAUDE.md](CLAUDE.md).
+Reglas de trabajo: ver [AGENTS.md](AGENTS.md).

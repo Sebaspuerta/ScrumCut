@@ -2,7 +2,7 @@
 
 Portado de MAGNUS v1 (`models/order.py`, `payment.py`) según `docs/migracion-magnus.md`.
 Al cerrar, cada línea guarda nombre, precio, costo y comisión (regla 10 de
-`CLAUDE.md`, defecto 1): los reportes leen esas copias, nunca el catálogo actual.
+`AGENTS.md`, defecto 1): los reportes leen esas copias, nunca el catálogo actual.
 """
 
 from decimal import Decimal
