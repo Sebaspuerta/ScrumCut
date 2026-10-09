@@ -37,7 +37,7 @@ Convenciones de ScrumCut que aplican a todas las tablas portadas, salvo que la t
 | `users`, `roles`, `permissions`, `role_permissions` | accounts / tenancy (existen) | `User`, `Membership`, `roles.py` | No se portan: el rol vive en `Membership` y la matriz en código | — |
 | `system_config` | tenancy | campos de `Barbershop` o un `BarbershopSettings` tipado | Clave-valor libre → campos con tipo y validación | — |
 | `master_code_config` | — | — | No se porta | — |
-| (sin tabla) reportes y dashboard | reports | solo `selectors.py` | Consultas agregadas sin N+1 | Exportación a Excel con marca de la barbería (dato), no fija |
+| (sin tabla) reportes y dashboard | reports | solo lecturas: `selectors/` por tema y `excel/` | Consultas agregadas sin N+1 | Exportación a Excel con marca de la barbería (dato), no fija |
 
 **Decisiones tomadas:**
 
@@ -136,6 +136,8 @@ Origen como `archivo.función` dentro de `services/`, salvo que se indique otro 
 53. Tablero: ingresos del día (pagos + abonos, todos los métodos), comandas cerradas hoy, comandas abiertas, caja abierta con su esperado, inventario crítico, fiados y alertas no leídas. — `dashboard_service.get_dashboard_summary`
 54. "Mis cortes de hoy": el barbero ve solo su conteo, sin dinero. — `dashboard_service.get_my_cuts_today`
 55. Exportación contable: ventas con costo por línea de producto (los servicios no tienen costo directo; la comisión va aparte), comisiones, fiados, movimientos, cierres, estado de resultados y panorama. — `excel_report_service.generate_business_report_excel`
+
+Estado de resultados en ScrumCut: como gasto solo restan los movimientos de caja de tipo gasto; los retiros del dueño, los ingresos manuales y los ajustes no entran, y una comanda anulada deja de contar como venta.
 
 ### Seguridad (ya cubierta por ScrumCut; solo referencia)
 
@@ -237,3 +239,5 @@ Ya existen `core`, `tenancy` (Barbershop, Branch, Membership), `accounts`, `audi
 | 9 | reports | todas las anteriores | Selectores de ventas, comisiones, top de productos, fiados, cierres, tablero y exportación |
 
 Los pasos 1 a 7 son la fase 1 (operación diaria) y los pasos 8 y 9 la fase 2 (gerencia) de `docs/arquitectura.md`. Decisiones que aplica cada paso: la 1 en el paso 4; la 2 y la 4 en el 5; la 3 en el 2 y el 6; la 5 en el 3; la 6 en el 6 y el 7.
+
+**Estado:** los nueve pasos están portados. Con los pasos 8 (alertas) y 9 (reportes) queda en ScrumCut toda la lógica de negocio de MAGNUS; falta la interfaz.

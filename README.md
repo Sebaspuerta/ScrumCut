@@ -3,7 +3,7 @@
 Software de gestión para barberías, por [ScrumTech Solutions](https://www.instagram.com/scrumtech_solutions/).
 Multi-barbería, 100 % web, con agenda, comandas, caja, inventario, fiados y reportes gerenciales.
 
-Estado: **fase 0 (fundaciones)**: identidad segura, multi-barbería, auditoría y base legal.
+Estado: **lógica de negocio de MAGNUS portada por completo** (pasos 1 a 9 de `docs/migracion-magnus.md`), sin interfaz todavía. Sobre las fundaciones de la fase 0: identidad segura, multi-barbería, auditoría y base legal.
 
 ## Stack
 
@@ -34,7 +34,15 @@ backend/
   apps/tenancy/    barberías, sedes, membresías, roles y matriz de permisos
   apps/audit/      registro de auditoría solo-agregar
   apps/legal/      documentos legales versionados y aceptaciones
-  apps/...         módulos de negocio portados de MAGNUS (ver docs/migracion-magnus.md)
+  apps/catalog/    servicios
+  apps/staff/      barberos y reglas de comisión
+  apps/clients/    clientes, duplicados, perfil y anonimización
+  apps/inventory/  productos, categorías, insumos y movimientos de stock
+  apps/cash/       cajas por sede, libro de movimientos y arqueo
+  apps/sales/      comandas, cierre con copia de precio, costo y comisión, y pagos
+  apps/receivables/ fiados y abonos
+  apps/alerts/     alertas automáticas (comando generar_alertas para cron)
+  apps/reports/    reportes, tablero y exportación a Excel (solo lecturas)
   tests/           pruebas (pytest se corre desde backend/)
   requirements/    dependencias fijadas
 frontend/

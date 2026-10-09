@@ -10,7 +10,7 @@ from decimal import Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Page, Paginator
 from django.db.models import Count, DecimalField, F, Prefetch, Q, QuerySet, Sum, Value
 from django.db.models.functions import Coalesce
@@ -23,6 +23,7 @@ from apps.tenancy.permissions import ensure_member, ensure_permission
 from apps.tenancy.roles import Role, role_has_permission
 
 DELETED_SUFFIX = " (eliminado)"
+DEFAULT_PERIOD_DAYS = 30
 _ZERO = Decimal("0.00")
 
 
@@ -50,13 +51,24 @@ def scoped_orders(membership: Membership) -> QuerySet[Order]:
     return orders
 
 
-def _day_bounds(tz_name: str, start: date, end: date) -> tuple[datetime, datetime]:
+def day_bounds(tz_name: str, start: date, end: date) -> tuple[datetime, datetime]:
     tz = ZoneInfo(tz_name)
     return datetime.combine(start, time.min, tz), datetime.combine(end + timedelta(days=1), time.min, tz)
 
 
 def local_today(membership: Membership) -> date:
     return timezone.now().astimezone(ZoneInfo(membership.barbershop.timezone)).date()
+
+
+def period_dates(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None
+) -> tuple[date, date]:
+    """Ambos extremos incluidos. Por defecto, los últimos 30 días contando hoy (regla 49)."""
+    date_to = date_to or local_today(membership)
+    date_from = date_from or date_to - timedelta(days=DEFAULT_PERIOD_DAYS - 1)
+    if date_from > date_to:
+        raise ValidationError("La fecha inicial no puede ser posterior a la final.", code="invalid_period")
+    return date_from, date_to
 
 
 def list_orders(
@@ -78,9 +90,9 @@ def list_orders(
         orders = orders.filter(barber__public_id=barber)
     tz_name = membership.barbershop.timezone
     if date_from is not None:
-        orders = orders.filter(created_at__gte=_day_bounds(tz_name, date_from, date_from)[0])
+        orders = orders.filter(created_at__gte=day_bounds(tz_name, date_from, date_from)[0])
     if date_to is not None:
-        orders = orders.filter(created_at__lt=_day_bounds(tz_name, date_to, date_to)[1])
+        orders = orders.filter(created_at__lt=day_bounds(tz_name, date_to, date_to)[1])
     return Paginator(orders.order_by("-number"), page_size).get_page(page)
 
 
@@ -124,7 +136,7 @@ def barber_performance(
 ) -> dict:
     """Regla 44 con el defecto 1 corregido: suma solo lo copiado en las líneas al cerrar.
 
-    Rango por defecto: los últimos 30 días en la zona de la barbería. Lo ve quien
+    Rango por defecto: el de `period_dates`, en la zona de la barbería. Lo ve quien
     tiene `barberos.ver`, y cada barbero el suyo.
     """
     ensure_member(membership)
@@ -133,9 +145,8 @@ def barber_performance(
         mine = own_barber(membership)
         if mine is None or mine.pk != target.pk:
             raise PermissionDenied
-    date_to = date_to or local_today(membership)
-    date_from = date_from or date_to - timedelta(days=30)
-    start, end = _day_bounds(membership.barbershop.timezone, date_from, date_to)
+    date_from, date_to = period_dates(membership, date_from, date_to)
+    start, end = day_bounds(membership.barbershop.timezone, date_from, date_to)
     totals = _closed_lines(target, start, end).aggregate(
         orders_count=Count("order", distinct=True),
         services_count=Coalesce(Sum("quantity", filter=Q(item_type=ItemType.SERVICE)), 0),
@@ -152,7 +163,7 @@ def my_cuts_today(membership: Membership) -> dict:
     if barber is None:
         return {"cuts_today": 0}
     today = local_today(membership)
-    start, end = _day_bounds(membership.barbershop.timezone, today, today)
+    start, end = day_bounds(membership.barbershop.timezone, today, today)
     cuts = (
         _closed_lines(barber, start, end)
         .filter(item_type=ItemType.SERVICE)

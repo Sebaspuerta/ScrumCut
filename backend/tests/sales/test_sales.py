@@ -1,9 +1,11 @@
 import threading
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import connection
+from django.utils import timezone
 
 from apps.cash import selectors as cash_selectors
 from apps.cash import services as cash
@@ -426,6 +428,20 @@ def test_rendimiento_lo_ve_quien_tiene_permiso_y_cada_barbero_el_suyo(world, mem
         selectors.barber_performance(world.beto_login, world.ana.public_id)
     viewer = member(Role.VIEWER, world.shop)
     assert selectors.barber_performance(viewer, world.ana.public_id)["services_count"] == 1
+
+
+def test_rendimiento_por_defecto_son_30_dias_contando_hoy(world):
+    inside, outside = (_sold_corte(world) for _ in range(2))
+    for order in (inside, outside):
+        services.close_order(world.cashier, order.public_id, _cash("25000"))
+    today = selectors.local_today(world.owner)
+    Order.objects.filter(pk=inside.pk).update(closed_at=timezone.now() - timedelta(days=29))
+    Order.objects.filter(pk=outside.pk).update(closed_at=timezone.now() - timedelta(days=30, hours=1))
+
+    performance = selectors.barber_performance(world.owner, world.ana.public_id)
+
+    assert (performance["date_from"], performance["date_to"]) == (today - timedelta(days=29), today)
+    assert performance["orders_count"] == 1
 
 
 def test_mis_cortes_cuenta_servicios_sin_dinero(world):
