@@ -21,11 +21,11 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 
 ## Diseño de interfaz
 
-- Prohibido: fuente Inter (y Geist, Space Grotesk), degradados violetas, glassmorphism, tarjetas dentro de tarjetas, emojis como íconos, el rojo-azul-blanco del poste de barbería.
-- Base negro y hueso con un solo acento metálico; el color de la barbería solo como acento.
-- Títulos en serif con carácter (Fraunces o Cormorant), texto en IBM Plex Sans, cifras tabulares.
-- Superficies planas separadas por líneas finas; radio único de 4 px; tablas densas para gerencia.
-- Todo estado de pantalla diseñado: vacío, cargando, error.
+- Ningún diseño se inventa. Pantallas, colores, tipografía, espaciado, íconos y componentes visuales solo se implementan cuando Sebastián los aprueba. Si falta una definición, se pregunta antes de escribir HTML o CSS; no se rellena con valores supuestos.
+- Prohibido: fuente Inter (y Geist, Space Grotesk), degradados violeta, glassmorphism, tarjetas dentro de tarjetas, emojis como íconos, el rojo-azul-blanco del poste de barbería y cualquier diseño genérico de IA.
+- Las fuentes tipográficas y los recursos de diseño los entrega Sebastián. Los archivos que hoy están en frontend/static/fonts/ no son una elección aprobada: no se usan hasta que él lo indique.
+- Toda pantalla contempla sus estados vacío, cargando y error; su aspecto también requiere aprobación.
+- La identidad de cada barbería (nombre, logo, color) es dato de tenancy.Barbershop, nunca fija en el código.
 
 ## Frontend
 
