@@ -40,15 +40,17 @@ v3. Pagos en línea — sin empezar.
 
 ## Pendientes de seguridad
 
-| Pendiente | Fase |
-|---|---|
-| Botón "cerrar sesión en todos los dispositivos", con prueba | 1 |
-| Honeypot en registro y recuperación de contraseña | 1 |
-| Prueba de que el logout invalida la sesión en el servidor | 1 |
-| Textos legales redactados, aprobados y publicados; aceptación al registrarse | 1 |
-| Meta títulos y descripciones, datos estructurados (schema.org), sitemap y robots.txt en páginas públicas | Frontend |
-| Favicon completo (.ico, apple-touch-icon, 192 y 512 px) con el logo definitivo | Frontend |
-| Honeypot en reservas públicas | 3 |
-| Usuario de base de datos de la app sin BYPASSRLS ni dueño de las tablas, con prueba | 4 |
-| HSTS de 1 día a 1 año | 4 |
-| Ficha de Google Business de ScrumTech | Fuera del código |
+| Pendiente | Fase | Estado |
+|---|---|---|
+| Botón "cerrar sesión en todos los dispositivos", con prueba | 1 | Hecho (lógica y prueba; el botón visual llega con la interfaz) |
+| Honeypot en registro y recuperación de contraseña | 1 | Hecho |
+| Prueba de que el logout invalida la sesión en el servidor | 1 | Hecho |
+| Textos legales redactados, aprobados y publicados; aceptación al registrarse | 1 | Lógica hecha (aceptación, registro cerrado sin documentos, chequeo de despliegue); textos pendientes de Sebastián |
+| Meta títulos y descripciones, datos estructurados (schema.org), sitemap y robots.txt en páginas públicas | Frontend | Pendiente |
+| Favicon completo (.ico, apple-touch-icon, 192 y 512 px) con el logo definitivo | Frontend | Pendiente |
+| Desactivar la caché de historial de htmx (sessionStorage) al montar el frontend | Frontend | Pendiente |
+| Honeypot en reservas públicas | 3 | Pendiente |
+| Usuario de base de datos de la app sin BYPASSRLS ni dueño de las tablas, con prueba | 4 | Pendiente |
+| HSTS de 1 día a 1 año | 4 | Pendiente |
+| Correr la suite completa con un rol sin privilegios, igual al de producción | 4 | Pendiente |
+| Ficha de Google Business de ScrumTech | Fuera del código | Pendiente |

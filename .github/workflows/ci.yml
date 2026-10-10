@@ -65,6 +65,11 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings.test
       - name: Pruebas
         run: pytest
+      - name: Base desechable para el chequeo de despliegue
+        # El chequeo legal lee la base: se migra y se publican documentos de prueba, solo aquí.
+        run: python manage.py migrate --noinput && python manage.py publicar_documentos_ci
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
       - name: Configuración de despliegue
         run: python manage.py check --deploy --fail-level WARNING
         env:

@@ -5,19 +5,38 @@ ignora RLS. Cada tabla se prueba con un control positivo (insertar en la barber�
 fijada funciona) para que el rechazo en la ajena solo pueda deberse a RLS.
 """
 
+import pytest
 from django.db import DatabaseError, connection, transaction
 
 PROBE_ROLE = "scrumcut_rls_probe"
 
+postgres_only = pytest.mark.skipif(connection.vendor != "postgresql", reason="RLS solo existe en PostgreSQL")
 
-def become_app_role(*tables: str) -> None:
-    """Crea el rol de prueba con SELECT e INSERT en `tables` y lo asume hasta el fin de la transacción."""
+
+def _assume_probe_role(grant: str) -> None:
+    """Crea el rol de prueba con `grant` y lo asume hasta el fin de la transacción."""
     with connection.cursor() as cursor:
         cursor.execute(f"DROP ROLE IF EXISTS {PROBE_ROLE}")
         cursor.execute(f"CREATE ROLE {PROBE_ROLE} NOLOGIN NOSUPERUSER NOBYPASSRLS")
-        cursor.execute(f"GRANT SELECT, INSERT ON {', '.join(tables)} TO {PROBE_ROLE}")
+        cursor.execute(f"{grant} TO {PROBE_ROLE}")
         cursor.execute(f"GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO {PROBE_ROLE}")
         cursor.execute(f"SET LOCAL ROLE {PROBE_ROLE}")
+
+
+def become_app_role(*tables: str) -> None:
+    """SELECT e INSERT solo en `tables`: para probar la política de una tabla con SQL directo."""
+    _assume_probe_role(f"GRANT SELECT, INSERT ON {', '.join(tables)}")
+
+
+def become_production_role() -> None:
+    """Lectura y escritura en todas las tablas, sin superusuario: como la app en producción."""
+    _assume_probe_role("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public")
+
+
+def back_to_test_role() -> None:
+    """Vuelve al rol de las pruebas para verificar el resultado sin el filtro de RLS."""
+    with connection.cursor() as cursor:
+        cursor.execute("RESET ROLE")
 
 
 def _fix_barbershop(cursor, barbershop_id: int | None) -> None:

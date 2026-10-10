@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 
 
 class UserManager(BaseUserManager):
@@ -35,6 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False, help_text="Acceso al admin de Django.")
     is_platform_staff = models.BooleanField(default=False, help_text="Equipo ScrumTech (superadmin).")
     date_joined = models.DateTimeField(default=timezone.now)
+    session_version = models.PositiveIntegerField(default=0, editable=False)
 
     objects = UserManager()
 
@@ -44,3 +46,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.email
+
+    def _get_session_auth_hash(self, secret=None) -> str:
+        # Django guarda este hash en cada sesión y lo compara en cada petición: con la
+        # versión dentro, subirla invalida a la vez todas las sesiones abiertas del usuario.
+        key_salt = "django.contrib.auth.models.AbstractBaseUser.get_session_auth_hash"
+        payload = f"{self.password}:{self.session_version}"
+        return salted_hmac(key_salt, payload, secret=secret, algorithm="sha256").hexdigest()

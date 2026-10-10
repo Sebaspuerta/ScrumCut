@@ -115,13 +115,19 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_PREVENT_ENUMERATION = True
+ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
+ACCOUNT_FORMS = {
+    "signup": "apps.accounts.forms.ScrumCutSignupForm",
+    "reset_password": "apps.accounts.forms.ScrumCutResetPasswordForm",
+}
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = False
 # Invalida el enlace de recuperación si el correo de la cuenta cambia.
 ACCOUNT_PASSWORD_RESET_TOKEN_GENERATOR = "allauth.account.forms.EmailAwarePasswordResetTokenGenerator"  # noqa: S105  # nosec B105
 PASSWORD_RESET_TIMEOUT = 60 * 60  # 1 hora
 ACCOUNT_RATE_LIMITS = {
     "login": "20/m/ip",
-    "login_failed": "5/15m/ip,5/15m/key",
+    # Solo por IP: un límite por cuenta dejaría a cualquiera bloquear al dueño desde otra red (S4).
+    "login_failed": "5/15m/ip",
     "signup": "10/h/ip",
     "reset_password": "5/h/ip,3/h/key",  # nosec B105
     "reset_password_from_key": "10/h/ip",  # nosec B105
@@ -148,6 +154,8 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_AGE = 60 * 60 * 12
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
+# Los avisos ("sesión iniciada") viajan en la sesión y no en una cookie propia: solo cookies esenciales.
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 # --- Cabeceras -------------------------------------------------------------
 X_FRAME_OPTIONS = "DENY"

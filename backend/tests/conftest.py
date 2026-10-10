@@ -1,3 +1,4 @@
+import secrets
 from decimal import Decimal
 from types import SimpleNamespace
 
@@ -15,6 +16,9 @@ from apps.staff import services as staff
 from apps.tenancy.models import Barbershop, Branch, Membership
 from apps.tenancy.roles import Role
 
+# Se genera en cada corrida: una contraseña literal en el código la marca gitleaks como secreto.
+TEST_PASSWORD = secrets.token_urlsafe(18)
+
 
 @pytest.fixture
 def make_shop(db):
@@ -26,7 +30,7 @@ def make_shop(db):
 
 @pytest.fixture
 def make_member(db):
-    def _make(email: str, shop: Barbershop, role: Role, password: str = "clave-larga-de-prueba-2026") -> User:
+    def _make(email: str, shop: Barbershop, role: Role, password: str = TEST_PASSWORD) -> User:
         user = User.objects.create_user(email=email, password=password)
         EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
         Membership.objects.create(user=user, barbershop=shop, role=role)

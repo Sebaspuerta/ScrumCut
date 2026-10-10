@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from apps.core.http import client_ip
+
 
 class AuditLog(models.Model):
     """Registro solo-agregar. No se edita ni se borra desde la aplicación.
@@ -42,8 +44,7 @@ def record(
     ip = None
     agent = ""
     if request is not None:
-        # Detrás de Cloudflare la IP real llega en CF-Connecting-IP (Nginx solo acepta rangos de Cloudflare).
-        ip = request.META.get("HTTP_CF_CONNECTING_IP") or request.META.get("REMOTE_ADDR")
+        ip = client_ip(request)
         agent = request.META.get("HTTP_USER_AGENT", "")[:255]
     return AuditLog.objects.create(
         action=action,

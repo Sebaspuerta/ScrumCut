@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from functools import wraps
 
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
 
@@ -24,6 +25,8 @@ def ensure_permission(membership, code: str) -> None:
 
 
 def require_permission(code: str) -> Callable:
+    """Exige sesión iniciada (si no, al login) y el permiso en la barbería activa (si no, 403)."""
+
     def decorator(view: Callable) -> Callable:
         @wraps(view)
         def wrapper(request: HttpRequest, *args, **kwargs):
@@ -32,6 +35,8 @@ def require_permission(code: str) -> Callable:
                 raise PermissionDenied
             return view(request, *args, **kwargs)
 
-        return wrapper
+        # La prueba que recorre las URLs lee esta marca: una vista sin ella falla.
+        wrapper.required_permission = code
+        return login_required(wrapper)
 
     return decorator
