@@ -1,0 +1,19 @@
+<aside id="menu-modulos" class="sidebar" aria-label="Módulos">
+  <nav class="sidebar__nav">
+    <span class="sidebar__group">Operación</span>
+    {% for link in shell.module_links %}{% include "layout/nav.html#link" with css="module-link" %}{% endfor %}
+  </nav>
+  <div class="sidebar__foot">
+    <button type="button" class="module-link assistant-toggle" title="Asistente" aria-controls="assistant-panel"
+            aria-expanded="false" x-bind:aria-expanded="chatExpanded"
+            aria-label="Abrir asistente" x-bind:aria-label="chatLabel"
+            x-bind:class="chatButtonClass" x-on:click="toggleChat">
+      <span class="icon" aria-hidden="true">{% include "icons/message-circle.svg" %}</span>
+      <span class="module-link__label">Asistente</span>
+    </button>
+    <p class="signature">
+      <span class="signature__name">ScrumCut</span>
+      <span class="signature__by">por ScrumTech Solutions</span>
+    </p>
+  </div>
+</aside>

@@ -1,0 +1,38 @@
+/* Botones (Main.dc.html): principal café y con borde sobre la barra café. */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: 0 var(--space-3-5);
+  background: transparent;
+  border: var(--line-width) solid transparent;
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.button .icon {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+.button--primary {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  background: var(--color-espresso);
+  color: var(--color-on-dark);
+}
+
+.button--on-dark {
+  border-color: var(--color-espresso-600);
+  color: var(--color-on-dark);
+}
+
+.button:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}

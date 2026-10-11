@@ -1,0 +1,38 @@
+<header class="topbar">
+  <div class="topbar__start">
+    <button type="button" class="icon-button" aria-controls="menu-modulos"
+            aria-expanded="true" x-bind:aria-expanded="sideExpanded"
+            aria-label="Ocultar menú de módulos" x-bind:aria-label="sideLabel" x-on:click="toggleSide">
+      <span class="icon" aria-hidden="true">{% include "icons/panel-left.svg" %}</span>
+    </button>
+    {% if shell.shop %}
+    <span class="shop-mark" aria-hidden="true">{{ shell.shop.initials }}</span>
+    <span class="shop-name">
+      <span class="shop-name__title">{{ shell.shop.name }}</span>
+      <span class="shop-name__label">Barbería</span>
+    </span>
+    {% endif %}
+  </div>
+  <div class="topbar__end">
+    {% if shell.admin_links %}
+    <nav class="admin-nav" aria-label="Administración">
+      {% for link in shell.admin_links %}{% include "layout/nav.html#link" with css="admin-link" %}{% endfor %}
+    </nav>
+    <span class="topbar__divider" aria-hidden="true"></span>
+    {% endif %}
+    <div class="topbar__actions">
+      {% if shell.can_export %}
+      <button type="button" class="button button--on-dark" disabled title="Próximamente">
+        <span class="icon" aria-hidden="true">{% include "icons/download.svg" %}</span>Exportar
+      </button>
+      {% endif %}
+      {% if shell.unread_alerts is not None %}
+      <a class="bell" aria-disabled="true" title="Alertas · Próximamente" aria-label="Alertas: {{ shell.unread_alerts }} sin leer">
+        <span class="icon" aria-hidden="true">{% include "icons/bell.svg" %}</span>
+        {% if shell.unread_alerts %}<span class="bell__count num" aria-hidden="true">{{ shell.unread_alerts }}</span>{% endif %}
+      </a>
+      {% endif %}
+      {% include "layout/account_menu.html" %}
+    </div>
+  </div>
+</header>

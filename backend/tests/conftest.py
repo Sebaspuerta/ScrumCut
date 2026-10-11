@@ -1,4 +1,5 @@
 import secrets
+from datetime import timedelta
 from decimal import Decimal
 from types import SimpleNamespace
 
@@ -12,6 +13,7 @@ from apps.catalog import services as catalog
 from apps.clients import services as clients
 from apps.core.tenant_context import tenant_context
 from apps.inventory import services as inventory
+from apps.legal.models import LegalDocument
 from apps.staff import services as staff
 from apps.tenancy.models import Barbershop, Branch, Membership
 from apps.tenancy.roles import Role
@@ -120,3 +122,18 @@ def world(member, in_shop):
         laura=laura,
         session=session,
     )
+
+
+def publish(kind: str, version: str, days_ago: int = 1) -> LegalDocument:
+    """Documento de prueba: los textos reales los redacta y aprueba una persona, nunca una migración."""
+    return LegalDocument.objects.create(
+        kind=kind,
+        version=version,
+        body=f"Texto de prueba de {kind} {version}.",
+        published_at=timezone.now() - timedelta(days=days_ago),
+    )
+
+
+@pytest.fixture
+def legal_documents(db) -> dict[str, LegalDocument]:
+    return {kind: publish(kind, "1.0") for kind in LegalDocument.Kind.values}

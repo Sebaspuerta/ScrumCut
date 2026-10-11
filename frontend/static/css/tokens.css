@@ -59,10 +59,29 @@
   --color-nav-group: #8a8077;
   --color-on-dark: #f2ede7;
   --color-on-dark-muted: #bfae9f;
+  --color-field: #ffffff;
 
   /* Inicio de sesión */
   --color-login-light: #f7f1e9;
   --color-login-line: #c4ae99;
+  --color-login-field: rgba(255, 252, 247, 0.6);
+  --color-login-field-autofill: #f3ebe2; /* el campo crema tal como se ve sobre el degradado, opaco */
+  --color-login-cream: #efe6da;
+  --shadow-login-claim: 0 1px 12px rgba(46, 33, 26, 0.45);
+  --shadow-login-logo: 0 8px 14px rgba(46, 33, 26, 0.35);
+  /* Capas del logo 3D, del frente al fondo */
+  --color-logo-1: #2e211a;
+  --color-logo-2: #3a2b22;
+  --color-logo-3: #46352a;
+  --color-logo-4: #523f32;
+  --color-logo-5: #5e4a3b;
+  --color-logo-6: #6b5444;
+  --color-logo-7: #7a614f;
+  --color-logo-8: #89705c;
+  --color-logo-9: #987f69;
+  --color-logo-10: #a68b76;
+  --color-logo-11: #b39a86;
+  --color-logo-12: #c4ae99;
   --gradient-login: linear-gradient(100deg, #6b5444 0%, #8e7461 30%, #b89f89 52%, #d8c7b5 72%, #efe6da 100%);
 
   /* Tipografía */
@@ -72,35 +91,62 @@
   --text-h1: 40px;
   --text-h2: 20px;
   --text-figure: 30px;
+  --text-login-title: 34px;
+  --text-login-pitch: 30px;
+  --text-brand: 16px;
+  --text-input: 15px;
   --text-body: 14px;
+  --text-meta: 13px;
   --text-small: 12px;
   --text-label: 11px;
+  --text-micro: 10px;
   --line-height-body: 1.5;
   --tracking-heading: -0.02em;
   --tracking-label: 0.14em;
   --tracking-group: 0.18em;
+  --tracking-field: 0.08em;
 
   /* Forma */
   --radius: 4px;
   --radius-chart: 2px;
   --line-width: 1px;
   --icon-stroke: 1.5;
+  --icon-sm: 16px;
+  --icon-md: 18px;
+  --icon-lg: 20px;
+  --marker-width: 3px;
+  --badge-size: 18px;
+  --badge-padding: 7px;
+  --opacity-disabled: 0.5;
   --shadow-floating: 0 12px 32px rgba(46, 33, 26, 0.16);
 
-  /* Espaciado */
+  /* Espaciado (los medios pasos son los que usan las maquetas) */
+  --space-0-5: 2px;
   --space-1: 4px;
+  --space-1-5: 6px;
   --space-2: 8px;
+  --space-2-5: 10px;
   --space-3: 12px;
+  --space-3-5: 14px;
   --space-4: 16px;
+  --space-4-5: 18px;
   --space-5: 20px;
   --space-6: 24px;
+  --space-7: 28px;
   --space-8: 32px;
+  --space-9: 36px;
   --space-10: 40px;
+  --space-12: 48px;
   --space-14: 56px;
+  --space-16: 64px;
 
   /* Medidas de la estructura */
   --touch-target: 44px;
+  --control-height: 40px;
+  --control-height-login: 48px;
   --sidebar-width: 236px;
   --sidebar-width-collapsed: 72px;
+  --avatar-size: 34px;
+  --assistant-width: 340px;
   --content-max-width: 1320px;
 }

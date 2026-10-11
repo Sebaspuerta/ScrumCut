@@ -1,0 +1,2 @@
+{% include "components/form.html#errors" with errors=attrs.form.non_field_errors %}
+{% for field in attrs.form %}{% include "components/form.html#field" %}{% endfor %}

@@ -1,0 +1,13 @@
+{# Sin funcionalidad hasta que el backend esté completo (docs/diseno.md): no envía nada al servidor. #}
+<section id="assistant-panel" class="assistant" aria-label="Asistente ScrumCut" x-show="chatOpen" x-cloak>
+  <div class="assistant__header">
+    <span class="assistant__title">Asistente</span>
+    <button type="button" class="icon-button" aria-label="Cerrar asistente" x-on:click="toggleChat">×</button>
+  </div>
+  <p class="assistant__body">El asistente estará disponible pronto.</p>
+  <div class="assistant__form">
+    <label for="assistant-question" class="visually-hidden">Pregunta</label>
+    <input id="assistant-question" type="text" placeholder="Escribe tu pregunta" disabled>
+    <button type="button" class="button button--primary" disabled>Enviar</button>
+  </div>
+</section>

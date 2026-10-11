@@ -1,0 +1,311 @@
+/* Inicio de sesión y demás pantallas de cuenta (Login.dc.html): foto a la izquierda, formulario sobre crema. */
+
+.entrance {
+  /* Medidas propias de esta pantalla, tomadas de la maqueta. */
+  --entrance-visual-basis: 420px;
+  --entrance-visual-min-height: 360px;
+  --entrance-form-basis: 380px;
+  --entrance-pitch-width: 440px;
+  --entrance-panel-width: 380px;
+  --entrance-panel-gap: 30px;
+
+  min-height: 100vh;
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--gradient-login);
+}
+
+/* Foto ---------------------------------------------------------------------- */
+
+.entrance__visual {
+  position: relative;
+  flex: 7 1 var(--entrance-visual-basis);
+  min-height: var(--entrance-visual-min-height);
+  overflow: hidden;
+}
+
+.entrance__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: grayscale(1) sepia(0.45) brightness(0.86) contrast(1.02);
+  mask-image: linear-gradient(90deg, #000 0%, #000 48%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+}
+
+.entrance__pitch {
+  position: absolute;
+  top: var(--space-12);
+  left: var(--space-12);
+  right: var(--space-12);
+  max-width: var(--entrance-pitch-width);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--color-login-light);
+}
+
+.entrance__eyebrow {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-group);
+  text-transform: uppercase;
+  color: var(--color-login-cream);
+}
+
+.entrance__claim {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-login-pitch);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-shadow: var(--shadow-login-claim);
+}
+
+.entrance__credit {
+  position: absolute;
+  left: var(--space-12);
+  bottom: var(--space-6);
+  font-size: var(--text-label);
+  color: var(--color-login-light);
+}
+
+/* Formulario -------------------------------------------------------------- */
+
+.entrance__main {
+  flex: 5 1 var(--entrance-form-basis);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-9);
+  padding: var(--space-14) var(--space-16) var(--space-9);
+}
+
+.entrance__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--entrance-panel-gap);
+  width: 100%;
+  max-width: var(--entrance-panel-width);
+  margin: auto;
+}
+
+.entrance__intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.entrance__panel h1 {
+  font-size: var(--text-login-title);
+  line-height: 1.1;
+  color: var(--color-espresso);
+}
+
+.entrance__panel p {
+  color: var(--color-espresso-700);
+}
+
+.entrance__panel a[href] {
+  color: var(--color-espresso);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.entrance__panel a[href]:hover {
+  color: var(--color-espresso-600);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Campos en todo el panel: los códigos de recuperación de allauth no van dentro de un formulario. */
+.entrance__panel .field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-form .field__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.auth-form .field__row a {
+  font-size: var(--text-meta);
+}
+
+.entrance__panel .field label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  letter-spacing: var(--tracking-field);
+  text-transform: uppercase;
+  color: var(--color-espresso-700);
+}
+
+.entrance__panel input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.entrance__panel textarea {
+  min-height: var(--control-height-login);
+  padding: 0 var(--space-3-5);
+  background: var(--color-login-field);
+  border: var(--line-width) solid var(--color-espresso-400);
+  border-radius: var(--radius);
+  font-size: var(--text-input);
+  color: var(--color-text);
+}
+
+/* Chrome pinta de azul lo autocompletado y no deja cambiar ese fondo: una sombra interna
+   opaca lo tapa con el color que el campo crema tiene sobre el degradado. */
+.entrance__panel input:-webkit-autofill,
+.entrance__panel input:-webkit-autofill:hover,
+.entrance__panel input:-webkit-autofill:focus {
+  box-shadow: inset 0 0 0 1000px var(--color-login-field-autofill);
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+}
+
+.entrance__panel textarea {
+  padding: var(--space-2-5) var(--space-3-5);
+  font-variant-numeric: var(--font-numeric);
+  resize: vertical;
+}
+
+/* El secreto del autenticador y los códigos se leen y se copian: sin el atenuado de los deshabilitados. */
+.entrance__panel input:disabled,
+.entrance__panel textarea[readonly] {
+  opacity: 1;
+  cursor: text;
+}
+
+.entrance__panel .field--check {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.entrance__panel .field--check label {
+  font-size: var(--text-meta);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.entrance__panel .field__help {
+  font-size: var(--text-small);
+  color: var(--color-espresso-700);
+}
+
+.auth-form button {
+  min-height: var(--control-height-login);
+  margin-top: var(--space-1);
+  background: var(--color-espresso);
+  border: 0;
+  border-radius: var(--radius);
+  font-size: var(--text-input);
+  font-weight: 600;
+  color: var(--color-login-light);
+  cursor: pointer;
+}
+
+.entrance__panel .notices {
+  margin-top: var(--space-6);
+}
+
+.entrance__panel .auth-form__note {
+  font-size: var(--text-small);
+}
+
+.entrance__panel .entrance__switch {
+  padding-top: var(--space-5);
+  border-top: var(--line-width) solid var(--color-login-line);
+  font-size: var(--text-meta);
+}
+
+.entrance__switch a[href] {
+  font-weight: 600;
+}
+
+/* Pie: logo 3D, firma y documentos legales -------------------------------- */
+
+.entrance__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2-5);
+}
+
+.entrance__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-0-5);
+}
+
+.entrance__by {
+  font-size: var(--text-label);
+  color: var(--color-espresso-700);
+}
+
+.entrance__legal {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--color-espresso-700);
+}
+
+/* Mide lo mismo que sus capas: más alto dejaría un hueco entre el logo y la firma. */
+.logo3d {
+  width: 220px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 520px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.logo3d__body {
+  position: relative;
+  width: 200px;
+  height: 56px;
+  transform-style: preserve-3d;
+  transform: rotateX(10deg) rotateY(-22deg);
+}
+
+/* login-logo.js clona la capa 11 veces y fija --layer en cada copia. */
+.logo3d__layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-login-pitch);
+  letter-spacing: -0.01em;
+  color: var(--color-logo-1);
+  transform: translateZ(calc(var(--layer, 0) * -1.1px));
+}
+
+.logo3d__layer:nth-child(2) { color: var(--color-logo-2); }
+.logo3d__layer:nth-child(3) { color: var(--color-logo-3); }
+.logo3d__layer:nth-child(4) { color: var(--color-logo-4); }
+.logo3d__layer:nth-child(5) { color: var(--color-logo-5); }
+.logo3d__layer:nth-child(6) { color: var(--color-logo-6); }
+.logo3d__layer:nth-child(7) { color: var(--color-logo-7); }
+.logo3d__layer:nth-child(8) { color: var(--color-logo-8); }
+.logo3d__layer:nth-child(9) { color: var(--color-logo-9); }
+.logo3d__layer:nth-child(10) { color: var(--color-logo-10); }
+.logo3d__layer:nth-child(11) { color: var(--color-logo-11); }
+
+.logo3d__layer:nth-child(12) {
+  color: var(--color-logo-12);
+  text-shadow: var(--shadow-login-logo);
+}

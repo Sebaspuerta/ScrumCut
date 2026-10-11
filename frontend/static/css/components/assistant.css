@@ -1,0 +1,53 @@
+/* Panel del asistente (Main.dc.html): abre al lado del menú, abajo a la izquierda. */
+
+.assistant {
+  position: fixed;
+  left: calc(var(--sidebar-width) + var(--space-4));
+  bottom: var(--space-6);
+  z-index: 20;
+  width: var(--assistant-width);
+  max-width: calc(100vw - var(--space-12));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-panel);
+  border: var(--line-width) solid var(--color-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-floating);
+}
+
+.is-collapsed .assistant {
+  left: calc(var(--sidebar-width-collapsed) + var(--space-4));
+}
+
+.assistant__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3-5) var(--space-4);
+  background: var(--color-espresso);
+  color: var(--color-on-dark);
+}
+
+.assistant__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-input);
+}
+
+.assistant__body {
+  padding: var(--space-4);
+  font-size: var(--text-meta);
+}
+
+.assistant__form {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: var(--line-width) solid var(--color-line);
+}
+
+.assistant__form input {
+  flex: 1 1 auto;
+}

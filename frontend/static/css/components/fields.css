@@ -1,0 +1,19 @@
+/* Campos de texto de la aplicación (panel del asistente en Main.dc.html). El login tiene los suyos. */
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  min-height: var(--touch-target);
+  min-width: 0;
+  padding: 0 var(--space-3);
+  background: var(--color-field);
+  border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  color: var(--color-text);
+}
+
+input:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}

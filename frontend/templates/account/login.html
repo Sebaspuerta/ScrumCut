@@ -1,0 +1,31 @@
+{% extends "account/base_entrance.html" %}
+{% block head_title %}Iniciar sesión · ScrumCut{% endblock %}
+{% block content %}
+<div class="entrance__intro">
+  <h1>Iniciar sesión</h1>
+  <p>Entra con el correo de tu cuenta.</p>
+</div>
+<form class="auth-form" method="post" action="{% url 'account_login' %}">
+  {% csrf_token %}
+  {% include "components/form.html#errors" with errors=form.non_field_errors %}
+  <div class="field">
+    <label for="{{ form.login.id_for_label }}">Correo</label>
+    <input id="{{ form.login.id_for_label }}" name="{{ form.login.html_name }}" type="email" autocomplete="email"
+           placeholder="nombre@barberia.com" required{% if form.login.value %} value="{{ form.login.value }}"{% endif %}>
+    {% include "components/form.html#errors" with errors=form.login.errors %}
+  </div>
+  <div class="field">
+    <div class="field__row">
+      <label for="{{ form.password.id_for_label }}">Contraseña</label>
+      <a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a>
+    </div>
+    <input id="{{ form.password.id_for_label }}" name="{{ form.password.html_name }}" type="password"
+           autocomplete="current-password" required>
+    {% include "components/form.html#errors" with errors=form.password.errors %}
+  </div>
+  {{ redirect_field }}
+  <button type="submit">Entrar</button>
+  <p class="auth-form__note">Dueños y administradores confirman su ingreso con un código de verificación en dos pasos.</p>
+</form>
+<p class="entrance__switch">¿Tu barbería aún no usa ScrumCut? <a href="{% url 'account_signup' %}">Crear cuenta</a></p>
+{% endblock %}

@@ -1,0 +1,39 @@
+"""Menú de la cuenta y panel del asistente de la plantilla base."""
+
+import pytest
+from django.urls import reverse
+
+from tests.frontend.html_support import elements, forms, inside
+
+pytestmark = pytest.mark.django_db
+
+
+@pytest.mark.parametrize("url_name", ["account_logout", "logout_everywhere"])
+def test_los_cierres_de_sesion_son_post_con_csrf(owner_page, url_name):
+    [form] = [form for form in forms(owner_page.content.decode()) if form["action"] == reverse(url_name)]
+    assert form["method"] == "post"
+    assert "csrfmiddlewaretoken" in form["fields"]
+
+
+def test_los_cierres_de_sesion_estan_en_el_details_sin_depender_de_js(owner_page):
+    menu = [
+        (tag, attrs)
+        for tag, attrs, ancestors in elements(owner_page.content.decode())
+        if tag == "details" or "details" in {name for name, _ in ancestors}
+    ]
+    actions = {attrs.get("action") for tag, attrs in menu if tag == "form"}
+
+    assert actions == {reverse("account_logout"), reverse("logout_everywhere")}
+    assert [tag for tag, _ in menu].count("summary") == 1
+    # Nada que lo esconda hasta que cargue Alpine: al abrir el <details> se ve sin JavaScript.
+    assert not any("x-show" in attrs or "x-cloak" in attrs for _, attrs in menu)
+
+
+def test_el_asistente_no_tiene_funcionalidad(owner_page):
+    page = owner_page.content.decode()
+    controls = inside(page, "assistant-panel", "input") + inside(page, "assistant-panel", "button")
+    disabled = [control for control in controls if "aria-label" not in control]  # todo menos el botón de cerrar
+
+    assert "El asistente estará disponible pronto." in page
+    assert len(disabled) == 2 and all("disabled" in control for control in disabled)
+    assert inside(page, "assistant-panel", "form") == []  # nada que se envíe al servidor

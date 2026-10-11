@@ -1,0 +1,112 @@
+/* Base: reset mínimo, tipografía, enlaces, íconos y foco visible. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--line-height-body);
+}
+
+h1,
+h2,
+p,
+ul,
+dl,
+dd {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--text-h1);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-heading);
+}
+
+h2 {
+  font-size: var(--text-h2);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a[href]:hover {
+  color: var(--color-espresso-600);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.num {
+  font-variant-numeric: var(--font-numeric);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: var(--icon-stroke);
+}
+
+/* Alpine quita x-cloak al iniciar: evita que paneles cerrados se vean un instante. */
+[x-cloak] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}

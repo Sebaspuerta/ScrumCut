@@ -1,0 +1,23 @@
+{# <details> nativo: cerrar sesión funciona sin JavaScript. Alpine solo agrega Escape y clic fuera. #}
+<details class="account" x-data="accountMenu" x-on:keydown.escape="closeAndFocus" x-on:click.outside="close">
+  <summary class="account__button" x-ref="summary"
+           aria-label="Cuenta de {{ shell.account.name }}{% if shell.account.role %}, {{ shell.account.role }}{% endif %}">
+    <span class="avatar" aria-hidden="true">{{ shell.account.initials }}</span>
+    <span class="account__text" aria-hidden="true">
+      <span class="account__name">{{ shell.account.name }}</span>
+      {% if shell.account.role %}<span class="account__role">{{ shell.account.role }}</span>{% endif %}
+    </span>
+  </summary>
+  <div class="dropdown">
+    <form method="post" action="{% url 'account_logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="dropdown__item">
+        <span class="icon" aria-hidden="true">{% include "icons/log-out.svg" %}</span>Cerrar sesión
+      </button>
+    </form>
+    <form method="post" action="{% url 'logout_everywhere' %}">
+      {% csrf_token %}
+      <button type="submit" class="dropdown__item">Cerrar sesión en todos los dispositivos</button>
+    </form>
+  </div>
+</details>

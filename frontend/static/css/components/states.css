@@ -1,0 +1,32 @@
+/* Estados de pantalla: vacío, error de formulario y avisos. Sin rojos (docs/diseno.md). */
+
+.empty-state {
+  padding-top: var(--space-5);
+  border-top: var(--line-width) solid var(--color-espresso);
+  color: var(--color-text-muted);
+}
+
+.form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3-5) var(--space-4-5);
+  background: var(--color-espresso-200);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  color: var(--color-text);
+}
+
+.form-error .icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  color: var(--color-espresso-600);
+}
+
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}

@@ -1,6 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Inicio · ScrumCut{% endblock %}
+{% block head_title %}Resumen ejecutivo{% if shell.shop %} · {{ shell.shop.name }}{% endif %} · ScrumCut{% endblock %}
 {% block content %}
-  <h1>{% if request.barbershop %}{{ request.barbershop.trade_name }}{% else %}ScrumCut{% endif %}</h1>
-  <p>Fase 0: base segura lista. Los módulos operativos llegan en la fase 1.</p>
+<section class="page-header">
+  <h1>Resumen ejecutivo</h1>
+</section>
+<section class="empty-state">
+  <p>El tablero se conecta a tus datos en la siguiente etapa.</p>
+</section>
 {% endblock %}

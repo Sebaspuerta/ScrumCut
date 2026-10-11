@@ -1,0 +1,28 @@
+{% partialdef errors %}
+{% if errors %}
+<div class="form-error" role="alert">
+  <span class="icon" aria-hidden="true">{% include "icons/circle-alert.svg" %}</span>
+  <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% endpartialdef %}
+
+{% partialdef field %}
+{# Los ocultos (incluido el campo trampa, con el atributo hidden) van sin etiqueta. #}
+{% if field.is_hidden or field.field.widget.attrs.hidden %}
+{{ field }}
+{% elif field.widget_type == "checkbox" %}
+<div class="field field--check">
+  {{ field }}
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {% include "components/form.html#errors" with errors=field.errors %}
+</div>
+{% else %}
+<div class="field">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% if field.help_text %}<div class="field__help">{{ field.help_text|safe }}</div>{% endif %}
+  {% include "components/form.html#errors" with errors=field.errors %}
+</div>
+{% endif %}
+{% endpartialdef %}

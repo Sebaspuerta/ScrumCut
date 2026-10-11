@@ -5,7 +5,8 @@ from django.urls import reverse
 
 from apps.accounts.models import User
 from apps.legal.models import Acceptance, LegalDocument
-from tests.security.conftest import publish, sign_up
+from tests.conftest import publish
+from tests.security.conftest import sign_up
 
 pytestmark = pytest.mark.django_db
 

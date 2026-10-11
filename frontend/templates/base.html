@@ -1,13 +1,25 @@
-{% load static %}<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}ScrumCut{% endblock %}</title>
-  <link rel="icon" href="{% static 'brand/icon.svg' %}" type="image/svg+xml">
-  <link rel="manifest" href="{% static 'brand/site.webmanifest' %}">
-</head>
-<body>
-  <main>{% block content %}{% endblock %}</main>
-</body>
-</html>
+{% extends "layout/document.html" %}
+{% load static %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/dropdown.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/assistant.css' %}">
+{% endblock %}
+{% block scripts %}<script type="module" src="{% static 'js/core/app.js' %}"></script>{% endblock %}
+{% block body %}
+<div class="shell" x-data="shell" x-bind:class="shellClass">
+  {% include "layout/topbar.html" %}
+  <div class="shell__body">
+    {% include "layout/sidebar.html" %}
+    <main class="content">
+      <div class="content__inner">
+        {% include "layout/messages.html" %}
+        {% block content %}{% endblock %}
+        {% include "layout/footer.html" %}
+      </div>
+    </main>
+  </div>
+  {% include "layout/assistant.html" %}
+</div>
+{% endblock %}
