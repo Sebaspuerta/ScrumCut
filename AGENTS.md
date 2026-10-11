@@ -21,11 +21,13 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 
 ## Diseño de interfaz
 
+- El diseño aprobado está en docs/diseno.md y sus maquetas en docs/diseno/maquetas/. Es la única referencia visual.
 - Ningún diseño se inventa. Pantallas, colores, tipografía, espaciado, íconos y componentes visuales solo se implementan cuando Sebastián los aprueba. Si falta una definición, se pregunta antes de escribir HTML o CSS; no se rellena con valores supuestos.
 - Prohibido: fuente Inter (y Geist, Space Grotesk), degradados violeta, glassmorphism, tarjetas dentro de tarjetas, emojis como íconos, el rojo-azul-blanco del poste de barbería y cualquier diseño genérico de IA.
-- Las fuentes tipográficas y los recursos de diseño los entrega Sebastián. Los archivos que hoy están en frontend/static/fonts/ no son una elección aprobada: no se usan hasta que él lo indique.
+- Fuentes aprobadas: Bricolage Grotesque y Hanken Grotesk, alojadas en frontend/static/fonts/.
 - Toda pantalla contempla sus estados vacío, cargando y error; su aspecto también requiere aprobación.
 - La identidad de cada barbería (nombre, logo, color) es dato de tenancy.Barbershop, nunca fija en el código.
+- El asistente se muestra sin funcionalidad hasta que el backend esté completo.
 
 ## Frontend
 

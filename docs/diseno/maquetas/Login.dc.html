@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Iniciar sesión · ScrumCut</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Hanken+Grotesk:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#EFE6DA}
+a{color:#2E211A}a:hover{color:#6B5444}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: linear-gradient(100deg, #6B5444 0%, #8E7461 30%, #B89F89 52%, #D8C7B5 72%, #EFE6DA 100%); color: #1E1915; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; line-height: 1.5">
+
+<div style="flex: 7 1 420px; min-height: 360px; position: relative; overflow: hidden">
+<img src="/_blob/f5ae59e93c5783a019f252b8c9650f69" alt="Un barbero peina y corta el cabello de un cliente en una barbería clásica" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; filter: grayscale(1) sepia(0.45) brightness(0.86) contrast(1.02); -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 48%, rgba(0, 0, 0, 0.55) 72%, transparent 100%); mask-image: linear-gradient(90deg, #000 0%, #000 48%, rgba(0, 0, 0, 0.55) 72%, transparent 100%)">
+<div style="position: absolute; left: 48px; top: 48px; right: 48px; display: flex; flex-direction: column; gap: 8px; max-width: 440px; color: #F7F1E9">
+<span style="font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #EFE6DA">Gestión ejecutiva para barberías</span>
+<p style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 30px; line-height: 1.15; letter-spacing: -0.01em; text-shadow: 0 1px 12px rgba(46, 33, 26, 0.45)">Cada corte, cada venta y cada cierre de caja, en un solo lugar.</p>
+</div>
+</div>
+
+<main style="flex: 5 1 380px; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 36px; box-sizing: border-box; padding: 56px 64px 36px">
+<div></div>
+
+<div style="display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 380px; margin: 0 auto">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 34px; line-height: 1.1; letter-spacing: -0.02em; color: #2E211A">Iniciar sesión</h1>
+<p style="margin: 0; color: #4A382D">Entra con el correo de tu cuenta.</p>
+</div>
+
+<form style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="login-email" style="font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #4A382D">Correo</label>
+<input id="login-email" type="email" autocomplete="email" placeholder="nombre@barberia.com" style="font: inherit; font-size: 15px; color: #1E1915; background: rgba(255, 252, 247, 0.6); border: 1px solid #A68B76; border-radius: 4px; padding: 0 14px; min-height: 48px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+<label for="login-pass" style="font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #4A382D">Contraseña</label>
+<a href="#" style="font-size: 13px; text-decoration: underline; text-underline-offset: 3px">¿Olvidaste tu contraseña?</a>
+</div>
+<input id="login-pass" type="password" autocomplete="current-password" style="font: inherit; font-size: 15px; color: #1E1915; background: rgba(255, 252, 247, 0.6); border: 1px solid #A68B76; border-radius: 4px; padding: 0 14px; min-height: 48px">
+</div>
+<button type="submit" style="font: inherit; font-size: 15px; font-weight: 600; color: #F7F1E9; background: #2E211A; border: 0; border-radius: 4px; min-height: 48px; cursor: pointer; margin-top: 4px">Entrar</button>
+<p style="margin: 0; font-size: 12px; color: #4A382D">Dueños y administradores confirman su ingreso con un código de verificación en dos pasos.</p>
+</form>
+
+<p style="margin: 0; font-size: 13px; color: #4A382D; border-top: 1px solid #C4AE99; padding-top: 20px">¿Tu barbería aún no usa ScrumCut? <a href="#" style="font-weight: 600; text-decoration: underline; text-underline-offset: 3px">Crear cuenta</a></p>
+</div>
+
+<footer style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div role="img" aria-label="Logotipo de ScrumCut en 3D; arrástralo para girarlo" onPointerDown="{{dragStart}}" onPointerMove="{{dragMove}}" onPointerUp="{{dragEnd}}" onPointerLeave="{{dragEnd}}" style="width: 220px; height: 84px; perspective: 520px; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; user-select: none">
+<div style="{{logoStyle}}">
+<sc-for list="{{layers}}" as="l" hint-placeholder-count="12">
+<span style="{{l.style}}">ScrumCut</span>
+</sc-for>
+</div>
+</div>
+<span style="font-size: 11px; color: #4A382D">por ScrumTech Solutions</span>
+<nav aria-label="Documentos legales" style="display: flex; gap: 16px; font-size: 12px">
+<a href="#" style="color: #4A382D">Términos</a>
+<a href="#" style="color: #4A382D">Privacidad</a>
+<a href="#" style="color: #4A382D">Cookies</a>
+</nav>
+</footer>
+</main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const rx = st.rx ?? 10;
+    const ry = st.ry ?? -22;
+    const depth = ['#2E211A', '#3A2B22', '#46352A', '#523F32', '#5E4A3B', '#6B5444', '#7A614F', '#89705C', '#987F69', '#A68B76', '#B39A86', '#C4AE99'];
+    const layers = depth.map((color, i) => ({
+      style: 'position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: \'Bricolage Grotesque\', sans-serif; ' +
+        'font-weight: 700; font-size: 30px; letter-spacing: -0.01em; color: ' + color + '; transform: translateZ(' + (-i * 1.1).toFixed(1) + 'px)' +
+        (i === depth.length - 1 ? '; text-shadow: 0 8px 14px rgba(46, 33, 26, 0.35)' : ''),
+    }));
+    const logoStyle = 'position: relative; width: 200px; height: 56px; transform-style: preserve-3d; transform: rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
+
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const dragStart = (e) => {
+      this.drag = { x: e.clientX, y: e.clientY, rx, ry };
+      if (e.currentTarget && e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+    };
+    const dragMove = (e) => {
+      if (!this.drag) return;
+      this.setState({ ry: this.drag.ry + (e.clientX - this.drag.x) * 0.6, rx: clamp(this.drag.rx - (e.clientY - this.drag.y) * 0.4, -45, 45) });
+    };
+    const dragEnd = () => { this.drag = null; };
+
+    return { layers, logoStyle, dragStart, dragMove, dragEnd };
+  }
+}
+</script>
+</body>
+</html>

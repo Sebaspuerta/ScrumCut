@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Resumen ejecutivo · Santo Varón · ScrumCut</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&amp;family=Hanken+Grotesk:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#EEEBE6}
+a{color:#1E1915;text-decoration:none}a:hover{color:#6B5444}
+.num{font-variant-numeric:tabular-nums lining-nums}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #EEEBE6; font-family: 'Hanken Grotesk', sans-serif; color: #1E1915; font-size: 14px; line-height: 1.5">
+
+<header style="background: #2E211A; color: #F2EDE7; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 10px 24px 10px 16px">
+<div style="display: flex; align-items: center; gap: 14px">
+<button type="button" aria-label="{{toggleLabel}}" aria-expanded="{{sideOpen}}" aria-controls="menu-modulos" onClick="{{toggleSide}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 4px; color: #F2EDE7; cursor: pointer">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
+</button>
+<div style="width: 36px; height: 36px; border: 1px solid #6B5444; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px">SV</div>
+<div style="display: flex; flex-direction: column; line-height: 1.2">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 16px">Santo Varón</span>
+<span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #BFAE9F">Barbería</span>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px">
+<nav aria-label="Administración" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px">
+<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="15" r="3"></circle><circle cx="9" cy="7" r="4"></circle><path d="M10 15H6a4 4 0 0 0-4 4v2"></path><path d="m21.7 16.4-.9-.3"></path><path d="m15.2 13.9-.9-.3"></path><path d="m16.6 18.7.3-.9"></path><path d="m19.1 12.2.3-.9"></path><path d="m19.6 18.7-.4-1"></path><path d="m16.8 12.3-.4-1"></path><path d="m14.3 16.6 1-.4"></path><path d="m20.7 13.8 1-.4"></path></svg>
+Gestión de barberos</a>
+<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+Usuarios y roles</a>
+<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+Auditoría</a>
+<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+Ajustes</a>
+</nav>
+<span aria-hidden="true" style="width: 1px; height: 28px; background: #4A382D"></span>
+<div style="display: flex; align-items: center; gap: 8px">
+<button type="button" style="display: flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; font-weight: 500; color: #F2EDE7; background: transparent; border: 1px solid #6B5444; border-radius: 4px; padding: 0 14px; min-height: 40px; cursor: pointer">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+Exportar</button>
+<a href="#" aria-label="Alertas: 4 sin leer" style="position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #F2EDE7">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<span class="num" style="position: absolute; top: 6px; right: 4px; min-width: 18px; height: 18px; border-radius: 9px; background: {{accent}}; color: #F2EDE7; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">4</span>
+</a>
+<button type="button" aria-label="Cuenta de Andrés Mora, Dueño" style="display: flex; align-items: center; gap: 10px; font: inherit; background: transparent; border: 0; padding: 0 4px; min-height: 44px; color: #F2EDE7; cursor: pointer">
+<span style="width: 34px; height: 34px; border-radius: 17px; background: #E4DAD0; color: #2E211A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">AM</span>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25">
+<span style="font-weight: 500; font-size: 13px">Andrés Mora</span>
+<span style="font-size: 11px; color: #BFAE9F">Dueño</span>
+</span>
+</button>
+</div>
+</div>
+</header>
+
+<div style="flex: 1 1 auto; display: flex; min-height: 0">
+
+<aside id="menu-modulos" aria-label="Módulos" style="{{sideStyle}}">
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}">
+<span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A8077; padding: 4px 14px 10px">Operación</span>
+</sc-if>
+<a href="#" aria-current="page" title="Tablero" style="{{navActive}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Tablero</span></sc-if>
+</a>
+<a href="#" title="Comandas" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Comandas</span></sc-if>
+</a>
+<a href="#" title="Caja" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Caja</span></sc-if>
+</a>
+<a href="#" title="Clientes" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Clientes</span></sc-if>
+</a>
+<a href="#" title="Servicios" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Servicios</span></sc-if>
+</a>
+<a href="#" title="Inventario" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path><path d="M12 22V12"></path><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"></path><path d="m7.5 4.27 9 5.15"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Inventario</span></sc-if>
+</a>
+<a href="#" title="Fiados" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"></path><path d="M2 6h4"></path><path d="M2 10h4"></path><path d="M2 14h4"></path><path d="M2 18h4"></path><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Fiados</span></sc-if>
+</a>
+<a href="#" title="Reportes" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Reportes</span></sc-if>
+</a>
+<a href="#" title="Alertas" style="{{navItem}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span style="flex: 1 1 auto">Alertas</span><span class="num" style="font-size: 11px; font-weight: 600; color: #F2EDE7; background: #6B5444; border-radius: 9px; padding: 0 7px; line-height: 18px">4</span></sc-if>
+</a>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 14px">
+<button type="button" aria-label="{{chatLabel}}" aria-expanded="{{chatOpen}}" title="Asistente" onClick="{{toggleChat}}" style="{{chatBtn}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Asistente</span></sc-if>
+</button>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; padding: 12px 14px 0; border-top: 1px solid #D9D2C8; line-height: 1.3">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px; color: #2E211A">ScrumCut</span>
+<span style="font-size: 11px; color: #6E655D">por ScrumTech Solutions</span>
+</div>
+</sc-if>
+</div>
+</aside>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 56px; padding: 40px 40px 64px; max-width: 1320px; box-sizing: border-box">
+
+<section style="display: flex; flex-direction: column; gap: 28px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 40px; line-height: 1.05; letter-spacing: -0.02em">Resumen ejecutivo</h1>
+<p style="margin: 0; color: #6E655D">Actualizado hoy, 2:45 p. m.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6E655D">Sede
+<select style="font: inherit; font-size: 14px; color: #1E1915; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; padding: 8px 12px; min-height: 40px"><option>Centro</option><option>Norte</option></select>
+</label>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6E655D">Período
+<select style="font: inherit; font-size: 14px; color: #1E1915; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; padding: 8px 12px; min-height: 40px"><option>11 sep – 10 oct 2026</option><option>Este mes</option><option>Personalizado</option></select>
+</label>
+</div>
+</div>
+
+<div style="background: #2E211A; color: #F2EDE7; border-radius: 4px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr))">
+<sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
+<div style="{{k.style}}">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #BFAE9F">{{k.label}}</span>
+<span class="num" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 30px; line-height: 1.1; letter-spacing: -0.01em">{{k.value}}</span>
+<span class="num" style="font-size: 12px; color: #BFAE9F"><span style="{{k.deltaStyle}}">{{k.delta}}</span> {{k.note}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 56px">
+
+<section aria-labelledby="t-3d" style="flex: 7 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px; border-top: 1px solid #2E211A; padding-top: 20px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="t-3d" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Ventas por día</h2>
+<p style="margin: 0; color: #6E655D">Cada torre es un día; su altura, lo que vendió. Arrastra para girar.</p>
+</div>
+<div style="display: flex; gap: 8px">
+<button type="button" aria-label="Girar a la izquierda" onClick="{{rotLeft}}" style="font: inherit; font-size: 16px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; cursor: pointer; color: #2E211A">↺</button>
+<button type="button" aria-label="Girar a la derecha" onClick="{{rotRight}}" style="font: inherit; font-size: 16px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; cursor: pointer; color: #2E211A">↻</button>
+<button type="button" onClick="{{resetView}}" style="font: inherit; font-size: 13px; padding: 0 14px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; cursor: pointer; color: #2E211A">Vista inicial</button>
+</div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 32px">
+<div role="img" aria-label="Torres de ventas diarias del 11 de septiembre al 10 de octubre; viernes y sábados son los días más altos, los domingos la barbería está cerrada" onPointerDown="{{dragStart}}" onPointerMove="{{dragMove}}" onPointerUp="{{dragEnd}}" onPointerLeave="{{dragEnd}}" style="flex: 3 1 420px; min-width: 0; height: 400px; position: relative; perspective: 1200px; cursor: grab; touch-action: none; user-select: none; overflow: hidden">
+<div style="{{sceneStyle}}">
+<sc-for list="{{floor}}" as="f" hint-placeholder-count="35">
+<div style="{{f.style}}"></div>
+</sc-for>
+<sc-for list="{{axis}}" as="x" hint-placeholder-count="7">
+<span style="{{x.style}}">{{x.label}}</span>
+</sc-for>
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="26">
+<div onPointerEnter="{{b.hover}}" style="{{b.box}}">
+<div style="{{b.north}}"></div>
+<div style="{{b.west}}"></div>
+<div style="{{b.south}}"></div>
+<div style="{{b.east}}"></div>
+<div style="{{b.top}}"></div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<dl style="flex: 1 1 200px; margin: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 2px; background: #2E211A; color: #F2EDE7; border-radius: 4px; padding: 16px 18px">
+<dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #BFAE9F">{{readout.label}}</dt>
+<dd class="num" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 26px">{{readout.value}}</dd>
+<dd style="margin: 0; font-size: 12px; color: #BFAE9F">Pasa el cursor sobre una torre</dd>
+</div>
+<sc-for list="{{calStats}}" as="s" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid #D9D2C8; padding-bottom: 12px">
+<dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">{{s.label}}</dt>
+<dd class="num" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 20px">{{s.value}}</dd>
+<dd style="margin: 0; font-size: 12px; color: #6E655D">{{s.note}}</dd>
+</div>
+</sc-for>
+</dl>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; border-top: 1px solid #D9D2C8; padding-top: 10px">
+<sc-for list="{{weekAvg}}" as="a" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+<span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6E655D">{{a.day}}</span>
+<span class="num" style="font-size: 13px; font-weight: 500">{{a.avg}}</span>
+</div>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 11px; color: #6E655D">Promedio por día de la semana. Domingo: cerrado.</p>
+</section>
+
+<section aria-labelledby="t-caja" style="flex: 5 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px; border-top: 1px solid #2E211A; padding-top: 20px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="t-caja" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Cuadre de caja de hoy</h2>
+<p style="margin: 0; color: #6E655D">De la base de apertura al dinero que debe haber en caja.</p>
+</div>
+<div role="img" aria-label="Apertura 200.000, más ventas en efectivo 1.180.000, más abonos 95.000, menos gastos 210.000, menos retiros 145.000: esperado 1.120.000; contado 1.112.000" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; align-items: end">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<div style="position: relative; height: 210px">
+<span class="num" style="{{s.labelStyle}}">{{s.amount}}</span>
+<div style="{{s.barStyle}}"></div>
+</div>
+<span style="font-size: 11px; line-height: 1.3; color: #6E655D; text-align: center; border-top: 1px solid #2E211A; padding-top: 8px">{{s.label}}</span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; background: #E4DAD0; border-radius: 4px; padding: 14px 18px">
+<span>Diferencia del arqueo</span>
+<span class="num" style="font-weight: 600">▾ −$8.000 · faltante</span>
+</div>
+</section>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 56px">
+
+<section aria-labelledby="t-barb" style="flex: 7 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px; border-top: 1px solid #2E211A; padding-top: 20px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="t-barb" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Rendimiento por barbero</h2>
+<p style="margin: 0; color: #6E655D">Ventas de servicios y comisión causada en el período.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 18px">
+<sc-for list="{{barbers}}" as="b" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: minmax(120px, 1.1fr) minmax(0, 3fr) minmax(110px, auto); gap: 18px; align-items: center">
+<div style="display: flex; flex-direction: column; line-height: 1.3">
+<span style="font-weight: 500">{{b.name}}</span>
+<span class="num" style="font-size: 12px; color: #6E655D">{{b.orders}} comandas</span>
+</div>
+<div style="height: 10px; background: #E4DAD0; border-radius: 2px"><div style="{{b.barStyle}}"></div></div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3">
+<span class="num" style="font-weight: 600">{{b.sales}}</span>
+<span class="num" style="{{b.commStyle}}">{{b.commission}}</span>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #D9D2C8; padding-top: 18px">
+<div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">Mezcla de ingresos</span>
+<span class="num" style="font-size: 12px; color: #6E655D">Total $54.200.000</span>
+</div>
+<div style="display: flex; height: 12px; border-radius: 2px; overflow: hidden">
+<div style="width: 86%; background: #2E211A"></div>
+<div style="width: 14%; background: {{accent}}"></div>
+</div>
+<div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px">
+<span class="num"><strong style="font-weight: 600">86 %</strong> Servicios · $46.612.000</span>
+<span class="num"><strong style="font-weight: 600">14 %</strong> Productos · $7.588.000</span>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="t-alert" style="flex: 5 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px; border-top: 1px solid #2E211A; padding-top: 20px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="t-alert" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Alertas</h2>
+<p style="margin: 0; color: #6E655D">4 sin leer</p>
+</div>
+<a href="#" style="font-size: 13px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px">Ver todas</a>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{alerts}}" as="a" hint-placeholder-count="4">
+<li style="display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid #D9D2C8">
+<span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6B5444; padding-top: 2px">{{a.kind}}</span>
+<div style="display: flex; flex-direction: column; line-height: 1.35">
+<span style="font-weight: 500">{{a.title}}</span>
+<span style="font-size: 12px; color: #6E655D">{{a.detail}}</span>
+</div>
+</li>
+</sc-for>
+</ul>
+</section>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 56px">
+
+<section aria-labelledby="t-prod" style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px; border-top: 1px solid #2E211A; padding-top: 20px">
+<h2 id="t-prod" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Productos más vendidos</h2>
+<div style="overflow-x: auto">
+<table class="num" style="width: 100%; border-collapse: collapse; font-size: 13px">
+<thead>
+<tr style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6E655D">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 0 0 10px">Producto</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 0 10px">Unidades</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 0 10px">Ventas</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 0 10px">Margen</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{products}}" as="p" hint-placeholder-count="4">
+<tr style="border-top: 1px solid #D9D2C8">
+<td style="padding: 12px 0">{{p.name}}</td>
+<td style="padding: 12px 0; text-align: right">{{p.units}}</td>
+<td style="padding: 12px 0; text-align: right; font-weight: 500">{{p.sales}}</td>
+<td style="padding: 12px 0; text-align: right; color: #6E655D">{{p.margin}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<section aria-labelledby="t-cierres" style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 16px; border-top: 1px solid #2E211A; padding-top: 20px">
+<h2 id="t-cierres" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Últimos cierres de caja</h2>
+<div style="overflow-x: auto">
+<table class="num" style="width: 100%; border-collapse: collapse; font-size: 13px">
+<thead>
+<tr style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6E655D">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 0 0 10px">Fecha</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 0 10px">Esperado</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 0 10px">Contado</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 0 10px">Diferencia</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{closings}}" as="c" hint-placeholder-count="5">
+<tr style="border-top: 1px solid #D9D2C8">
+<td style="padding: 12px 0">{{c.date}}</td>
+<td style="padding: 12px 0; text-align: right">{{c.expected}}</td>
+<td style="padding: 12px 0; text-align: right">{{c.counted}}</td>
+<td style="{{c.diffStyle}}">{{c.diff}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+</div>
+
+<footer style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 16px; border-top: 1px solid #D9D2C8; padding-top: 18px; font-size: 12px; color: #6E655D">
+<a href="#" style="color: #6E655D">Términos</a>
+<a href="#" style="color: #6E655D">Privacidad</a>
+<a href="#" style="color: #6E655D">Cookies</a>
+</footer>
+
+</main>
+</div>
+
+<sc-if value="{{chatOpen}}" hint-placeholder-val="{{false}}">
+<div style="{{chatPanelStyle}}">
+<section aria-label="Asistente ScrumCut" style="width: 340px; max-width: calc(100vw - 48px); background: #F8F6F3; border: 1px solid #D9D2C8; border-radius: 4px; box-shadow: 0 12px 32px rgba(46, 33, 26, 0.16); display: flex; flex-direction: column; overflow: hidden">
+<div style="background: #2E211A; color: #F2EDE7; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="display: flex; flex-direction: column; line-height: 1.25">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 15px">Asistente</span>
+<span style="font-size: 11px; color: #BFAE9F">Responde con los datos de Santo Varón</span>
+</div>
+<button type="button" aria-label="Cerrar asistente" onClick="{{toggleChat}}" style="font: inherit; font-size: 18px; width: 44px; height: 44px; background: transparent; border: 0; color: #F2EDE7; cursor: pointer">×</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; max-height: 280px; overflow-y: auto">
+<p style="margin: 0; max-width: 85%; background: #E4DAD0; border-radius: 4px; padding: 10px 12px; font-size: 13px">Hola, Andrés. Puedo responderte sobre ventas, caja, fiados, inventario y barberos.</p>
+<p style="margin: 0; max-width: 85%; align-self: flex-end; background: #2E211A; color: #F2EDE7; border-radius: 4px; padding: 10px 12px; font-size: 13px">¿Cuánto vendió Julián esta semana?</p>
+<p class="num" style="margin: 0; max-width: 85%; background: #E4DAD0; border-radius: 4px; padding: 10px 12px; font-size: 13px">Julián Restrepo vendió $3.420.000 en 49 comandas desde el lunes 5 de octubre. Su comisión causada es $1.368.000.</p>
+</div>
+<form style="display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid #D9D2C8">
+<label for="chat-q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Pregunta</label>
+<input id="chat-q" type="text" placeholder="Escribe tu pregunta" style="flex: 1 1 auto; min-width: 0; font: inherit; font-size: 13px; border: 1px solid #CFC6BA; border-radius: 4px; padding: 0 12px; min-height: 44px; background: #FFFFFF; color: #1E1915">
+<button type="submit" style="font: inherit; font-size: 13px; font-weight: 500; color: #F2EDE7; background: #2E211A; border: 0; border-radius: 4px; padding: 0 16px; min-height: 44px; cursor: pointer">Enviar</button>
+</form>
+</section>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5E7361","options":["#5E7361","#2F4F5A","#8C6A3F"]},"$preview":{"width":1440,"height":1860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const rx = st.rx ?? 58;
+    const rz = st.rz ?? -36;
+    const hover = st.hover ?? 33;
+    const chatOpen = st.chatOpen ?? false;
+    const sideOpen = st.sideOpen ?? true;
+    const accent = this.props.accent ?? '#5E7361';
+    const sep = (n) => String(Math.round(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const cop = (n) => (n < 0 ? '−$' : '$') + sep(n);
+    const short = (k) => '$' + (k / 1000).toFixed(1).replace('.', ',') + ' M';
+
+    const sideW = sideOpen ? 236 : 72;
+    const sideStyle = 'flex: 0 0 ' + sideW + 'px; width: ' + sideW + 'px; box-sizing: border-box; background: #F3F0EB; border-right: 1px solid #D9D2C8; ' +
+      'display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding: 20px 12px; transition: width 160ms ease, flex-basis 160ms ease';
+    const item = 'display: flex; align-items: center; gap: 12px; min-height: 44px; border-radius: 4px; font: inherit; font-size: 14px; text-align: left; cursor: pointer; ' +
+      (sideOpen ? 'padding: 0 14px; justify-content: flex-start' : 'padding: 0; justify-content: center');
+    const navItem = item + '; color: #4A4039; background: transparent; border: 0';
+    const navActive = item + '; color: #2E211A; font-weight: 600; background: #E4DAD0; box-shadow: inset 3px 0 0 ' + accent;
+    const chatBtn = item + '; width: 100%; color: ' + (chatOpen ? '#F2EDE7' : '#2E211A') + '; background: ' + (chatOpen ? '#2E211A' : 'transparent') + '; border: 1px solid #CFC6BA';
+    const toggleSide = () => this.setState({ sideOpen: !sideOpen });
+    const toggleLabel = sideOpen ? 'Ocultar menú de módulos' : 'Mostrar menú de módulos';
+    const chatPanelStyle = 'position: fixed; left: ' + (sideW + 16) + 'px; bottom: 24px; z-index: 20';
+
+    const cell = 'padding: 18px 24px; display: flex; flex-direction: column; gap: 6px; border-left: 1px solid #4A382D';
+    const up = 'color: #9DB09F; font-weight: 600';
+    const down = 'color: #E4DAD0; font-weight: 600';
+    const kpis = [
+      { label: 'Ingresos de hoy', value: '$2.480.000', delta: '▴ +12,4 %', deltaStyle: up, note: 'vs. sábado anterior' },
+      { label: 'Comandas cerradas', value: '38', delta: '▴ +8,6 %', deltaStyle: up, note: '· 4 abiertas' },
+      { label: 'Ticket promedio', value: '$65.300', delta: '▾ −3,1 %', deltaStyle: down, note: 'vs. período anterior' },
+      { label: 'Esperado en caja', value: '$1.120.000', delta: 'Abierta', deltaStyle: up, note: 'desde las 8:02 a. m.' },
+      { label: 'Fiados pendientes', value: '$845.000', delta: '3 vencidos', deltaStyle: down, note: '· 11 clientes' },
+    ].map((k, i) => ({ ...k, style: i === 0 ? cell.replace('border-left: 1px solid #4A382D', 'border-left: 0') : cell }));
+
+    const raw = [null, null, null, null, 2860, 3140, 0,
+      1180, 1420, 1510, 1760, 2690, 3020, 0,
+      1090, 1380, 1620, 1840, 2950, 3310, 0,
+      1240, 1460, 1550, 1930, 3080, 3460, 0,
+      1150, 1510, 1690, 2010, 2870, 2480, null];
+    const dates = ['7 sep', '8 sep', '9 sep', '10 sep', '11 sep', '12 sep', '13 sep', '14 sep', '15 sep', '16 sep', '17 sep', '18 sep', '19 sep', '20 sep',
+      '21 sep', '22 sep', '23 sep', '24 sep', '25 sep', '26 sep', '27 sep', '28 sep', '29 sep', '30 sep', '1 oct', '2 oct', '3 oct', '4 oct',
+      '5 oct', '6 oct', '7 oct', '8 oct', '9 oct', '10 oct', '11 oct'];
+    const weekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+    const STEP = 56, SIDE = 40, W = 7 * STEP - (STEP - SIDE), D = 5 * STEP - (STEP - SIDE);
+    const sceneStyle = 'position: absolute; left: 50%; top: 56%; width: ' + W + 'px; height: ' + D + 'px; margin-left: -' + W / 2 + 'px; margin-top: -' + D / 2 +
+      'px; transform-style: preserve-3d; transform: rotateX(' + rx + 'deg) rotateZ(' + rz + 'deg)';
+    const top = ['#E4DAD0', '#CBB8A6', '#A68B76', '#6B5444', '#2E211A'];
+    const south = ['#D3C6BA', '#B9A390', '#927663', '#5A4638', '#241913'];
+    const east = ['#C4B5A7', '#A9917D', '#806653', '#4C3B2F', '#1B130E'];
+    const level = (v) => (v < 1500 ? 0 : v < 2000 ? 1 : v < 2600 ? 2 : v < 3100 ? 3 : 4);
+    const pos = (i) => ({ x: (i % 7) * STEP, y: Math.floor(i / 7) * STEP });
+    const face = 'position: absolute; box-sizing: border-box; ';
+
+    const floor = raw.map((v, i) => {
+      const p = pos(i);
+      const border = v === null ? 'border: 1px solid #DDD6CC' : v === 0 ? 'border: 1px dashed #A99E92' : 'border: 1px solid #CFC6BA';
+      return { style: face + 'left: ' + p.x + 'px; top: ' + p.y + 'px; width: ' + SIDE + 'px; height: ' + SIDE + 'px; border-radius: 2px; ' + border };
+    });
+    const axis = weekdays.map((label, c) => ({
+      label,
+      style: face + 'left: ' + c * STEP + 'px; top: ' + (D + 10) + 'px; width: ' + SIDE + 'px; text-align: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6E655D',
+    }));
+
+    const pxPer = 160 / 3460;
+    const bars = [];
+    raw.forEach((v, i) => {
+      if (!v) return;
+      const p = pos(i), h = Math.round(v * pxPer), lv = level(v);
+      const isToday = i === 33, isHover = i === hover;
+      const topColor = isToday || isHover ? accent : top[lv];
+      bars.push({
+        hover: () => this.setState({ hover: i }),
+        box: face + 'left: ' + p.x + 'px; top: ' + p.y + 'px; width: ' + SIDE + 'px; height: ' + SIDE + 'px; transform-style: preserve-3d; cursor: pointer',
+        north: face + 'left: 0; top: 0; width: ' + SIDE + 'px; height: ' + h + 'px; transform-origin: top; transform: rotateX(90deg); background: ' + east[lv],
+        west: face + 'left: 0; top: 0; width: ' + h + 'px; height: ' + SIDE + 'px; transform-origin: left; transform: rotateY(-90deg); background: ' + south[lv],
+        south: face + 'left: 0; top: ' + SIDE + 'px; width: ' + SIDE + 'px; height: ' + h + 'px; transform-origin: top; transform: rotateX(90deg); background: ' + south[lv],
+        east: face + 'left: ' + SIDE + 'px; top: 0; width: ' + h + 'px; height: ' + SIDE + 'px; transform-origin: left; transform: rotateY(-90deg); background: ' + east[lv],
+        top: face + 'left: 0; top: 0; width: ' + SIDE + 'px; height: ' + SIDE + 'px; transform: translateZ(' + h + 'px); background: ' + topColor,
+      });
+    });
+    const hv = raw[hover] || 0;
+    const readout = { label: weekdays[hover % 7] + ' ' + dates[hover] + (hover === 33 ? ' · hoy' : ''), value: cop(hv * 1000) };
+
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const dragStart = (e) => {
+      this.drag = { x: e.clientX, y: e.clientY, rx, rz };
+      if (e.currentTarget && e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+    };
+    const dragMove = (e) => {
+      if (!this.drag) return;
+      this.setState({ rz: this.drag.rz + (e.clientX - this.drag.x) * 0.4, rx: clamp(this.drag.rx - (e.clientY - this.drag.y) * 0.3, 20, 80) });
+    };
+    const dragEnd = () => { this.drag = null; };
+    const rotLeft = () => this.setState({ rz: rz - 30 });
+    const rotRight = () => this.setState({ rz: rz + 30 });
+    const resetView = () => this.setState({ rx: 58, rz: -36 });
+
+    const weekAvg = weekdays.map((day, col) => {
+      const vals = raw.filter((v, i) => i % 7 === col && v);
+      return { day, avg: vals.length ? short(vals.reduce((a, b) => a + b, 0) / vals.length) : 'Cerrado' };
+    });
+    const open = raw.filter((v) => v);
+    const total = open.reduce((a, b) => a + b, 0);
+    const calStats = [
+      { label: 'Total del período', value: cop(total * 1000), note: open.length + ' días abiertos' },
+      { label: 'Mejor día', value: '$3.460.000', note: 'Sábado 3 de octubre' },
+      { label: 'Promedio diario', value: cop((total / open.length) * 1000), note: 'Días abiertos' },
+    ];
+
+    const flow = [
+      { label: 'Apertura', from: 0, to: 200, kind: 'total' },
+      { label: 'Ventas en efectivo', from: 200, to: 1380, kind: 'up' },
+      { label: 'Abonos de fiados', from: 1380, to: 1475, kind: 'up' },
+      { label: 'Gastos', from: 1475, to: 1265, kind: 'down' },
+      { label: 'Retiros', from: 1265, to: 1120, kind: 'down' },
+      { label: 'Esperado', from: 0, to: 1120, kind: 'total' },
+      { label: 'Contado', from: 0, to: 1112, kind: 'counted' },
+    ];
+    const px = 180 / 1475;
+    const fill = { total: 'background: #2E211A', up: 'background: ' + accent, down: 'background: #CBB8A6', counted: 'background: transparent; border: 1.5px solid #2E211A' };
+    const steps = flow.map((s) => {
+      const lo = Math.min(s.from, s.to), hi = Math.max(s.from, s.to);
+      const sign = s.kind === 'up' ? '+' : s.kind === 'down' ? '−' : '';
+      return {
+        label: s.label,
+        amount: sign + sep((hi - lo) * 1000),
+        barStyle: 'position: absolute; left: 0; right: 0; box-sizing: border-box; border-radius: 2px; bottom: ' + Math.round(lo * px) + 'px; height: ' + Math.max(3, Math.round((hi - lo) * px)) + 'px; ' + fill[s.kind],
+        labelStyle: 'position: absolute; left: -6px; right: -6px; text-align: center; font-size: 11px; font-weight: 600; bottom: ' + (Math.round(hi * px) + 6) + 'px',
+      };
+    });
+
+    const team = [
+      { name: 'Julián Restrepo', orders: 214, sales: 15180000, commission: 6072000 },
+      { name: 'Camilo Ortiz', orders: 188, sales: 13020000, commission: 5208000 },
+      { name: 'Mateo Gil', orders: 161, sales: 10940000, commission: 3829000 },
+      { name: 'Santiago Ruiz', orders: 112, sales: 7472000, commission: 2615200 },
+    ];
+    const barbers = team.map((b) => ({
+      name: b.name,
+      orders: b.orders,
+      sales: cop(b.sales),
+      commission: 'Comisión ' + cop(b.commission),
+      commStyle: 'font-size: 12px; color: ' + accent,
+      barStyle: 'height: 10px; border-radius: 2px; background: #2E211A; width: ' + Math.round((b.sales / team[0].sales) * 100) + '%',
+    }));
+
+    const alerts = [
+      { kind: 'Agotado', title: 'Cera brillo', detail: 'Sin unidades desde ayer' },
+      { kind: 'Stock bajo', title: 'Aceite para barba', detail: '6 unidades · mínimo 10' },
+      { kind: 'Por vencer', title: 'Tónico capilar', detail: 'Vence el 22 de octubre' },
+      { kind: 'Fiado vencido', title: 'Carlos Pérez · $180.000', detail: 'Venció el 3 de octubre' },
+    ];
+
+    const products = [
+      { name: 'Cera mate', units: 142, sales: '$3.550.000', margin: '52 %' },
+      { name: 'Aceite para barba', units: 63, sales: '$2.205.000', margin: '48 %' },
+      { name: 'Shampoo anticaída', units: 38, sales: '$1.140.000', margin: '41 %' },
+      { name: 'Bálsamo para barba', units: 29, sales: '$693.000', margin: '44 %' },
+    ];
+
+    const diffCell = 'padding: 12px 0; text-align: right; font-weight: 600';
+    const closings = [
+      ['Vie 9 oct', 1284000, 1284000], ['Jue 8 oct', 1052500, 1050000], ['Mié 7 oct', 968000, 968000],
+      ['Mar 6 oct', 1120000, 1125000], ['Lun 5 oct', 874000, 874000],
+    ].map(([date, expected, counted]) => {
+      const d = counted - expected;
+      return {
+        date, expected: cop(expected), counted: cop(counted),
+        diff: d === 0 ? 'Cuadrada' : (d > 0 ? '▴ +' : '▾ ') + cop(d),
+        diffStyle: diffCell + '; color: ' + (d === 0 ? '#6E655D; font-weight: 400' : d > 0 ? accent : '#6B5444'),
+      };
+    });
+
+    const toggleChat = (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ chatOpen: !chatOpen }); };
+    const chatLabel = chatOpen ? 'Ocultar asistente' : 'Abrir asistente';
+
+    return { accent, sideOpen, sideStyle, navItem, navActive, chatBtn, toggleSide, toggleLabel, chatPanelStyle, kpis, sceneStyle, floor, axis, bars, readout, dragStart, dragMove, dragEnd, rotLeft, rotRight, resetView,
+      weekAvg, calStats, steps, barbers, alerts, products, closings, chatOpen, toggleChat, chatLabel };
+  }
+}
+</script>
+</body>
+</html>

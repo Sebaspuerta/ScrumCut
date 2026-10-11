@@ -1,0 +1,106 @@
+/* Variables del diseño aprobado (docs/diseno.md). Solo variables y fuentes: los estilos de las pantallas van en sus propios archivos. */
+
+/* Variable: pesos 200 a 800 y tamaño óptico 12 a 96, que el navegador ajusta solo (font-optical-sizing: auto). */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../fonts/bricolage-grotesque-latin-opsz-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/hanken-grotesk-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/hanken-grotesk-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/hanken-grotesk-latin-600-normal.woff2") format("woff2");
+}
+
+:root {
+  /* Café espresso y sus tonos */
+  --color-espresso: #2e211a;
+  --color-espresso-800: #3a2b22;
+  --color-espresso-700: #4a382d;
+  --color-espresso-600: #6b5444;
+  --color-espresso-400: #a68b76;
+  --color-espresso-300: #cbb8a6;
+  --color-espresso-200: #e4dad0;
+
+  /* Acento salvia: lo positivo y lo activo. Sin rojos: lo negativo se marca con signo y flecha. */
+  --color-accent: #5e7361;
+  --color-accent-on-dark: #9db09f;
+
+  /* Superficies, líneas y texto */
+  --color-background: #eeebe6;
+  --color-sidebar: #f3f0eb;
+  --color-panel: #f8f6f3;
+  --color-line: #d9d2c8;
+  --color-control-border: #cfc6ba;
+  --color-text: #1e1915;
+  --color-text-muted: #6e655d;
+  --color-nav-text: #4a4039;
+  --color-nav-group: #8a8077;
+  --color-on-dark: #f2ede7;
+  --color-on-dark-muted: #bfae9f;
+
+  /* Inicio de sesión */
+  --color-login-light: #f7f1e9;
+  --color-login-line: #c4ae99;
+  --gradient-login: linear-gradient(100deg, #6b5444 0%, #8e7461 30%, #b89f89 52%, #d8c7b5 72%, #efe6da 100%);
+
+  /* Tipografía */
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-body: "Hanken Grotesk", sans-serif;
+  --font-numeric: tabular-nums lining-nums;
+  --text-h1: 40px;
+  --text-h2: 20px;
+  --text-figure: 30px;
+  --text-body: 14px;
+  --text-small: 12px;
+  --text-label: 11px;
+  --line-height-body: 1.5;
+  --tracking-heading: -0.02em;
+  --tracking-label: 0.14em;
+  --tracking-group: 0.18em;
+
+  /* Forma */
+  --radius: 4px;
+  --radius-chart: 2px;
+  --line-width: 1px;
+  --icon-stroke: 1.5;
+  --shadow-floating: 0 12px 32px rgba(46, 33, 26, 0.16);
+
+  /* Espaciado */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-14: 56px;
+
+  /* Medidas de la estructura */
+  --touch-target: 44px;
+  --sidebar-width: 236px;
+  --sidebar-width-collapsed: 72px;
+  --content-max-width: 1320px;
+}
