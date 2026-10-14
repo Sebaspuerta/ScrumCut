@@ -43,7 +43,7 @@ def sales_sheet(membership: Membership, period: Period) -> Sheet:
             line["commission_amount"],
             line["net"] - line["cost"] - line["commission_amount"],
         ]
-        for line in sales.sale_lines(membership, period.date_from, period.date_to)
+        for line in sales.sale_lines(membership, period.date_from, period.date_to, branch=period.branch)
     ]
     return Sheet("Ventas", header, rows)
 
@@ -62,7 +62,7 @@ def commissions_sheet(membership: Membership, period: Period) -> Sheet:
             line["commission_rate"],
             line["commission_amount"],
         ]
-        for line in sales.commission_lines(membership, period.date_from, period.date_to)
+        for line in sales.commission_lines(membership, period.date_from, period.date_to, branch=period.branch)
     ]
     return Sheet("Comisiones", header, rows)
 
@@ -95,7 +95,7 @@ def movements_sheet(membership: Membership, period: Period) -> Sheet:
             row["description"],
             row["created_by__email"],
         ]
-        for row in cash.cash_movements(membership, period.date_from, period.date_to)
+        for row in cash.cash_movements(membership, period.date_from, period.date_to, branch=period.branch)
     ]
     return Sheet("Movimientos de caja", header, rows)
 
@@ -113,7 +113,7 @@ def closings_sheet(membership: Membership, period: Period) -> Sheet:
             row["counted_amount"],
             row["difference"],
         ]
-        for row in cash.cash_closings(membership, period.date_from, period.date_to)
+        for row in cash.cash_closings(membership, period.date_from, period.date_to, branch=period.branch)
     ]
     return Sheet("Cierres de caja", header, rows)
 
@@ -132,7 +132,7 @@ _STATEMENT_CONCEPTS = [
 
 
 def statement_sheet(membership: Membership, period: Period) -> Sheet:
-    statement = income.income_statement(membership, period.date_from, period.date_to)
+    statement = income.income_statement(membership, period.date_from, period.date_to, branch=period.branch)
     return Sheet(
         "Estado de resultados", ["Concepto", "Valor"], [[label, statement[key]] for key, label in _STATEMENT_CONCEPTS]
     )
@@ -152,19 +152,19 @@ def _indicators(membership: Membership, days: list[dict]) -> list[list]:
 
 
 def overview_sheet(membership: Membership, period: Period) -> Sheet:
-    days = sales.sales_by_period(membership, period.date_from, period.date_to)
+    days = sales.sales_by_period(membership, period.date_from, period.date_to, branch=period.branch)
     rows = _indicators(membership, days)
     rows += [[], ["Ventas por día", "Comandas", "Ventas netas"]]
     rows += [[day["day"], day["orders"], day["total"]] for day in days]
     rows += [[], ["Ventas por barbero", "Ventas netas", "Comisión"]]
     rows += [
         [row["name"], row["sales"], row["commission"]]
-        for row in sales.sales_by_barber(membership, period.date_from, period.date_to)
+        for row in sales.sales_by_barber(membership, period.date_from, period.date_to, branch=period.branch)
     ]
     rows += [[], ["Productos más vendidos", "Cantidad", "Venta neta"]]
     rows += [
         [row["name"], row["quantity"], row["sales"]]
-        for row in sales.top_products(membership, period.date_from, period.date_to)
+        for row in sales.top_products(membership, period.date_from, period.date_to, branch=period.branch)
     ]
     return Sheet("Panorama", ["Indicador", "Valor"], rows)
 

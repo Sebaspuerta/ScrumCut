@@ -5,10 +5,14 @@ import re
 import pytest
 from django.urls import reverse
 
+from tests.frontend.conftest import logged_in_with_mfa
+from tests.reports.helpers import sell
+
 pytestmark = pytest.mark.django_db
 
 INLINE_STYLE = re.compile(r"\sstyle\s*=", re.IGNORECASE)
-INLINE_SCRIPT = re.compile(r"<script(?![^>]*\ssrc=)[^>]*>", re.IGNORECASE)
+# Solo se permiten scripts con src o el bloque de datos de json_script, que el navegador no ejecuta.
+INLINE_SCRIPT = re.compile(r'<script(?![^>]*\ssrc=)(?![^>]*type="application/json")[^>]*>', re.IGNORECASE)
 INLINE_HANDLER = re.compile(r"\son[a-z]+\s*=", re.IGNORECASE)
 BROWSER_STORAGE = re.compile(r"localStorage|sessionStorage")
 
@@ -22,6 +26,13 @@ def _assert_csp_friendly(html: str) -> None:
 
 def test_el_inicio_cumple_la_csp(owner_page):
     _assert_csp_friendly(owner_page.content.decode())
+
+
+def test_el_tablero_con_datos_cumple_la_csp(world):
+    sell(world, world.ana, service=world.corte)
+    html = logged_in_with_mfa(world.owner.user).get(reverse("home")).content.decode()
+    assert 'type="application/json"' in html  # los datos de las torres
+    _assert_csp_friendly(html)
 
 
 @pytest.mark.parametrize("url_name", ["account_login", "account_signup", "account_reset_password"])

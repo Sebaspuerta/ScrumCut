@@ -4,6 +4,7 @@ from django.urls import include, path
 
 from apps.accounts import views as account_views
 from apps.core import views as core_views
+from apps.reports import views as report_views
 
 urlpatterns = [
     path(f"{settings.ADMIN_URL.strip('/')}/", admin.site.urls),
@@ -11,5 +12,6 @@ urlpatterns = [
     path("cuenta/", include("allauth.urls")),
     path("legal/", include("apps.legal.urls")),
     path("salud/", core_views.health, name="health"),
-    path("", core_views.home, name="home"),
+    path("reportes/exportar/", report_views.export, name="reports_export"),
+    path("", report_views.dashboard, name="home"),
 ]

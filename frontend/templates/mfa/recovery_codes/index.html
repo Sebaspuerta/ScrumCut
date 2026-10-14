@@ -1,0 +1,6 @@
+{# La pantalla de allauth tal cual, más la salida al tablero: suele ser el último paso al activar el 2FA. #}
+{% extends "mfa/recovery_codes/index.html" %}
+{% block content %}
+{{ block.super }}
+<a class="button--primary" href="{% url 'home' %}">Continuar al tablero</a>
+{% endblock content %}

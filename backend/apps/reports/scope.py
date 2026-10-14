@@ -15,7 +15,7 @@ from django.db.models.functions import Coalesce
 
 from apps.sales.models import Order, OrderItem, OrderStatus
 from apps.sales.selectors import day_bounds, period_dates, scoped_orders
-from apps.tenancy.models import Membership
+from apps.tenancy.models import Branch, Membership
 
 NET_SALE = F("line_total") - F("line_discount")
 LINE_COST = F("unit_cost") * F("quantity") + F("consumables_cost")
@@ -28,13 +28,16 @@ class Period:
     start: datetime
     end: datetime
     tz: ZoneInfo
+    branch: Branch | None = None  # None: todas las sedes
 
 
-def resolve_period(membership: Membership, date_from: date | None = None, date_to: date | None = None) -> Period:
+def resolve_period(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> Period:
     date_from, date_to = period_dates(membership, date_from, date_to)
     tz_name = membership.barbershop.timezone
     start, end = day_bounds(tz_name, date_from, date_to)
-    return Period(date_from, date_to, start, end, ZoneInfo(tz_name))
+    return Period(date_from, date_to, start, end, ZoneInfo(tz_name), branch)
 
 
 def money_sum(expression, condition: Q | None = None) -> Coalesce:
@@ -47,9 +50,10 @@ def money_sum(expression, condition: Q | None = None) -> Coalesce:
 
 def closed_orders(membership: Membership, period: Period) -> QuerySet[Order]:
     """Pasa por `scoped_orders`: si un rol con alcance propio llega a ver reportes, ve solo lo suyo."""
-    return scoped_orders(membership).filter(
+    orders = scoped_orders(membership).filter(
         status=OrderStatus.CLOSED, closed_at__gte=period.start, closed_at__lt=period.end
     )
+    return orders.filter(branch=period.branch) if period.branch else orders
 
 
 def closed_items(membership: Membership, period: Period) -> QuerySet[OrderItem]:

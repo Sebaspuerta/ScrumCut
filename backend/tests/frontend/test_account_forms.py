@@ -45,3 +45,14 @@ def test_los_codigos_de_recuperacion_van_en_columna(client, make_shop, make_memb
     page = client.get(reverse("mfa_view_recovery_codes")).content.decode()
 
     assert _field(page, "recovery_codes", "textarea"), "los códigos no están en un .field con la etiqueta encima"
+
+
+def test_los_codigos_de_recuperacion_llevan_al_tablero_con_el_boton_principal(client, make_shop, make_member):
+    owner = make_member("dueno@example.com", make_shop("a"), Role.OWNER)
+    TOTP.activate(owner, generate_totp_secret())
+    RecoveryCodes.activate(owner)
+    _recently_authenticated(client, owner)
+
+    page = client.get(reverse("mfa_view_recovery_codes")).content.decode()
+
+    assert f'<a class="button--primary" href="{reverse("home")}">Continuar al tablero</a>' in page

@@ -2,7 +2,9 @@
 <section id="assistant-panel" class="assistant" aria-label="Asistente ScrumCut" x-show="chatOpen" x-cloak>
   <div class="assistant__header">
     <span class="assistant__title">Asistente</span>
-    <button type="button" class="icon-button" aria-label="Cerrar asistente" x-on:click="toggleChat">×</button>
+    <button type="button" class="icon-button" aria-label="Cerrar asistente" x-on:click="toggleChat">
+      <span class="icon" aria-hidden="true">{% include "icons/x.svg" %}</span>
+    </button>
   </div>
   <p class="assistant__body">El asistente estará disponible pronto.</p>
   <div class="assistant__form">

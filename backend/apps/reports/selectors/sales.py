@@ -9,7 +9,7 @@ from django.db.models.functions import Coalesce, TruncDate
 from apps.reports.scope import LINE_COST, NET_SALE, closed_items, closed_orders, money_sum, resolve_period
 from apps.sales.models import ItemType
 from apps.sales.selectors import DELETED_SUFFIX
-from apps.tenancy.models import Membership
+from apps.tenancy.models import Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
 _EMPTY_DAY = {"orders": 0, "subtotal": Decimal("0.00"), "discount": Decimal("0.00"), "total": Decimal("0.00")}
@@ -19,10 +19,12 @@ def _name(name: str | None, deleted_at) -> str | None:
     return name + DELETED_SUFFIX if name and deleted_at else name
 
 
-def sales_by_period(membership: Membership, date_from: date | None = None, date_to: date | None = None) -> list[dict]:
+def sales_by_period(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> list[dict]:
     """Una fila por cada día local del período, con 0 los días sin ventas."""
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, branch)
     rows = (
         closed_orders(membership, period)
         .annotate(day=TruncDate("closed_at", tzinfo=period.tz))
@@ -40,10 +42,12 @@ def sales_by_period(membership: Membership, date_from: date | None = None, date_
     return [with_sales.get(day, {"day": day, **_EMPTY_DAY}) for day in days]
 
 
-def sales_by_barber(membership: Membership, date_from: date | None = None, date_to: date | None = None) -> list[dict]:
+def sales_by_barber(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> list[dict]:
     """Regla 50: ventas netas y comisión de cada barbero, tal como quedaron al cerrar."""
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, branch)
     rows = (
         closed_items(membership, period)
         .filter(barber__isnull=False)
@@ -70,11 +74,15 @@ def sales_by_barber(membership: Membership, date_from: date | None = None, date_
 
 
 def top_products(
-    membership: Membership, date_from: date | None = None, date_to: date | None = None, limit: int = 10
+    membership: Membership,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    limit: int = 10,
+    branch: Branch | None = None,
 ) -> list[dict]:
     """Regla 51: por cantidad vendida, con lo vendido y su costo copiado al cerrar."""
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, branch)
     rows = (
         closed_items(membership, period)
         .filter(item_type=ItemType.PRODUCT)
@@ -95,15 +103,39 @@ def top_products(
     ]
 
 
-def _lines(membership: Membership, date_from: date | None, date_to: date | None) -> QuerySet:
+def _share(part: Decimal, total: Decimal) -> Decimal:
+    return (part * 100 / total).quantize(Decimal("1")) if total else Decimal("0")
+
+
+def income_mix(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> dict:
+    """Ventas netas de servicios y de productos del período, con su parte del total."""
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, branch)
+    totals = closed_items(membership, period).aggregate(
+        services=money_sum(NET_SALE, Q(item_type=ItemType.SERVICE)),
+        products=money_sum(NET_SALE, Q(item_type=ItemType.PRODUCT)),
+    )
+    total = totals["services"] + totals["products"]
+    return {
+        "total": total,
+        "services": {"amount": totals["services"], "percent": _share(totals["services"], total)},
+        "products": {"amount": totals["products"], "percent": _share(totals["products"], total)},
+    }
+
+
+def _lines(membership: Membership, date_from: date | None, date_to: date | None, branch: Branch | None) -> QuerySet:
+    ensure_permission(membership, "reportes.ver")
+    period = resolve_period(membership, date_from, date_to, branch)
     return closed_items(membership, period).annotate(net=NET_SALE).order_by("order__closed_at", "order__number", "pk")
 
 
-def sale_lines(membership: Membership, date_from: date | None = None, date_to: date | None = None) -> QuerySet:
+def sale_lines(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> QuerySet:
     """Regla 55: cada línea vendida con su costo (producto o insumos) y su comisión."""
-    return _lines(membership, date_from, date_to).values(
+    return _lines(membership, date_from, date_to, branch).values(
         "order__closed_at",
         "order__number",
         "item_type",
@@ -119,10 +151,12 @@ def sale_lines(membership: Membership, date_from: date | None = None, date_to: d
     )
 
 
-def commission_lines(membership: Membership, date_from: date | None = None, date_to: date | None = None) -> QuerySet:
+def commission_lines(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> QuerySet:
     """Cada servicio con la comisión que se copió al cerrar: tipo, valor y monto."""
     return (
-        _lines(membership, date_from, date_to)
+        _lines(membership, date_from, date_to, branch)
         .filter(item_type=ItemType.SERVICE)
         .values(
             "order__closed_at",

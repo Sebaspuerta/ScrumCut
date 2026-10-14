@@ -61,7 +61,6 @@
   background: transparent;
   border: 0;
   border-radius: var(--radius);
-  font-size: var(--icon-md);
   cursor: pointer;
 }
 
@@ -146,9 +145,14 @@
 
 /* Módulos sin pantalla todavía: atenuados y sin enlace. */
 .admin-link[aria-disabled="true"],
-.module-link[aria-disabled="true"],
 .bell[aria-disabled="true"] {
   opacity: var(--opacity-disabled);
+  cursor: default;
+}
+
+/* En el menú lateral se atenúan con un tono café en vez de opacidad, para conservar el contraste AA. */
+.module-link[aria-disabled="true"] {
+  color: var(--color-espresso-600);
   cursor: default;
 }
 
@@ -181,6 +185,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-0-5);
+  /* Sin la barra nativa con flechas: fina, en los tonos del diseño y solo al pasar el cursor. */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.sidebar__nav:hover {
+  scrollbar-color: var(--color-control-border) transparent;
 }
 
 .sidebar__group {
@@ -188,7 +199,7 @@
   font-size: var(--text-micro);
   letter-spacing: var(--tracking-group);
   text-transform: uppercase;
-  color: var(--color-nav-group);
+  color: var(--color-espresso-600);
 }
 
 .module-link {
@@ -283,6 +294,30 @@
   display: none;
 }
 
+/* Pantallas bajas (portátiles con escalado): los 9 módulos, el Asistente y la firma caben sin scroll. */
+@media (max-height: 760px) {
+  .sidebar {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .sidebar__group {
+    padding: var(--space-0-5) var(--space-3-5) var(--space-1-5);
+  }
+
+  .module-link {
+    min-height: var(--control-height);
+  }
+
+  .sidebar__foot {
+    gap: var(--space-2-5);
+  }
+
+  .signature {
+    padding-top: var(--space-2);
+  }
+}
+
 /* Contenido --------------------------------------------------------------- */
 
 .content {
@@ -291,13 +326,16 @@
   overflow-y: auto;
 }
 
+/* Llena el ancho disponible hasta el máximo y, por encima, se centra en el espacio que deja el menú. */
 .content__inner {
   min-height: 100%;
+  width: 100%;
   max-width: var(--content-max-width);
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-14);
-  padding: var(--space-10) var(--space-10) var(--space-16);
+  gap: var(--gap-section);
+  padding: var(--content-padding) var(--content-padding) var(--content-padding-bottom);
 }
 
 .page-header {

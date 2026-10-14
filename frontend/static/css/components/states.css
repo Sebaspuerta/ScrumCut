@@ -26,7 +26,63 @@
 .notices {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
+}
+
+/* Aviso del sistema: el borde izquierdo y el ícono dicen el nivel. Sin rojos: éxito en salvia, lo demás en café. */
+.notice {
+  --notice-marker: var(--color-text-muted);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-panel);
+  border: var(--line-width) solid var(--color-line);
+  border-left: var(--marker-width) solid var(--notice-marker);
+  border-radius: var(--radius);
   font-size: var(--text-meta);
+  color: var(--color-text);
+}
+
+.notice--success {
+  --notice-marker: var(--color-accent);
+}
+
+.notice--warning {
+  --notice-marker: var(--color-espresso-600);
+}
+
+.notice--error {
+  --notice-marker: var(--color-espresso);
+}
+
+.notice .icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  color: var(--notice-marker);
+}
+
+.notice__text {
+  flex: 1 1 auto;
+}
+
+.notice__close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
   color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.notice__close .icon {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
 }

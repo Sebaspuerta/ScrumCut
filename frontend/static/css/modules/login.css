@@ -200,7 +200,12 @@
   color: var(--color-espresso-700);
 }
 
-.auth-form button {
+/* Botón principal de estas pantallas: el "Entrar" del login y los enlaces con forma de botón. */
+.auth-form button,
+.entrance__panel a.button--primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--control-height-login);
   margin-top: var(--space-1);
   background: var(--color-espresso);
@@ -209,7 +214,12 @@
   font-size: var(--text-input);
   font-weight: 600;
   color: var(--color-login-light);
+  text-decoration: none;
   cursor: pointer;
+}
+
+.entrance__panel a.button--primary:hover {
+  color: var(--color-login-light);
 }
 
 .entrance__panel .notices {

@@ -1,0 +1,1 @@
+{# Sin aviso al cerrar sesión: la persona ya ve la pantalla de inicio de sesión. allauth no agrega un mensaje vacío. #}

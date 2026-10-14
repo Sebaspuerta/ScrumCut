@@ -31,7 +31,7 @@ Tonos de apoyo que usan las maquetas:
 | Texto sobre café | `#F2EDE7` |
 | Texto secundario sobre café | `#BFAE9F` |
 | Texto del menú lateral | `#4A4039` |
-| Título de grupo del menú ("Operación") | `#8A8077` |
+| Título de grupo del menú ("Operación") e ítems sin pantalla todavía | `#6B5444` (`--color-espresso-600`, contraste AA 6,2:1 sobre el menú) |
 | Borde de controles (selects, botones secundarios) | `#CFC6BA` |
 | Panel flotante (asistente) | `#F8F6F3` |
 | Texto claro del login (foto, botón) | `#F7F1E9` |
@@ -75,7 +75,7 @@ Lucide, trazo 1.5, en línea (SVG dentro del HTML) con `currentColor`. Los archi
 - Elemento activo: fondo `#E4DAD0`, texto café en 600 y una marca de 3px en el acento a la izquierda.
 - Al pie: botón Asistente (`message-circle`) y la firma "ScrumCut · por ScrumTech Solutions".
 
-**Contenido:** máximo 1320px de ancho, 40px de margen, 56px entre secciones. Cada sección empieza con una línea café de 1px y su h2 con una descripción corta en texto secundario. Pie con enlaces a Términos, Privacidad y Cookies.
+**Contenido:** máximo 1600px de ancho (centrado por encima de ese ancho), 40px de margen, 56px entre secciones. Cada sección empieza con una línea café de 1px y su h2 con una descripción corta en texto secundario. Pie con enlaces a Términos, Privacidad y Cookies.
 
 Todo control mide al menos 44px de alto.
 

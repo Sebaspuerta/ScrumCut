@@ -37,3 +37,17 @@ def test_el_asistente_no_tiene_funcionalidad(owner_page):
     assert "El asistente estará disponible pronto." in page
     assert len(disabled) == 2 and all("disabled" in control for control in disabled)
     assert inside(page, "assistant-panel", "form") == []  # nada que se envíe al servidor
+
+
+def test_el_nombre_completo_de_la_cuenta_queda_en_title_aunque_se_corte(owner_page):
+    [summary] = [attrs for tag, attrs, _ in elements(owner_page.content.decode()) if tag == "summary"]
+    assert summary["title"] == "dueno@example.com · Dueño"
+    assert summary["aria-label"] == "Cuenta de dueno@example.com, Dueño"
+
+
+def test_el_asistente_se_cierra_con_el_icono_x_de_lucide(owner_page):
+    [close] = [
+        attrs for attrs in inside(owner_page.content.decode(), "assistant-panel", "button") if "aria-label" in attrs
+    ]
+    assert close["aria-label"] == "Cerrar asistente"
+    assert "lucide-x" in owner_page.content.decode().split('id="assistant-panel"')[1]

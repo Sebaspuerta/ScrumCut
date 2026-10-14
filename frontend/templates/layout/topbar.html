@@ -22,9 +22,9 @@
     {% endif %}
     <div class="topbar__actions">
       {% if shell.can_export %}
-      <button type="button" class="button button--on-dark" disabled title="Próximamente">
+      <a class="button button--on-dark" href="{% url 'reports_export' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
         <span class="icon" aria-hidden="true">{% include "icons/download.svg" %}</span>Exportar
-      </button>
+      </a>
       {% endif %}
       {% if shell.unread_alerts is not None %}
       <a class="bell" aria-disabled="true" title="Alertas · Próximamente" aria-label="Alertas: {{ shell.unread_alerts }} sin leer">

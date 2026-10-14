@@ -1,0 +1,1 @@
+{# Sin aviso al iniciar sesión: la persona ya ve su tablero. allauth no agrega un mensaje vacío. #}

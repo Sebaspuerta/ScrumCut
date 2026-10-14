@@ -1,6 +1,7 @@
 {# <details> nativo: cerrar sesión funciona sin JavaScript. Alpine solo agrega Escape y clic fuera. #}
 <details class="account" x-data="accountMenu" x-on:keydown.escape="closeAndFocus" x-on:click.outside="close">
   <summary class="account__button" x-ref="summary"
+           title="{{ shell.account.name }}{% if shell.account.role %} · {{ shell.account.role }}{% endif %}"
            aria-label="Cuenta de {{ shell.account.name }}{% if shell.account.role %}, {{ shell.account.role }}{% endif %}">
     <span class="avatar" aria-hidden="true">{{ shell.account.initials }}</span>
     <span class="account__text" aria-hidden="true">

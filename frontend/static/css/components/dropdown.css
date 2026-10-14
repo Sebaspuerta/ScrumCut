@@ -34,11 +34,22 @@
   font-weight: 600;
 }
 
+/* Nunca desborda la barra: nombre y rol se cortan con puntos suspensivos; el nombre completo va en title. */
 .account__text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 0;
+  max-width: var(--account-text-max-width);
   line-height: 1.25;
+}
+
+.account__name,
+.account__role {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account__name {

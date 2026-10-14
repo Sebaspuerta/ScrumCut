@@ -15,7 +15,7 @@ PUBLIC_VIEWS = {
 }
 
 LOGIN_ONLY_VIEWS = {
-    "home": "Portada: no muestra datos de negocio.",
+    "home": "Tablero: con reportes.ver muestra todo; sin ese permiso, solo los cortes propios del barbero.",
     "logout_everywhere": "Actúa sobre la propia cuenta, no sobre datos de una barbería.",
 }
 

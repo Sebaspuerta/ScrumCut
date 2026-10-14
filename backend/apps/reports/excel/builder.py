@@ -15,7 +15,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from apps.reports.excel.sheets import SHEETS, Sheet
 from apps.reports.scope import Period, resolve_period
-from apps.tenancy.models import Membership
+from apps.tenancy.models import Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
 MONEY_FORMAT = "#,##0.00"
@@ -44,7 +44,8 @@ def _append(sheet: Worksheet, values: list, period: Period) -> None:
 def _write(book: Workbook, content: Sheet, shop_name: str, period: Period) -> None:
     sheet = book.create_sheet(content.title)
     _append(sheet, [shop_name], period)
-    sheet.append([f"{content.title} del {period.date_from:%Y-%m-%d} al {period.date_to:%Y-%m-%d}"])
+    branch = f" · Sede {period.branch.name}" if period.branch else ""
+    _append(sheet, [f"{content.title} del {period.date_from:%Y-%m-%d} al {period.date_to:%Y-%m-%d}{branch}"], period)
     sheet.append([])
     sheet.append(content.header)
     for cell in sheet[1] + sheet[sheet.max_row]:
@@ -53,9 +54,15 @@ def _write(book: Workbook, content: Sheet, shop_name: str, period: Period) -> No
         _append(sheet, row, period)
 
 
-def build_business_report(membership: Membership, date_from: date | None = None, date_to: date | None = None) -> bytes:
+def build_business_report(
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+) -> bytes:
+    """Sin sede, toda la barbería; con sede, lo mismo que el tablero filtrado por ella.
+
+    Los fiados son siempre de toda la barbería: un fiado es del cliente, no de una sede.
+    """
     ensure_permission(membership, "reportes.exportar")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, branch)
     book = Workbook()
     book.remove(book.active)
     for build_sheet in SHEETS:

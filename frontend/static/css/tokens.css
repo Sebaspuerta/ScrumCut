@@ -56,7 +56,6 @@
   --color-text: #1e1915;
   --color-text-muted: #6e655d;
   --color-nav-text: #4a4039;
-  --color-nav-group: #8a8077;
   --color-on-dark: #f2ede7;
   --color-on-dark-muted: #bfae9f;
   --color-field: #ffffff;
@@ -83,6 +82,25 @@
   --color-logo-11: #b39a86;
   --color-logo-12: #c4ae99;
   --gradient-login: linear-gradient(100deg, #6b5444 0%, #8e7461 30%, #b89f89 52%, #d8c7b5 72%, #efe6da 100%);
+
+  /* Torres 3D de ventas: caras de arriba, frente y lado en cinco niveles, de menos a más vendido */
+  --tower-top-0: #e4dad0;
+  --tower-top-1: #cbb8a6;
+  --tower-top-2: #a68b76;
+  --tower-top-3: #6b5444;
+  --tower-top-4: #2e211a;
+  --tower-front-0: #d3c6ba;
+  --tower-front-1: #b9a390;
+  --tower-front-2: #927663;
+  --tower-front-3: #5a4638;
+  --tower-front-4: #241913;
+  --tower-side-0: #c4b5a7;
+  --tower-side-1: #a9917d;
+  --tower-side-2: #806653;
+  --tower-side-3: #4c3b2f;
+  --tower-side-4: #1b130e;
+  --color-floor-outside: #ddd6cc;
+  --color-floor-closed: #a99e92;
 
   /* Tipografía */
   --font-display: "Bricolage Grotesque", sans-serif;
@@ -140,6 +158,14 @@
   --space-14: 56px;
   --space-16: 64px;
 
+  /* Densidad: lo que se compacta en pantallas de portátil (ver al final) */
+  --gap-section: var(--space-14);
+  --content-padding: var(--space-10);
+  --content-padding-bottom: var(--space-16);
+  --kpi-padding: var(--space-4-5) var(--space-6);
+  --kpi-min-width: 190px;
+  --text-readout: 26px;
+
   /* Medidas de la estructura */
   --touch-target: 44px;
   --control-height: 40px;
@@ -148,5 +174,22 @@
   --sidebar-width-collapsed: 72px;
   --avatar-size: 34px;
   --assistant-width: 340px;
-  --content-max-width: 1320px;
+  /* 1920 − 236 del menú = 1684 px útiles; 1600 (40 × --space-10) deja aire a los lados sin estirar tablas. */
+  --content-max-width: 1600px;
+  --account-text-max-width: 160px; /* 10 × --space-4 */
+}
+
+/* Portátiles: menos ancho útil que la maqueta (1440 px); los espacios y las cifras grandes se reducen
+   en la misma proporción para conservar el aire. Por debajo sigue compacto: lo móvil aún no está diseñado. */
+@media (max-width: 1400px) {
+  :root {
+    --gap-section: var(--space-10);
+    --content-padding: var(--space-8);
+    --content-padding-bottom: var(--space-12);
+    --kpi-padding: var(--space-3-5) var(--space-4-5);
+    --kpi-min-width: 170px;
+    --text-h1: 34px;
+    --text-figure: 26px;
+    --text-readout: 22px;
+  }
 }

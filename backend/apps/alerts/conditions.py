@@ -10,6 +10,7 @@ from datetime import date, timedelta
 from django.db.models import F, Q, QuerySet
 
 from apps.alerts.models import AlertType
+from apps.core.formatting import format_cop, short_date
 from apps.inventory.models import Product
 from apps.receivables.models import Receivable, ReceivableStatus
 
@@ -43,7 +44,7 @@ def _expiry_conditions(today: date) -> dict[AlertKey, str]:
     expiring = alertable_products().filter(expiration_date__isnull=False, expiration_date__lte=limit)
     return {
         (AlertType.EXPIRING, p.pk): (
-            f"{p.name} {'venció' if p.expiration_date < today else 'vence'} el {p.expiration_date:%Y-%m-%d}."
+            f"{p.name} {'venció' if p.expiration_date < today else 'vence'} el {short_date(p.expiration_date)}."
         )
         for p in expiring
     }
@@ -52,7 +53,7 @@ def _expiry_conditions(today: date) -> dict[AlertKey, str]:
 def _receivable_conditions() -> dict[AlertKey, str]:
     overdue = Receivable.objects.filter(status=ReceivableStatus.OVERDUE, balance__gt=0).select_related("client")
     return {
-        (AlertType.OVERDUE_RECEIVABLE, r.pk): f"El fiado de {r.client} está vencido; saldo {r.balance}."
+        (AlertType.OVERDUE_RECEIVABLE, r.pk): f"El fiado de {r.client} está vencido; saldo {format_cop(r.balance)}."
         for r in overdue
     }
 

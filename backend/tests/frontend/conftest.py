@@ -1,17 +1,23 @@
 import pytest
 from allauth.mfa.models import Authenticator
+from django.test import Client
 from django.urls import reverse
 
 from apps.tenancy.roles import Role
 
 
+def logged_in_with_mfa(user) -> Client:
+    """Dueño o administrador con 2FA: sin él, el middleware lo enviaría a configurarlo."""
+    Authenticator.objects.create(user=user, type=Authenticator.Type.TOTP, data={})
+    client = Client()
+    client.force_login(user)
+    return client
+
+
 @pytest.fixture
-def owner_page(client, make_shop, make_member):
-    """El inicio visto por el dueño. Sin 2FA el middleware lo enviaría a configurarlo."""
+def owner_page(make_shop, make_member):
     owner = make_member("dueno@example.com", make_shop("a"), Role.OWNER)
-    Authenticator.objects.create(user=owner, type=Authenticator.Type.TOTP, data={})
-    client.force_login(owner)
-    return client.get(reverse("home"))
+    return logged_in_with_mfa(owner).get(reverse("home"))
 
 
 @pytest.fixture

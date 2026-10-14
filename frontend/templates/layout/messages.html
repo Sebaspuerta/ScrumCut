@@ -1,5 +1,16 @@
+{# Avisos de Django. Sin JavaScript quedan visibles; notices.js muestra y activa el botón de cerrar. #}
 {% if messages %}
-<ul class="notices">
-  {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-</ul>
+<div class="notices">
+  {% for message in messages %}
+  {% with level=message.level_tag|default:"info" %}
+  <div class="notice notice--{{ level }}" role="{% if level == 'error' or level == 'warning' %}alert{% else %}status{% endif %}" data-notice>
+    <span class="icon" aria-hidden="true">{% if level == "success" %}{% include "icons/check.svg" %}{% else %}{% include "icons/circle-alert.svg" %}{% endif %}</span>
+    <p class="notice__text">{{ message }}</p>
+    <button type="button" class="notice__close" aria-label="Cerrar aviso" data-notice-close hidden>
+      <span class="icon" aria-hidden="true">{% include "icons/x.svg" %}</span>
+    </button>
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
 {% endif %}
