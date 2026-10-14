@@ -1,0 +1,15 @@
+# Finales de línea LF en el repositorio para todo archivo de texto, en cualquier sistema.
+* text=auto eol=lf
+
+# Binarios: sin conversión de finales de línea ni diff de texto.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.xlsx binary
+*.pdf binary

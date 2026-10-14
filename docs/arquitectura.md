@@ -38,6 +38,17 @@ Patrones que no se repiten al portar (regla 1 de `AGENTS.md`). Detalle y defecto
 4. Producción: dominio, despliegue, pentest — sin empezar.
 v3. Pagos en línea — sin empezar.
 
+### Multi-sede
+
+Especificación, diagnóstico y conflictos por decidir en [sedes.md](sedes.md). La barbería sigue siendo la frontera de seguridad (RLS); la sede se controla en servicios, selectores y permisos.
+
+- S1. Modelo de datos — sin empezar.
+- S2. Alcance por petición, solo backend — sin empezar.
+- S3. Ajustes → Sedes, selector de sede y modo "todas" (requiere maqueta aprobada) — sin empezar.
+- S4a. Caja, comandas, gastos y precios por sede — sin empezar.
+- S4b. Inventario por sede y traslados — sin empezar.
+- S5. Consolidado y comparativo (requiere maqueta aprobada) — sin empezar.
+
 ## Pendientes de seguridad
 
 | Pendiente | Fase | Estado |
