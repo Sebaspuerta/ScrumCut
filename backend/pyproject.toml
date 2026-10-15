@@ -26,10 +26,11 @@ max-positional-args = 2
 
 [tool.ruff.lint.per-file-ignores]
 # PLR0917 (máx. 2 posicionales) automatiza la regla de AGENTS.md "los servicios con más de dos
-# parámetros usan argumentos solo por nombre", así que aplica solo a apps/*/services.py. En las
-# pruebas, pytest inyecta las fixtures como posicionales; el resto del código no está sujeto a la regla.
+# parámetros usan argumentos solo por nombre", así que aplica solo a los servicios: apps/*/services.py
+# y los módulos de los paquetes apps/*/services/. En las pruebas, pytest inyecta las fixtures como
+# posicionales; el resto del código no está sujeto a la regla.
 "tests/*" = ["S105", "S106", "S107", "PLR0917"]
-"!apps/*/services.py" = ["PLR0917"]
+"!apps/*/{services.py,services/*.py}" = ["PLR0917"]
 "config/settings/*" = ["F405"]
 
 [tool.pytest.ini_options]
