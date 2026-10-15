@@ -69,6 +69,8 @@ class CashSession(TenantScopedModel):
                 name="ck_cashsession_close_fields_together",
             ),
         ]
+        # Los movimientos heredan la sede de su sesión (decisión 4 de docs/sedes.md): se indexa aquí.
+        indexes = [models.Index(fields=["barbershop", "branch", "opened_at"], name="ix_cashsession_branch_opened")]
 
     def __str__(self) -> str:
         return f"Caja {self.branch} · {self.opened_at:%Y-%m-%d %H:%M}"

@@ -31,6 +31,8 @@ MODULE_ACTIONS: dict[str, tuple[str, ...]] = {
     "alertas": ("ver", "marcar"),
     "reportes": ("ver", "exportar"),
     "auditoria": ("ver",),
+    # docs/sedes.md: ver todas las sedes y el consolidado; crear, editar, desactivar y asignar personal.
+    "sedes": ("ver", "gestionar"),
 }
 
 ALL_PERMISSIONS = frozenset(f"{module}.{action}" for module, actions in MODULE_ACTIONS.items() for action in actions)
@@ -108,6 +110,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[str]] = {
             "fiados.ver",
             "alertas.ver",
             "reportes.ver",
+            "sedes.ver",
         }
     ),
 }

@@ -23,9 +23,9 @@ PROBE_ROLE = "scrumcut_rls_probe"
 def two_shops_with_branches(make_shop):
     a, b = make_shop("a"), make_shop("b")
     with tenant_context(a.pk):
-        Branch.objects.create(name="Centro A")
+        Branch.objects.update(name="Centro A")  # la Sede principal de cada barbería nueva
     with tenant_context(b.pk):
-        Branch.objects.create(name="Norte B")
+        Branch.objects.update(name="Norte B")
     return a, b
 
 

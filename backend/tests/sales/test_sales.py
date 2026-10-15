@@ -240,7 +240,7 @@ def test_el_limite_de_credito_cuenta_la_deuda_total_del_cliente(world):
     settings = BarbershopSettings.objects.get()
     settings.max_credit_per_client = D("20000")
     settings.save()
-    receivables.create_manual(world.cashier, world.laura.public_id, total=D("8000"))
+    receivables.create_manual(world.cashier, world.laura.public_id, total=D("8000"), branch=world.branch.public_id)
     order = _sold_corte(world, client=world.laura.public_id)
     with pytest.raises(ValidationError) as excinfo:
         services.close_order(world.cashier, order.public_id, payments=_cash("10000"), as_credit=True)

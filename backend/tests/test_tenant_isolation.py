@@ -9,9 +9,9 @@ pytestmark = pytest.mark.django_db
 def test_cada_barberia_ve_solo_sus_sedes(make_shop):
     a, b = make_shop("a"), make_shop("b")
     with tenant_context(a.pk):
-        Branch.objects.create(name="Centro")
+        Branch.objects.update(name="Centro")  # la Sede principal de cada barbería nueva
     with tenant_context(b.pk):
-        Branch.objects.create(name="Norte")
+        Branch.objects.update(name="Norte")
 
     with tenant_context(a.pk):
         assert list(Branch.objects.values_list("name", flat=True)) == ["Centro"]

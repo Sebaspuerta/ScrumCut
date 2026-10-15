@@ -23,7 +23,7 @@ D = Decimal
 
 
 def _debt(w, total="30000", **kwargs):
-    return services.create_manual(w.cashier, w.laura.public_id, total=D(total), **kwargs)
+    return services.create_manual(w.cashier, w.laura.public_id, total=D(total), branch=w.branch.public_id, **kwargs)
 
 
 def _pay(w, debt, amount, method="efectivo"):
@@ -159,7 +159,7 @@ def test_lista_y_permisos_de_lectura(world, member):
     viewer = member(Role.VIEWER, world.shop)
     assert selectors.get_receivable(viewer, debt.public_id) == debt
     with pytest.raises(PermissionDenied):
-        services.create_manual(viewer, world.laura.public_id, total=D("1000"))
+        services.create_manual(viewer, world.laura.public_id, total=D("1000"), branch=world.branch.public_id)
 
 
 def test_otra_barberia_no_ve_ni_abona_fiados_ajenos(world, member, other_shop):

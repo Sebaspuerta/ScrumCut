@@ -13,6 +13,8 @@ class AuditLog(models.Model):
     """
 
     barbershop = models.ForeignKey("tenancy.Barbershop", null=True, blank=True, on_delete=models.PROTECT)
+    # Sede del evento cuando aplica (docs/sedes.md); con llave compuesta hacia la sede.
+    branch = models.ForeignKey("tenancy.Branch", null=True, blank=True, on_delete=models.PROTECT, related_name="+")
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT)
     action = models.CharField(max_length=80)
     entity = models.CharField(max_length=80)
@@ -39,7 +41,16 @@ class AuditLog(models.Model):
 
 
 def record(
-    *, action: str, entity: str, entity_id: str = "", actor=None, barbershop=None, before=None, after=None, request=None
+    *,
+    action: str,
+    entity: str,
+    entity_id: str = "",
+    actor=None,
+    barbershop=None,
+    branch=None,
+    before=None,
+    after=None,
+    request=None,
 ) -> AuditLog:
     ip = None
     agent = ""
@@ -52,6 +63,7 @@ def record(
         entity_id=entity_id,
         actor=actor,
         barbershop=barbershop,
+        branch=branch,
         before=before,
         after=after,
         ip_address=ip,

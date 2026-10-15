@@ -33,6 +33,7 @@ def _audit(actor: Membership, action: str, *, session: CashSession, before: dict
         entity_id=str(session.public_id),
         actor=actor.user,
         barbershop=actor.barbershop,
+        branch=session.branch,
         before=before,
         after=after,
     )

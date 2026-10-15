@@ -56,3 +56,19 @@ def test_anular_fiados_es_de_dueno_y_administrador(role, allowed):
 )
 def test_marcar_alertas(role, allowed):
     assert role_has_permission(role, "alertas.marcar") is allowed
+
+
+@pytest.mark.parametrize(
+    ("role", "allowed"),
+    [(Role.OWNER, True), (Role.ADMIN, True), (Role.CASHIER, False), (Role.BARBER, False), (Role.VIEWER, True)],
+)
+def test_ver_todas_las_sedes_y_el_consolidado(role, allowed):
+    assert role_has_permission(role, "sedes.ver") is allowed
+
+
+@pytest.mark.parametrize(
+    ("role", "allowed"),
+    [(Role.OWNER, True), (Role.ADMIN, True), (Role.CASHIER, False), (Role.BARBER, False), (Role.VIEWER, False)],
+)
+def test_gestionar_sedes_es_de_dueno_y_administrador(role, allowed):
+    assert role_has_permission(role, "sedes.gestionar") is allowed

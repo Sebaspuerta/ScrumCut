@@ -106,6 +106,7 @@ Todas heredan de `TenantScopedModel`, terminan con `EnableTenantRLS` y llevan la
 - En cada columna de sede, `FOREIGN KEY (barbershop_id, <columna>_id) REFERENCES tenancy_branch (barbershop_id, id)`, con `RunSQL` reversible y `DEFERRABLE INITIALLY DEFERRED`, como las FK de Django.
 - Motivo: PostgreSQL no aplica RLS a las llaves foráneas. Sin esta llave, una fila podría apuntar a la sede de otra barbería; hoy solo la frena el manager (`TenantManager`).
 - En las columnas opcionales (`Alert.branch`, `AuditLog.branch`), una sede nula pasa (MATCH SIMPLE).
+- La misma llave protege `MembershipBranch.membership` → `tenancy_membership` y `BarberBranch.barber` → `staff_barber`, con su único `(barbershop_id, id)`. La operación es `TenantKey` (`apps/core/tenant_keys.py`).
 
 **Migración de datos sin sede.** Tres pasos, reversibles:
 1. Crear la "Sede principal" en cada barbería que no tenga ninguna.
@@ -170,7 +171,8 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 | No se desactiva una sede con caja abierta ni si es la única activa | NUEVO | S1 |
 | No se desactiva una sede con citas futuras | PENDIENTE: se activa cuando exista la agenda (fase 3 de `docs/arquitectura.md`) | Fase 3 |
 | `receivables.add_payment` y `cash.selectors.current_session` exigen una sede activa | CAMBIA (defecto: hoy no filtran `is_active`) | S1 |
-| Un barbero sin sedes no se puede elegir en comandas | NUEVO (`sales.services._active_barber` y la asignación por defecto) | S1 |
+| Un barbero sin sedes no se puede elegir en comandas | NUEVO (`sales.services._active_barber`) | S1 |
+| Barbero nuevo: con una sola sede activa queda en ella; con varias, `create_barber` exige sus sedes (`ValidationError` si no vienen) | NUEVO | S1 |
 | El fiado manual toma como `origin_branch` la sede activa al crearlo; el de una comanda, `order.branch` | NUEVO | S1 |
 | La sede del abono es la de la caja donde entra (`cash_movement.session.branch`), que puede ser distinta de `origin_branch`. Los selectores de abonos por sede filtran por esa sesión. | NUEVO | S1 |
 | El consumo de inventario al cerrar una comanda descuenta de `StockLevel` de `order.branch` | CAMBIA (`sales.services.close_order`) | S4b |
@@ -227,7 +229,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - Sede activa obligatoria en `add_payment` y `current_session` (decisión 14).
 - `Membership.last_branch` y `AuditLog.branch`.
 - Servicio de crear, editar, desactivar y reactivar sedes.
-- `cargar_demo` con 3 sedes y `max_branches = 3`.
+- `cargar_demo` con 2 sedes (Centro y Norte) y `max_branches = 3`.
 
 ## Decisiones tomadas
 
@@ -237,7 +239,7 @@ Resuelven los conflictos que dejó el diagnóstico.
    - Decisión: el Cajero accede por `MembershipBranch`; el Barbero, por las sedes de su `Barber` en `BarberBranch`, a través de `Barber.membership`; Dueño, Administrador y Consultor, a todas por su rol.
    - Motivo: dos tablas de acceso para el mismo rol podían contradecirse. El Barbero ya tiene sedes por su trabajo, y duplicarlas en la membresía no agrega nada.
 2. **`Barber.branch` pasa a `BarberBranch` (muchos a muchos).**
-   - Decisión: en la migración, un barbero con sede nula queda asignado a todas las sedes activas de su barbería. Después, un barbero sin sedes no se puede elegir en comandas.
+   - Decisión: en la migración, un barbero con sede nula queda asignado a todas las sedes activas de su barbería. Después, un barbero sin sedes no se puede elegir en comandas. Un barbero nuevo queda en la única sede activa; si hay varias, se indican al crearlo.
    - Motivo: hoy la sede nula equivale en la práctica a "trabaja en cualquiera"; asignarle todas conserva ese comportamiento sin dejar un caso especial en el código.
 3. **Sede de origen del fiado y sede del abono.**
    - Decisión: `Receivable.origin_branch` es la sede de la comanda o, si el fiado es manual, la sede activa al crearlo. `ReceivablePayment` no lleva sede propia: la del abono es `cash_movement.session.branch`, la caja donde entró el dinero, que puede ser otra.
@@ -260,7 +262,7 @@ Resuelven los conflictos que dejó el diagnóstico.
    - Decisión: `Branch` no lleva zona horaria y todo sigue con `Barbershop.timezone`.
    - Motivo: con zonas distintas, el consolidado mezclaría días diferentes, y hoy todas las sedes están en Colombia. Ver "Trabajo futuro".
 8. **Límite de sedes.**
-   - Decisión: `Barbershop.max_branches` con valor por defecto 1. La migración pone a las existentes `max(1, número de sedes)`. Solo lo aplica el servicio de crear o reactivar sedes y cuenta solo las sedes activas, así que desactivar una libera cupo. La demo queda con 3.
+   - Decisión: `Barbershop.max_branches` con valor por defecto 1. La migración pone a las existentes `max(1, número de sedes)`. Solo lo aplica el servicio de crear o reactivar sedes y cuenta solo las sedes activas, así que desactivar una libera cupo. La demo tiene 2 sedes con `max_branches = 3`.
    - Motivo: ninguna barbería existente queda por encima de su límite. Las pruebas y la demo, que crean sedes directamente, no dependen del plan.
 9. **S2 se divide.**
    - Decisión: S2 es solo backend (alcance, middleware, cambio de sede y selectores). El selector visual y el modo "todas" del encabezado se diseñan y se aprueban junto con S3.

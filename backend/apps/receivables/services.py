@@ -26,13 +26,23 @@ from apps.tenancy.permissions import ensure_permission
 _CENTS = Decimal("0.01")
 
 
-def _audit(actor: Membership, action: str, *, receivable: Receivable, before: dict | None, after: dict) -> None:
+def _audit(
+    actor: Membership,
+    action: str,
+    *,
+    receivable: Receivable,
+    before: dict | None,
+    after: dict,
+    branch: Branch | None = None,
+) -> None:
+    """La sede del evento es la de origen del fiado, salvo en un abono: la de la caja donde entró."""
     record(
         action=action,
         entity=receivable._meta.label,
         entity_id=str(receivable.public_id),
         actor=actor.user,
         barbershop=actor.barbershop,
+        branch=branch or receivable.origin_branch,
         before=before,
         after=after,
     )
@@ -42,6 +52,7 @@ def _snapshot(receivable: Receivable) -> dict:
     return {
         "client": str(receivable.client.public_id),
         "order": str(receivable.order.public_id) if receivable.order_id else None,
+        "origin_branch": str(receivable.origin_branch.public_id),
         "total": str(Decimal(receivable.total).quantize(_CENTS)),
         "balance": str(Decimal(receivable.balance).quantize(_CENTS)),
         "status": receivable.status,
@@ -64,12 +75,22 @@ def _check_credit_limit(client: Client, amount: Decimal) -> None:
         )
 
 
-def _create(client: Client, total: Decimal, *, actor: Membership, order=None, due_date=None, notes="") -> Receivable:
+def _create(
+    client: Client,
+    total: Decimal,
+    *,
+    actor: Membership,
+    origin_branch: Branch,
+    order=None,
+    due_date=None,
+    notes="",
+) -> Receivable:
     _check_credit_limit(client, total)
     receivable = Receivable(
         barbershop_id=client.barbershop_id,
         client=client,
         order=order,
+        origin_branch=origin_branch,
         total=total,
         balance=total,
         due_date=due_date,
@@ -82,22 +103,82 @@ def _create(client: Client, total: Decimal, *, actor: Membership, order=None, du
     return receivable
 
 
+def _active_branch(public_id: UUID | str) -> Branch:
+    """Decisión 14 de docs/sedes.md: una sede desactivada no recibe fiados ni dinero."""
+    try:
+        return Branch.objects.get(public_id=public_id, is_active=True)
+    except Branch.DoesNotExist as exc:
+        raise ValidationError({"branch": "La sede no existe o está inactiva."}) from exc
+
+
 def create_from_order(order, amount: Decimal, *, actor: Membership, due_date: date | None = None) -> Receivable:
-    """Saldo de una comanda cerrada como fiado. La usa sales, que ya validó permisos y cliente."""
-    return _create(order.client, amount, actor=actor, order=order, due_date=due_date)
+    """Saldo de una comanda cerrada como fiado, con la sede de la comanda. La usa sales, que ya validó."""
+    return _create(order.client, amount, actor=actor, origin_branch=order.branch, order=order, due_date=due_date)
 
 
 def create_manual(
-    membership: Membership, client: UUID | str, *, total: Decimal, due_date: date | None = None, notes: str = ""
+    membership: Membership,
+    client: UUID | str,
+    *,
+    total: Decimal,
+    branch: UUID | str,
+    due_date: date | None = None,
+    notes: str = "",
 ) -> Receivable:
-    """Regla 26: fiado sin comanda, a un cliente vivo y no anonimizado, con total > 0."""
+    """Regla 26: fiado sin comanda, a un cliente vivo y no anonimizado, con total > 0.
+
+    `branch` es la sede activa al crearlo: queda como su sede de origen (decisión 3).
+    """
     ensure_permission(membership, "fiados.crear")
     try:
         target = Client.objects.get(public_id=client, deleted_at__isnull=True, anonymized_at__isnull=True)
     except Client.DoesNotExist as exc:
         raise ValidationError({"client": "El cliente no existe."}) from exc
+    origin = _active_branch(branch)
     with transaction.atomic():
-        return _create(target, total, actor=membership, due_date=due_date, notes=notes)
+        return _create(target, total, actor=membership, origin_branch=origin, due_date=due_date, notes=notes)
+
+
+def _locked_open_receivable(public_id: UUID | str, amount: Decimal) -> Receivable:
+    locked = Receivable.objects.select_for_update().get(public_id=public_id)
+    if locked.status not in OPEN_STATUSES:
+        raise ValidationError("Este fiado ya está pagado o anulado.")
+    if amount > locked.balance:
+        raise ValidationError(
+            "El abono supera el saldo de %(balance)s.", code="over_balance", params={"balance": locked.balance}
+        )
+    return locked
+
+
+def _record_payment(
+    locked: Receivable, session, *, membership: Membership, amount: Decimal, method: str
+) -> ReceivablePayment:
+    """El dinero entra a la caja de la sesión; esa es la sede del abono (no se guarda aparte)."""
+    movement = record_money(
+        session,
+        MovementKind.RECEIVABLE_PAYMENT,
+        direction=Direction.IN,
+        method=method,
+        amount=amount,
+        description=f"Abono a fiado de {locked.client}",
+        actor=membership,
+    )
+    payment = ReceivablePayment(
+        barbershop_id=locked.barbershop_id,
+        receivable=locked,
+        cash_movement=movement,
+        amount=amount,
+        method=method,
+        received_by=membership.user,
+    )
+    payment.full_clean()
+    payment.save()
+    locked.balance -= amount
+    if locked.balance == 0:
+        locked.status = ReceivableStatus.PAID
+    locked.full_clean()
+    locked.save(update_fields=["balance", "status", "updated_at"])
+    return payment
 
 
 def add_payment(
@@ -105,53 +186,23 @@ def add_payment(
 ) -> ReceivablePayment:
     """Regla 27 con el defecto 24 corregido: monto ≤ saldo, solo a fiados vivos, con caja abierta.
 
-    El abono entra al libro de caja de la sede con cualquier método (un solo libro).
+    El abono entra al libro de caja de la sede (activa) con cualquier método (un solo libro).
     """
     ensure_permission(membership, "fiados.abonar")
     amount = Decimal(amount)
     if amount <= 0:
         raise ValidationError({"amount": "El abono debe ser mayor que cero."})
-    try:
-        target_branch = Branch.objects.get(public_id=branch)
-    except Branch.DoesNotExist as exc:
-        raise ValidationError({"branch": "La sede no existe."}) from exc
+    target_branch = _active_branch(branch)
     with transaction.atomic():
-        locked = Receivable.objects.select_for_update().get(public_id=receivable)
-        if locked.status not in OPEN_STATUSES:
-            raise ValidationError("Este fiado ya está pagado o anulado.")
-        if amount > locked.balance:
-            raise ValidationError(
-                "El abono supera el saldo de %(balance)s.", code="over_balance", params={"balance": locked.balance}
-            )
+        locked = _locked_open_receivable(receivable, amount)
         session = open_session_for(target_branch)
         if session is None:
             raise ValidationError("No hay una caja abierta en esta sede para recibir el abono.", code="no_open_session")
         before = _snapshot(locked)
-        movement = record_money(
-            session,
-            MovementKind.RECEIVABLE_PAYMENT,
-            direction=Direction.IN,
-            method=method,
-            amount=amount,
-            description=f"Abono a fiado de {locked.client}",
-            actor=membership,
+        payment = _record_payment(locked, session, membership=membership, amount=amount, method=method)
+        _audit(
+            membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked), branch=target_branch
         )
-        payment = ReceivablePayment(
-            barbershop_id=locked.barbershop_id,
-            receivable=locked,
-            cash_movement=movement,
-            amount=amount,
-            method=method,
-            received_by=membership.user,
-        )
-        payment.full_clean()
-        payment.save()
-        locked.balance -= amount
-        if locked.balance == 0:
-            locked.status = ReceivableStatus.PAID
-        locked.full_clean()
-        locked.save(update_fields=["balance", "status", "updated_at"])
-        _audit(membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked))
     return payment
 
 

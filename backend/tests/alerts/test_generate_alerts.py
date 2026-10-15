@@ -58,7 +58,11 @@ def test_por_vencer_dentro_de_la_ventana_e_incluye_vencidos(owner):
 def test_fiado_vencido_se_marca_y_genera_alerta(owner):
     late = make_overdue_debt(owner)
     on_time = receivables.create_manual(
-        owner, late.client.public_id, total=Decimal("1000"), due_date=TODAY + timedelta(5)
+        owner,
+        late.client.public_id,
+        total=Decimal("1000"),
+        branch=late.origin_branch.public_id,
+        due_date=TODAY + timedelta(5),
     )
 
     result = services.generate_alerts(TODAY)

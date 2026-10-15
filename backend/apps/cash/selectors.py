@@ -38,8 +38,10 @@ def open_session_for(branch: Branch) -> CashSession | None:
 
 
 def current_session(membership: Membership, branch: UUID | str) -> CashSession | None:
+    """Decisión 14 de docs/sedes.md: una sede desactivada no tiene caja vigente."""
     ensure_permission(membership, "caja.ver")
-    return CashSession.objects.filter(branch__public_id=branch, closed_at__isnull=True).select_related("branch").first()
+    sessions = CashSession.objects.filter(branch__public_id=branch, branch__is_active=True, closed_at__isnull=True)
+    return sessions.select_related("branch").first()
 
 
 def session_summary(membership: Membership, session: UUID | str) -> dict:

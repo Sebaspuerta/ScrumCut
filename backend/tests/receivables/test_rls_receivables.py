@@ -21,10 +21,10 @@ pytestmark = [
 
 INSERTS = {
     "receivables_receivable": (
-        "INSERT INTO receivables_receivable (public_id, created_at, updated_at, barbershop_id, client_id, total, "
-        "balance, status, notes, created_by_id) VALUES (gen_random_uuid(), now(), now(), %s, %s, 1000, 1000, "
-        "'pendiente', '', %s)",
-        lambda shop, rows: [shop.pk, rows[shop.pk]["client"].pk, rows["user"].pk],
+        "INSERT INTO receivables_receivable (public_id, created_at, updated_at, barbershop_id, client_id, "
+        "origin_branch_id, total, balance, status, notes, created_by_id) VALUES (gen_random_uuid(), now(), now(), "
+        "%s, %s, %s, 1000, 1000, 'pendiente', '', %s)",
+        lambda shop, rows: [shop.pk, rows[shop.pk]["client"].pk, rows[shop.pk]["branch"].pk, rows["user"].pk],
     ),
     # El movimiento libre evita chocar con el OneToOne del abono que ya existe.
     "receivables_receivablepayment": (
@@ -63,12 +63,11 @@ def two_shops(make_shop):
             client = Client.objects.create(
                 full_name="Cliente", data_consent_at=timezone.now(), data_policy_version="2026-10"
             )
+            branch = Branch.objects.get()  # la Sede principal de toda barbería nueva
             receivable = Receivable.objects.create(
-                client=client, total=Decimal("1000"), balance=Decimal("900"), created_by=user
+                client=client, origin_branch=branch, total=Decimal("1000"), balance=Decimal("900"), created_by=user
             )
-            session = CashSession.objects.create(
-                branch=Branch.objects.create(name="Centro"), opened_by=user, opening_amount=Decimal("0")
-            )
+            session = CashSession.objects.create(branch=branch, opened_by=user, opening_amount=Decimal("0"))
             ReceivablePayment.objects.create(
                 receivable=receivable,
                 cash_movement=_movement(session, user),
@@ -76,7 +75,12 @@ def two_shops(make_shop):
                 method="efectivo",
                 received_by=user,
             )
-            rows[shop.pk] = {"client": client, "receivable": receivable, "spare_movement": _movement(session, user)}
+            rows[shop.pk] = {
+                "client": client,
+                "branch": branch,
+                "receivable": receivable,
+                "spare_movement": _movement(session, user),
+            }
     return a, b, rows
 
 

@@ -59,7 +59,7 @@ def test_deudor_manda_sobre_lo_demas(world):
     pedro = _client(world, "Pedro Ruiz")
     for _ in range(3):
         _visit(world, pedro, world.barba, "15000")
-    receivables.create_manual(world.cashier, pedro.public_id, total=D("7000"))
+    receivables.create_manual(world.cashier, pedro.public_id, total=D("7000"), branch=world.branch.public_id)
     profile = client_profile(world.cashier, pedro.public_id)
     assert (profile["balance"], profile["status"]) == (D("7000"), ClientStatus.DEBTOR)
 

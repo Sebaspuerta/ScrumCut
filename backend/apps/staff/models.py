@@ -17,9 +17,6 @@ class Barber(TenantScopedModel, SoftDeleteModel):
     display_name = models.CharField("nombre", max_length=120)
     alias = models.CharField(max_length=80, blank=True)
     phone = models.CharField("teléfono", max_length=30, blank=True)
-    branch = models.ForeignKey(
-        "tenancy.Branch", null=True, blank=True, on_delete=models.PROTECT, related_name="barbers"
-    )
     # Regla 41: una membresía se vincula a lo sumo a un barbero, aunque ese barbero esté borrado.
     membership = models.OneToOneField(
         "tenancy.Membership", null=True, blank=True, on_delete=models.PROTECT, related_name="barber"
@@ -27,8 +24,34 @@ class Barber(TenantScopedModel, SoftDeleteModel):
     is_active = models.BooleanField("activo", default=True)
     notes = models.TextField("notas", blank=True)
 
+    class Meta:
+        constraints = [
+            # Destino de la llave compuesta de BarberBranch (apps/core/tenant_keys.py).
+            models.UniqueConstraint(fields=["barbershop", "id"], name="uq_barber_barbershop_id"),
+        ]
+
     def __str__(self) -> str:
         return self.display_name
+
+
+class BarberBranch(TenantScopedModel):
+    """Sedes donde trabaja un barbero (decisiones 1 y 2 de docs/sedes.md).
+
+    También son las sedes a las que entra el usuario Barbero vinculado. Un barbero sin
+    sedes no se puede elegir en comandas.
+    """
+
+    barber = models.ForeignKey(Barber, on_delete=models.PROTECT, related_name="branch_links")
+    branch = models.ForeignKey("tenancy.Branch", on_delete=models.PROTECT, related_name="barber_links")
+
+    class Meta:
+        verbose_name = "sede del barbero"
+        constraints = [
+            models.UniqueConstraint(fields=["barber", "branch"], name="uq_barberbranch_barber_branch"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.barber} · {self.branch}"
 
 
 class CommissionType(models.TextChoices):

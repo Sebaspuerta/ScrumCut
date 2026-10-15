@@ -37,7 +37,8 @@ def _get_or_invalid(queryset, field: str, *, message: str, **lookup):
 
 
 def _active_barber(public_id: UUID | str) -> Barber:
-    return _get_or_invalid(
+    """Activo, vivo y con al menos una sede (decisión 2 de docs/sedes.md)."""
+    barber = _get_or_invalid(
         Barber.objects,
         "barber",
         message="El barbero no existe o está inactivo.",
@@ -45,6 +46,9 @@ def _active_barber(public_id: UUID | str) -> Barber:
         deleted_at__isnull=True,
         is_active=True,
     )
+    if not barber.branch_links.exists():
+        raise ValidationError({"barber": "El barbero no tiene sedes asignadas."})
+    return barber
 
 
 def create_order(

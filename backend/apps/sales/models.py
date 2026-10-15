@@ -99,7 +99,10 @@ class Order(TenantScopedModel):
                 name="ck_order_cancelled_has_reason",
             ),
         ]
-        indexes = [models.Index(fields=["barbershop", "status", "closed_at"])]
+        indexes = [
+            models.Index(fields=["barbershop", "status", "closed_at"]),
+            models.Index(fields=["barbershop", "branch", "closed_at"], name="ix_order_branch_closed"),
+        ]
 
     def __str__(self) -> str:
         return f"Comanda #{self.number}"

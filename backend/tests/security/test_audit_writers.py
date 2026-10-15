@@ -63,7 +63,9 @@ CASES = {
     "producto.crear": lambda w: partial(inventory.create_product, w.owner, {"name": "Gel", "product_type": "venta"}),
     "caja.cerrar": lambda w: partial(cash.close_session, w.cashier, w.session.public_id, counted_amount=D("50000")),
     "comanda.crear": lambda w: partial(sales.create_order, w.cashier, w.branch.public_id),
-    "fiado.crear": lambda w: partial(receivables.create_manual, w.cashier, w.laura.public_id, total=D("1000")),
+    "fiado.crear": lambda w: partial(
+        receivables.create_manual, w.cashier, w.laura.public_id, total=D("1000"), branch=w.branch.public_id
+    ),
     "alertas.generar": _alerts_to_generate,
     "alerta.marcar_leida": _alert_to_read,
     "sesion.cerrar_todas": lambda w: partial(logout_all_devices, w.ana_login.user),

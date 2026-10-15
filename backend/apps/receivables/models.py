@@ -31,6 +31,10 @@ class Receivable(TenantScopedModel):
     order = models.OneToOneField(
         "sales.Order", null=True, blank=True, on_delete=models.PROTECT, related_name="receivable"
     )
+    # Donde nació la deuda (decisión 3 de docs/sedes.md). El abono va a la caja de su sesión.
+    origin_branch = models.ForeignKey(
+        "tenancy.Branch", on_delete=models.PROTECT, related_name="+", verbose_name="sede de origen"
+    )
     total = models.DecimalField("total", validators=[MinValueValidator(Decimal("0.01"))], **_MONEY)
     balance = models.DecimalField("saldo", **_MONEY)
     status = models.CharField(

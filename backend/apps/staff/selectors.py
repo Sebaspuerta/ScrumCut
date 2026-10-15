@@ -32,7 +32,11 @@ def resolve_commission(barber: Barber, service: Service | None, at: datetime) ->
 
 def list_barbers(membership: Membership, *, active_only: bool = True) -> QuerySet[Barber]:
     ensure_permission(membership, "barberos.ver")
-    barbers = Barber.objects.filter(deleted_at__isnull=True).select_related("branch", "membership__user")
+    barbers = (
+        Barber.objects.filter(deleted_at__isnull=True)
+        .select_related("membership__user")
+        .prefetch_related("branch_links__branch")
+    )
     if active_only:
         barbers = barbers.filter(is_active=True)
     return barbers.order_by(Lower("display_name"))
@@ -41,7 +45,11 @@ def list_barbers(membership: Membership, *, active_only: bool = True) -> QuerySe
 def get_barber(membership: Membership, public_id: UUID | str) -> Barber:
     """Incluye desactivados; nunca borrados. Lanza `Barber.DoesNotExist`."""
     ensure_permission(membership, "barberos.ver")
-    return Barber.objects.select_related("branch", "membership__user").get(public_id=public_id, deleted_at__isnull=True)
+    return (
+        Barber.objects.select_related("membership__user")
+        .prefetch_related("branch_links__branch")
+        .get(public_id=public_id, deleted_at__isnull=True)
+    )
 
 
 def list_active_barbers_basic(membership: Membership) -> list[dict]:

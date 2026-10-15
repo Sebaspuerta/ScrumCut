@@ -9,6 +9,7 @@ Igual que en catalog: un objeto inexistente, de otra barbería o borrado lanza
 `DoesNotExist`; los datos inválidos, `ValidationError`.
 """
 
+from collections.abc import Iterable
 from datetime import datetime
 from decimal import Decimal
 from typing import TypedDict
@@ -21,15 +22,17 @@ from django.utils import timezone
 from apps.audit.models import record
 from apps.catalog.models import Service
 from apps.core.tenant_context import get_current_barbershop_id
-from apps.staff.models import Barber, CommissionRule
+from apps.staff.models import Barber, BarberBranch, CommissionRule
 from apps.tenancy.models import Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 from apps.tenancy.roles import Role
+from apps.tenancy.selectors import active_branches
 
 _CENTS = Decimal("0.01")
 _TEXT_FIELDS = ("display_name", "alias", "phone", "notes")
 
 MEMBERSHIP_TAKEN = "Esa membresía ya está vinculada a otro barbero."
+BRANCHES_REQUIRED = "La barbería tiene varias sedes: indica en cuáles trabaja el barbero."
 # El dueño o el administrador que también corta es lo normal; cajero y consultor no atienden.
 LINKABLE_ROLES = frozenset({Role.BARBER, Role.OWNER, Role.ADMIN})
 
@@ -39,7 +42,6 @@ class BarberData(TypedDict, total=False):
     alias: str
     phone: str
     notes: str
-    branch: UUID | str | None
     membership: UUID | str | None
 
 
@@ -61,7 +63,7 @@ def _barber_snapshot(barber: Barber) -> dict:
         "alias": barber.alias,
         "phone": barber.phone,
         "notes": barber.notes,
-        "branch": str(barber.branch.public_id) if barber.branch_id else None,
+        "branches": sorted(str(link.branch.public_id) for link in barber.branch_links.select_related("branch")),
         "membership": str(barber.membership.public_id) if barber.membership_id else None,
         "is_active": barber.is_active,
         "deleted_at": barber.deleted_at.isoformat() if barber.deleted_at else None,
@@ -80,15 +82,6 @@ def _rule_snapshot(rule: CommissionRule) -> dict:
 
 def _live_barber_for_update(public_id: UUID | str) -> Barber:
     return Barber.objects.select_for_update().get(public_id=public_id, deleted_at__isnull=True)
-
-
-def _resolve_branch(public_id: UUID | str | None) -> Branch | None:
-    if public_id is None:
-        return None
-    try:
-        return Branch.objects.get(public_id=public_id, is_active=True)
-    except Branch.DoesNotExist as exc:
-        raise ValidationError({"branch": "La sede no existe."}) from exc
 
 
 def _resolve_service(public_id: UUID | str | None) -> Service | None:
@@ -126,8 +119,6 @@ def _apply(barber: Barber, data: BarberData) -> None:
     for field in _TEXT_FIELDS:
         if field in data:
             setattr(barber, field, (data[field] or "").strip())
-    if "branch" in data:
-        barber.branch = _resolve_branch(data["branch"])
     if "membership" in data:
         barber.membership = _resolve_membership(data["membership"], barber)
 
@@ -161,13 +152,37 @@ def _create_rule(
 # ── Barberos ─────────────────────────────────────────────────────────────────
 
 
-def create_barber(membership_actor: Membership, data: BarberData, *, commission_type: str, commission_value) -> Barber:
-    """Crea el barbero y su regla de comisión general, vigente desde ahora."""
+def _starting_branches(branches: Iterable[UUID | str] | None) -> list[Branch]:
+    """Con una sola sede activa, esa; con varias, las que se indiquen (docs/sedes.md, decisión 2).
+
+    Después las cambia `tenancy.services.set_barber_branches`.
+    """
+    if branches is not None:
+        return active_branches(branches)
+    active = list(Branch.objects.filter(is_active=True)[:2])
+    if len(active) != 1:
+        raise ValidationError({"branches": BRANCHES_REQUIRED})
+    return active
+
+
+def create_barber(
+    membership_actor: Membership,
+    data: BarberData,
+    *,
+    commission_type: str,
+    commission_value,
+    branches: Iterable[UUID | str] | None = None,
+) -> Barber:
+    """Crea el barbero en sus sedes y su regla de comisión general, vigente desde ahora."""
     ensure_permission(membership_actor, "barberos.crear")
+    starting = _starting_branches(branches)
     with transaction.atomic():
         barber = Barber(barbershop_id=membership_actor.barbershop_id)
         _apply(barber, data)
         _save_validated(barber)
+        BarberBranch.objects.bulk_create(
+            BarberBranch(barbershop_id=barber.barbershop_id, barber=barber, branch=branch) for branch in starting
+        )
         rule = _create_rule(barber, commission_type, value=commission_value, service=None, valid_from=timezone.now())
         after = {**_barber_snapshot(barber), "commission": _rule_snapshot(rule)}
         _audit(membership_actor, "barbero.crear", obj=barber, before=None, after=after)

@@ -10,6 +10,7 @@ from apps.catalog.models import Service
 from apps.core.tenant_context import tenant_context
 from apps.staff import selectors, services
 from apps.staff.models import Barber, CommissionRule, CommissionType
+from apps.tenancy import services as tenancy
 from apps.tenancy.models import Branch
 from apps.tenancy.roles import Role
 
@@ -340,10 +341,10 @@ def test_no_se_usan_sedes_ni_servicios_de_otra_barberia(member, shop, other_shop
         foreign_service = _service("Ajeno")
     with tenant_context(shop.pk):
         owner = member(Role.OWNER, shop)
+        barber = _create(owner)
         with pytest.raises(ValidationError):
-            _create(owner, branch=foreign_branch.public_id)
-        barber = _create(owner, branch=Branch.objects.create(name="Centro").public_id)
-        assert barber.branch.name == "Centro"
+            tenancy.set_barber_branches(owner, barber.public_id, branches=[foreign_branch.public_id])
+        assert [link.branch.name for link in barber.branch_links.all()] == ["Sede principal"]
         with pytest.raises(ValidationError):
             services.set_commission(
                 owner, barber.public_id, commission_type=FIXED, value=Decimal("1"), service=foreign_service.public_id

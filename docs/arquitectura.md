@@ -64,4 +64,5 @@ Especificación, diagnóstico y conflictos por decidir en [sedes.md](sedes.md). 
 | Usuario de base de datos de la app sin BYPASSRLS ni dueño de las tablas, con prueba | 4 | Pendiente |
 | HSTS de 1 día a 1 año | 4 | Pendiente |
 | Correr la suite completa con un rol sin privilegios, igual al de producción | 4 | Pendiente |
+| Rol de base de datos para migraciones en producción (las migraciones de datos recorren cada barbería con each_barbershop) | 4 | Pendiente |
 | Ficha de Google Business de ScrumTech | Fuera del código | Pendiente |

@@ -9,6 +9,7 @@ from apps.alerts.models import Alert
 from apps.clients import services as clients
 from apps.inventory import services as inventory
 from apps.receivables import services as receivables
+from apps.tenancy.models import Branch
 
 TODAY = timezone.localdate()
 
@@ -21,8 +22,13 @@ def make_overdue_debt(owner, name="Laura"):
     client = clients.create_client(
         owner, {"full_name": name}, data_consent_at=timezone.now(), data_policy_version="2026-10"
     )
+    main_branch = Branch.objects.order_by("pk").first()  # la Sede principal
     return receivables.create_manual(
-        owner, client.public_id, total=Decimal("30000"), due_date=TODAY - timedelta(days=1)
+        owner,
+        client.public_id,
+        total=Decimal("30000"),
+        branch=main_branch.public_id,
+        due_date=TODAY - timedelta(days=1),
     )
 
 

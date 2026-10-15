@@ -81,7 +81,9 @@ def world(member, in_shop):
     cashier = member(Role.CASHIER, in_shop)
     ana_login = member(Role.BARBER, in_shop, email="ana@a.test")
     beto_login = member(Role.BARBER, in_shop, email="beto@a.test")
-    branch = Branch.objects.create(name="Centro")
+    branch = Branch.objects.get()  # la Sede principal de toda barbería nueva
+    branch.name = "Centro"
+    branch.save(update_fields=["name", "updated_at"])
 
     ana = staff.create_barber(
         owner,

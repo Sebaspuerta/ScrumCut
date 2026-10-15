@@ -45,6 +45,7 @@ def _audit(actor: Membership, action: str, *, order: Order, before: dict | None,
         entity_id=str(order.public_id),
         actor=actor.user,
         barbershop=actor.barbershop,
+        branch=order.branch,
         before=before,
         after=after,
     )

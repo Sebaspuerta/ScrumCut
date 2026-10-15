@@ -100,7 +100,11 @@ def test_el_ticket_se_compara_con_el_periodo_anterior_del_mismo_largo(world):
 def test_fiados_pendientes_con_vencidos_y_clientes(world):
     w = world
     receivables.create_manual(
-        w.cashier, w.laura.public_id, total=D("30000"), due_date=timezone.localdate() - timedelta(1)
+        w.cashier,
+        w.laura.public_id,
+        total=D("30000"),
+        branch=w.branch.public_id,
+        due_date=timezone.localdate() - timedelta(1),
     )
 
     debts = _dashboard(w)["kpis"]["receivables"]

@@ -3,8 +3,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.validators import ArrayMinLengthValidator
-from django.core.validators import MinValueValidator, RegexValidator
-from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.db import models, transaction
 
 from apps.cash.choices import PaymentMethod, all_payment_methods
 from apps.core.models import TenantScopedModel, TimeStampedModel
@@ -12,6 +12,9 @@ from apps.core.tenant_context import tenant_context
 from apps.tenancy.roles import Role
 
 hex_color = RegexValidator(r"^#[0-9A-Fa-f]{6}$", "Usa un color hexadecimal, por ejemplo #B08D57.")
+
+# Decisión 12 de docs/sedes.md: toda barbería nace con esta sede.
+MAIN_BRANCH_NAME = "Sede principal"
 
 
 class Barbershop(TimeStampedModel):
@@ -33,17 +36,21 @@ class Barbershop(TimeStampedModel):
     logo = models.ImageField(upload_to="logos/", blank=True)
     accent_color = models.CharField(max_length=7, default="#B08D57", validators=[hex_color])
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.TRIAL)
+    # Límite del plan (decisión 8 de docs/sedes.md): cuenta solo las sedes activas.
+    max_branches = models.PositiveSmallIntegerField("sedes del plan", default=1, validators=[MinValueValidator(1)])
 
     def __str__(self) -> str:
         return self.trade_name
 
     def save(self, *args, **kwargs) -> None:
         creating = self._state.adding
-        super().save(*args, **kwargs)
-        if creating:
-            # RLS exige fijar la barbería para insertar su configuración.
-            with tenant_context(self.pk):
-                BarbershopSettings.objects.create(barbershop=self)
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if creating:
+                # RLS exige fijar la barbería para insertar su configuración y su primera sede.
+                with tenant_context(self.pk):
+                    BarbershopSettings.objects.create(barbershop=self)
+                    Branch.objects.create(barbershop=self, name=MAIN_BRANCH_NAME)
 
     @property
     def is_operational(self) -> bool:
@@ -96,12 +103,15 @@ class Branch(TenantScopedModel):
 
     name = models.CharField(max_length=120)
     address = models.CharField(max_length=200, blank=True)
+    city = models.CharField("ciudad", max_length=80, blank=True)
     phone = models.CharField(max_length=30, blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["barbershop", "name"], name="uq_branch_name_per_barbershop"),
+            # Destino de las llaves compuestas (barbershop_id, branch_id): ver apps/core/tenant_keys.py.
+            models.UniqueConstraint(fields=["barbershop", "id"], name="uq_branch_barbershop_id"),
         ]
 
     def __str__(self) -> str:
@@ -119,11 +129,70 @@ class Membership(TimeStampedModel):
     barbershop = models.ForeignKey(Barbershop, on_delete=models.PROTECT, related_name="memberships")
     role = models.CharField(max_length=12, choices=Role.choices)
     is_active = models.BooleanField(default=True)
+    # Al iniciar sesión se vuelve a esta sede si sigue siendo válida (docs/sedes.md).
+    last_branch = models.ForeignKey(
+        Branch, null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name="última sede"
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "barbershop"], name="uq_membership_user_barbershop"),
+            # Destino de la llave compuesta de MembershipBranch (apps/core/tenant_keys.py).
+            models.UniqueConstraint(fields=["barbershop", "id"], name="uq_membership_barbershop_id"),
         ]
 
     def __str__(self) -> str:
         return f"{self.user} · {self.barbershop} · {self.get_role_display()}"
+
+
+class Weekday(models.IntegerChoices):
+    MONDAY = 0, "Lunes"
+    TUESDAY = 1, "Martes"
+    WEDNESDAY = 2, "Miércoles"
+    THURSDAY = 3, "Jueves"
+    FRIDAY = 4, "Viernes"
+    SATURDAY = 5, "Sábado"
+    SUNDAY = 6, "Domingo"
+
+
+class BranchHours(TenantScopedModel):
+    """Horario de una sede por día de la semana. Un día cerrado no lleva horas."""
+
+    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="hours")
+    weekday = models.PositiveSmallIntegerField(
+        "día", choices=Weekday.choices, validators=[MaxValueValidator(Weekday.SUNDAY)]
+    )
+    opens_at = models.TimeField("abre", null=True, blank=True)
+    closes_at = models.TimeField("cierra", null=True, blank=True)
+    is_closed = models.BooleanField("cerrado", default=False)
+
+    class Meta:
+        verbose_name = "horario de sede"
+        constraints = [
+            models.UniqueConstraint(fields=["branch", "weekday"], name="uq_branchhours_branch_weekday"),
+            models.CheckConstraint(condition=models.Q(weekday__lte=Weekday.SUNDAY), name="ck_branchhours_weekday"),
+            models.CheckConstraint(
+                condition=models.Q(is_closed=True)
+                | models.Q(opens_at__isnull=False, closes_at__isnull=False, opens_at__lt=models.F("closes_at")),
+                name="ck_branchhours_opens_before_closes",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.branch} · {self.get_weekday_display()}"
+
+
+class MembershipBranch(TenantScopedModel):
+    """Sedes a las que entra un Cajero (decisión 1 de docs/sedes.md). Los demás roles no la usan."""
+
+    membership = models.ForeignKey(Membership, on_delete=models.PROTECT, related_name="branch_access")
+    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="cashier_access")
+
+    class Meta:
+        verbose_name = "acceso de cajero a sede"
+        constraints = [
+            models.UniqueConstraint(fields=["membership", "branch"], name="uq_membershipbranch_membership_branch"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.membership} · {self.branch}"
