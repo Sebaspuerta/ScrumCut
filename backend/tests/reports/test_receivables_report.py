@@ -17,10 +17,10 @@ D = Decimal
 def test_deuda_por_cliente_con_lo_vencido(world):
     w = world
     today = local_today(w.owner)
-    receivables.create_manual(w.cashier, w.laura.public_id, D("30000"), due_date=today - timedelta(days=1))
-    receivables.create_manual(w.cashier, w.laura.public_id, D("10000"), due_date=today + timedelta(days=5))
-    paid = receivables.create_manual(w.cashier, w.laura.public_id, D("5000"))
-    receivables.add_payment(w.cashier, paid.public_id, D("5000"), "efectivo", w.branch.public_id)
+    receivables.create_manual(w.cashier, w.laura.public_id, total=D("30000"), due_date=today - timedelta(days=1))
+    receivables.create_manual(w.cashier, w.laura.public_id, total=D("10000"), due_date=today + timedelta(days=5))
+    paid = receivables.create_manual(w.cashier, w.laura.public_id, total=D("5000"))
+    receivables.add_payment(w.cashier, paid.public_id, amount=D("5000"), method="efectivo", branch=w.branch.public_id)
 
     report = receivables_report(w.owner)
 

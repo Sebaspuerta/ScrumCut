@@ -26,7 +26,7 @@ from apps.tenancy.permissions import ensure_permission
 _CENTS = Decimal("0.01")
 
 
-def _audit(actor: Membership, action: str, receivable: Receivable, *, before: dict | None, after: dict) -> None:
+def _audit(actor: Membership, action: str, *, receivable: Receivable, before: dict | None, after: dict) -> None:
     record(
         action=action,
         entity=receivable._meta.label,
@@ -64,7 +64,7 @@ def _check_credit_limit(client: Client, amount: Decimal) -> None:
         )
 
 
-def _create(client: Client, total: Decimal, actor: Membership, *, order=None, due_date=None, notes="") -> Receivable:
+def _create(client: Client, total: Decimal, *, actor: Membership, order=None, due_date=None, notes="") -> Receivable:
     _check_credit_limit(client, total)
     receivable = Receivable(
         barbershop_id=client.barbershop_id,
@@ -78,17 +78,17 @@ def _create(client: Client, total: Decimal, actor: Membership, *, order=None, du
     )
     receivable.full_clean()
     receivable.save()
-    _audit(actor, "fiado.crear", receivable, before=None, after=_snapshot(receivable))
+    _audit(actor, "fiado.crear", receivable=receivable, before=None, after=_snapshot(receivable))
     return receivable
 
 
-def create_from_order(order, amount: Decimal, actor: Membership, due_date: date | None = None) -> Receivable:
+def create_from_order(order, amount: Decimal, *, actor: Membership, due_date: date | None = None) -> Receivable:
     """Saldo de una comanda cerrada como fiado. La usa sales, que ya validó permisos y cliente."""
-    return _create(order.client, amount, actor, order=order, due_date=due_date)
+    return _create(order.client, amount, actor=actor, order=order, due_date=due_date)
 
 
 def create_manual(
-    membership: Membership, client: UUID | str, total: Decimal, due_date: date | None = None, notes: str = ""
+    membership: Membership, client: UUID | str, *, total: Decimal, due_date: date | None = None, notes: str = ""
 ) -> Receivable:
     """Regla 26: fiado sin comanda, a un cliente vivo y no anonimizado, con total > 0."""
     ensure_permission(membership, "fiados.crear")
@@ -97,11 +97,11 @@ def create_manual(
     except Client.DoesNotExist as exc:
         raise ValidationError({"client": "El cliente no existe."}) from exc
     with transaction.atomic():
-        return _create(target, total, membership, due_date=due_date, notes=notes)
+        return _create(target, total, actor=membership, due_date=due_date, notes=notes)
 
 
 def add_payment(
-    membership: Membership, receivable: UUID | str, amount: Decimal, method: str, branch: UUID | str
+    membership: Membership, receivable: UUID | str, *, amount: Decimal, method: str, branch: UUID | str
 ) -> ReceivablePayment:
     """Regla 27 con el defecto 24 corregido: monto ≤ saldo, solo a fiados vivos, con caja abierta.
 
@@ -151,11 +151,11 @@ def add_payment(
             locked.status = ReceivableStatus.PAID
         locked.full_clean()
         locked.save(update_fields=["balance", "status", "updated_at"])
-        _audit(membership, "fiado.abonar", locked, before=before, after=_snapshot(locked))
+        _audit(membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked))
     return payment
 
 
-def _cancel(locked: Receivable, actor: Membership, reason: str) -> Receivable:
+def _cancel(locked: Receivable, actor: Membership, *, reason: str) -> Receivable:
     if locked.payments.exists():
         raise ValidationError(
             "El fiado ya tiene abonos: primero hay que devolverlos o resolverlos antes de anularlo.",
@@ -167,26 +167,26 @@ def _cancel(locked: Receivable, actor: Membership, reason: str) -> Receivable:
     locked.status = ReceivableStatus.CANCELLED
     locked.balance = Decimal("0")
     locked.save(update_fields=["status", "balance", "updated_at"])
-    _audit(actor, "fiado.anular", locked, before=before, after={**_snapshot(locked), "reason": reason})
+    _audit(actor, "fiado.anular", receivable=locked, before=before, after={**_snapshot(locked), "reason": reason})
     return locked
 
 
-def cancel_receivable(membership: Membership, receivable: UUID | str, reason: str) -> Receivable:
+def cancel_receivable(membership: Membership, receivable: UUID | str, *, reason: str) -> Receivable:
     """Solo sin abonos. Exige motivo."""
     ensure_permission(membership, "fiados.anular")
     reason = (reason or "").strip()
     if not reason:
         raise ValidationError({"reason": "El motivo es obligatorio."})
     with transaction.atomic():
-        return _cancel(Receivable.objects.select_for_update().get(public_id=receivable), membership, reason)
+        return _cancel(Receivable.objects.select_for_update().get(public_id=receivable), membership, reason=reason)
 
 
-def cancel_for_order(order, actor: Membership, reason: str) -> Receivable | None:
+def cancel_for_order(order, actor: Membership, *, reason: str) -> Receivable | None:
     """Anula el fiado de una comanda que se está anulando. La usa sales con `comandas.anular`."""
     locked = Receivable.objects.select_for_update().filter(order=order).first()
     if locked is None or locked.status == ReceivableStatus.CANCELLED:
         return None
-    return _cancel(locked, actor, reason)
+    return _cancel(locked, actor, reason=reason)
 
 
 def mark_overdue(today: date) -> int:

@@ -106,9 +106,9 @@ def test_un_producto_borrado_no_se_usa_pero_su_historial_queda(owner):
     with pytest.raises(Product.DoesNotExist):
         selectors.get_product(owner, product.public_id)
     with pytest.raises(Product.DoesNotExist):
-        services.update_product(owner, product.public_id, {"supplier": "Otro"})
+        services.update_product(owner, product.public_id, data={"supplier": "Otro"})
     with pytest.raises(Product.DoesNotExist):
-        services.register_entry(owner, product.public_id, 1, "Compra")
+        services.register_entry(owner, product.public_id, quantity=1, reason="Compra")
     assert StockMovement.objects.filter(product=product).count() == 1
 
 
@@ -127,8 +127,8 @@ def test_desactivar_y_activar(owner):
 def test_update_product_no_toca_el_stock(owner):
     product = _product(owner, initial_stock=5)
     with pytest.raises(TypeError):
-        services.update_product(owner, product.public_id, {"current_stock": 99})
-    services.update_product(owner, product.public_id, {"sale_price": Decimal("16000")})
+        services.update_product(owner, product.public_id, data={"current_stock": 99})
+    services.update_product(owner, product.public_id, data={"sale_price": Decimal("16000")})
     product.refresh_from_db()
     assert product.current_stock == 5
     assert product.sale_price == Decimal("16000")
@@ -136,7 +136,9 @@ def test_update_product_no_toca_el_stock(owner):
 
 def test_entrada_valida_y_su_movimiento(owner):
     product = _product(owner, initial_stock=2)
-    movement = services.register_entry(owner, product.public_id, 10, "  Compra a proveedor  ", Decimal("7500"))
+    movement = services.register_entry(
+        owner, product.public_id, quantity=10, reason="  Compra a proveedor  ", unit_cost=Decimal("7500")
+    )
 
     product.refresh_from_db()
     assert product.current_stock == 12
@@ -152,18 +154,18 @@ def test_entrada_valida_y_su_movimiento(owner):
 def test_entrada_exige_cantidad_positiva_y_motivo(owner, quantity, reason):
     product = _product(owner)
     with pytest.raises(ValidationError):
-        services.register_entry(owner, product.public_id, quantity, reason)
+        services.register_entry(owner, product.public_id, quantity=quantity, reason=reason)
     assert product.movements.count() == 0
 
 
 def test_ajuste_con_signo_y_nunca_negativo(owner):
     product = _product(owner, initial_stock=4)
-    services.register_adjustment(owner, product.public_id, -3, "Conteo físico")
+    services.register_adjustment(owner, product.public_id, quantity=-3, reason="Conteo físico")
     with pytest.raises(ValidationError) as excinfo:
-        services.register_adjustment(owner, product.public_id, -2, "Conteo físico")
+        services.register_adjustment(owner, product.public_id, quantity=-2, reason="Conteo físico")
     assert excinfo.value.error_list[0].code == "insufficient_stock"
     with pytest.raises(ValidationError):
-        services.register_adjustment(owner, product.public_id, 0, "Nada")
+        services.register_adjustment(owner, product.public_id, quantity=0, reason="Nada")
 
     product.refresh_from_db()
     assert product.current_stock == 1
@@ -229,7 +231,7 @@ def test_dos_salidas_simultaneas_no_venden_la_ultima_unidad_dos_veces(member, sh
 def test_la_foto_se_recorta_a_200_y_se_guarda_por_barberia(owner, settings, tmp_path, fmt):
     settings.MEDIA_ROOT = tmp_path
     product = _product(owner)
-    services.upload_product_photo(owner, product.public_id, _image(fmt, size=(400, 300)))
+    services.upload_product_photo(owner, product.public_id, upload=_image(fmt, size=(400, 300)))
 
     product.refresh_from_db()
     assert product.photo.name == f"barbershops/{owner.barbershop.public_id}/products/{product.public_id}.png"
@@ -240,8 +242,8 @@ def test_la_foto_se_recorta_a_200_y_se_guarda_por_barberia(owner, settings, tmp_
 def test_cambiar_la_foto_reemplaza_el_archivo(owner, settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
     product = _product(owner)
-    services.upload_product_photo(owner, product.public_id, _image("PNG"))
-    services.upload_product_photo(owner, product.public_id, _image("JPEG"))
+    services.upload_product_photo(owner, product.public_id, upload=_image("PNG"))
+    services.upload_product_photo(owner, product.public_id, upload=_image("JPEG"))
     product.refresh_from_db()
     assert product.photo.name.endswith(f"{product.public_id}.png")
     assert len(list(tmp_path.rglob("*.png"))) == 1
@@ -260,14 +262,14 @@ def test_fotos_rechazadas(owner, settings, tmp_path, upload):
     settings.MEDIA_ROOT = tmp_path
     product = _product(owner)
     with pytest.raises(ValidationError):
-        services.upload_product_photo(owner, product.public_id, upload)
+        services.upload_product_photo(owner, product.public_id, upload=upload)
 
 
 def test_un_gif_real_se_rechaza(owner, settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
     product = _product(owner)
     with pytest.raises(ValidationError):
-        services.upload_product_photo(owner, product.public_id, _image("GIF"))
+        services.upload_product_photo(owner, product.public_id, upload=_image("GIF"))
 
 
 # ── Categorías (regla 37) ────────────────────────────────────────────────────
@@ -309,12 +311,12 @@ def test_insumos_crear_editar_quitar(owner):
     service = _service()
     product = _product(owner, name="Cuchilla", product_type="consumible")
 
-    consumable = services.add_consumable(owner, service.public_id, product.public_id, 2)
+    consumable = services.add_consumable(owner, service.public_id, product=product.public_id, quantity=2)
     assert list(selectors.consumables_for(service)) == [consumable]
     with pytest.raises(ValidationError):
-        services.add_consumable(owner, service.public_id, product.public_id, 1)
+        services.add_consumable(owner, service.public_id, product=product.public_id, quantity=1)
 
-    services.update_consumable(owner, consumable.public_id, 3)
+    services.update_consumable(owner, consumable.public_id, quantity=3)
     consumable.refresh_from_db()
     assert consumable.quantity == 3
 
@@ -326,12 +328,14 @@ def test_insumos_crear_editar_quitar(owner):
 def test_insumo_con_cantidad_cero_o_inactivos_se_rechaza(owner):
     product = _product(owner, name="Cuchilla")
     with pytest.raises(ValidationError):
-        services.add_consumable(owner, _service().public_id, product.public_id, 0)
+        services.add_consumable(owner, _service().public_id, product=product.public_id, quantity=0)
     with pytest.raises(ValidationError):
-        services.add_consumable(owner, _service("Barba", is_active=False).public_id, product.public_id, 1)
+        services.add_consumable(
+            owner, _service("Barba", is_active=False).public_id, product=product.public_id, quantity=1
+        )
     services.deactivate_product(owner, product.public_id)
     with pytest.raises(ValidationError):
-        services.add_consumable(owner, _service("Cejas").public_id, product.public_id, 1)
+        services.add_consumable(owner, _service("Cejas").public_id, product=product.public_id, quantity=1)
 
 
 # ── Selectores ───────────────────────────────────────────────────────────────
@@ -368,8 +372,8 @@ def test_filtros_de_la_lista(owner):
 
 def test_el_administrador_gestiona_pero_no_elimina(admin):
     product = _product(admin, initial_stock=1)
-    services.register_entry(admin, product.public_id, 2, "Compra")
-    services.register_adjustment(admin, product.public_id, -1, "Conteo")
+    services.register_entry(admin, product.public_id, quantity=2, reason="Compra")
+    services.register_adjustment(admin, product.public_id, quantity=-1, reason="Conteo")
     category = services.create_category(admin, name="Cuidado")
     with pytest.raises(PermissionDenied):
         services.soft_delete_product(admin, product.public_id)
@@ -384,11 +388,11 @@ def test_los_demas_roles_solo_ven(member, in_shop, owner, role):
     with pytest.raises(PermissionDenied):
         _product(reader, name="Otro")
     with pytest.raises(PermissionDenied):
-        services.register_entry(reader, product.public_id, 1, "Compra")
+        services.register_entry(reader, product.public_id, quantity=1, reason="Compra")
     with pytest.raises(PermissionDenied):
-        services.register_adjustment(reader, product.public_id, -1, "Conteo")
+        services.register_adjustment(reader, product.public_id, quantity=-1, reason="Conteo")
     with pytest.raises(PermissionDenied):
-        services.add_consumable(reader, _service().public_id, product.public_id, 1)
+        services.add_consumable(reader, _service().public_id, product=product.public_id, quantity=1)
     assert list(selectors.list_products(reader)) == [product]
 
 
@@ -402,7 +406,7 @@ def test_cada_barberia_ve_solo_su_inventario(member, shop, other_shop):
         with pytest.raises(Product.DoesNotExist):
             selectors.get_product(theirs, mine.public_id)
         with pytest.raises(Product.DoesNotExist):
-            services.register_adjustment(theirs, mine.public_id, -5, "Robo")
+            services.register_adjustment(theirs, mine.public_id, quantity=-5, reason="Robo")
     with tenant_context(shop.pk):
         mine.refresh_from_db()
         assert mine.current_stock == 5

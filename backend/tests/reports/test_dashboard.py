@@ -33,7 +33,7 @@ def test_el_esperado_del_tablero_coincide_con_el_arqueo_de_una_caja_abierta_ayer
     sales.create_order(w.cashier, w.branch.public_id)  # una comanda abierta
 
     summary = dashboard_summary(w.owner)
-    closed = cash.close_session(w.cashier, w.session.public_id, D("95000"))
+    closed = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("95000"))
 
     assert [session["expected_cash"] for session in summary["open_cash_sessions"]] == [D("95000")]
     assert closed.expected_amount == D("95000")
@@ -44,7 +44,7 @@ def test_el_esperado_del_tablero_coincide_con_el_arqueo_de_una_caja_abierta_ayer
 def test_el_tablero_resta_las_devoluciones_y_suma_los_abonos(world):
     w = world
     returned = sell(w, w.ana, service=w.corte, method="nequi")
-    sales.cancel_order(w.owner, returned.public_id, "Cobro duplicado")
+    sales.cancel_order(w.owner, returned.public_id, reason="Cobro duplicado")
     sell(w, w.beto, service=w.barba)
 
     income = dashboard_summary(w.owner)["income"]

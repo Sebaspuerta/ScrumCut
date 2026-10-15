@@ -50,7 +50,9 @@ CASES = {
     "servicio.crear": lambda w: partial(
         catalog.create_service, w.owner, name="Tinte", price=D("30000"), duration_minutes=40
     ),
-    "barbero.crear": lambda w: partial(staff.create_barber, w.owner, {"display_name": "Caro"}, "percentage", 30),
+    "barbero.crear": lambda w: partial(
+        staff.create_barber, w.owner, {"display_name": "Caro"}, commission_type="percentage", commission_value=30
+    ),
     "cliente.crear": lambda w: partial(
         clients.create_client,
         w.owner,
@@ -59,9 +61,9 @@ CASES = {
         data_policy_version="2026-10",
     ),
     "producto.crear": lambda w: partial(inventory.create_product, w.owner, {"name": "Gel", "product_type": "venta"}),
-    "caja.cerrar": lambda w: partial(cash.close_session, w.cashier, w.session.public_id, D("50000")),
+    "caja.cerrar": lambda w: partial(cash.close_session, w.cashier, w.session.public_id, counted_amount=D("50000")),
     "comanda.crear": lambda w: partial(sales.create_order, w.cashier, w.branch.public_id),
-    "fiado.crear": lambda w: partial(receivables.create_manual, w.cashier, w.laura.public_id, D("1000")),
+    "fiado.crear": lambda w: partial(receivables.create_manual, w.cashier, w.laura.public_id, total=D("1000")),
     "alertas.generar": _alerts_to_generate,
     "alerta.marcar_leida": _alert_to_read,
     "sesion.cerrar_todas": lambda w: partial(logout_all_devices, w.ana_login.user),

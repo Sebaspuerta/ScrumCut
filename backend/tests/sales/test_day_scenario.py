@@ -34,12 +34,15 @@ def test_un_dia_de_barberia(world):
     services.add_item(w.cashier, order.public_id, service=w.corte.public_id)
     services.add_item(w.cashier, order.public_id, service=w.barba.public_id, barber=w.beto.public_id)
     services.add_item(w.cashier, order.public_id, product=w.cera.public_id)
-    services.set_discount(w.cashier, order.public_id, D("5000"), "Cliente frecuente")
+    services.set_discount(w.cashier, order.public_id, amount=D("5000"), reason="Cliente frecuente")
 
     closed = services.close_order(
         w.cashier,
         order.public_id,
-        [{"method": "efectivo", "amount": "30000"}, {"method": "nequi", "amount": "25000", "reference": "NQ-123"}],
+        payments=[
+            {"method": "efectivo", "amount": "30000"},
+            {"method": "nequi", "amount": "25000", "reference": "NQ-123"},
+        ],
     )
 
     # Comanda
@@ -86,12 +89,12 @@ def test_un_dia_de_barberia(world):
     assert summary["expected_cash"] == D("80000")
     assert summary["by_method"]["nequi"]["in"] == D("25000")
     assert summary["by_kind"]["venta"] == D("55000")
-    session = cash.close_session(w.cashier, w.session.public_id, D("80000"))
+    session = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("80000"))
     assert (session.expected_amount, session.difference) == (D("80000"), D("0"))
 
     # Cambiar la comisión de Ana después no reescribe el día (defecto 1)
     before = selectors.barber_performance(w.owner, w.ana.public_id)
-    staff.set_commission(w.owner, w.ana.public_id, "percentage", D("60"))
+    staff.set_commission(w.owner, w.ana.public_id, commission_type="percentage", value=D("60"))
     after = selectors.barber_performance(w.owner, w.ana.public_id)
     assert before["commission_total"] == after["commission_total"] == D("9166.66")
     assert after["sales_total"] == D("22916.66")

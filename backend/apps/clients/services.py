@@ -38,7 +38,7 @@ class ClientData(TypedDict, total=False):
     document: str
 
 
-def _audit(actor: Membership, action: str, client: Client, *, before: dict | None, after: dict | None) -> None:
+def _audit(actor: Membership, action: str, *, client: Client, before: dict | None, after: dict | None) -> None:
     record(
         action=action,
         entity=client._meta.label,
@@ -168,11 +168,11 @@ def create_client(
                 params={"possible_duplicates": [str(other.public_id) for other in similar]},
             )
         _save_validated(client)
-        _audit(membership, "cliente.crear", client, before=None, after=_snapshot(client))
+        _audit(membership, "cliente.crear", client=client, before=None, after=_snapshot(client))
     return client
 
 
-def update_client(membership: Membership, public_id: UUID | str, data: ClientData) -> Client:
+def update_client(membership: Membership, public_id: UUID | str, *, data: ClientData) -> Client:
     """Solo cambia las claves presentes en `data`. `document=""` quita el documento."""
     ensure_permission(membership, "clientes.editar")
     with transaction.atomic():
@@ -188,7 +188,7 @@ def update_client(membership: Membership, public_id: UUID | str, data: ClientDat
         if document_changed:
             after["document_changed"] = True
         if after != before:
-            _audit(membership, "cliente.editar", client, before=before, after=after)
+            _audit(membership, "cliente.editar", client=client, before=before, after=after)
     return client
 
 
@@ -198,7 +198,7 @@ def soft_delete_client(membership: Membership, public_id: UUID | str) -> Client:
         client = Client.objects.select_for_update().get(public_id=public_id, deleted_at__isnull=True)
         before = _snapshot(client)
         client.soft_delete(by=membership.user)
-        _audit(membership, "cliente.eliminar", client, before=before, after=_snapshot(client))
+        _audit(membership, "cliente.eliminar", client=client, before=before, after=_snapshot(client))
     return client
 
 
@@ -226,7 +226,7 @@ def anonymize_client(membership: Membership, public_id: UUID | str) -> Client:
         _audit(
             membership,
             "cliente.anonimizar",
-            client,
+            client=client,
             before={"anonymized_at": None},
             after={"anonymized_at": client.anonymized_at.isoformat()},
         )

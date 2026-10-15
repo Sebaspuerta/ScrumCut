@@ -38,7 +38,7 @@ def _save_validated(obj, duplicate_message: str) -> None:
         raise ValidationError(duplicate_message) from exc
 
 
-def _audit(membership: Membership, action: str, obj, *, before: dict | None, after: dict | None) -> None:
+def _audit(membership: Membership, action: str, *, obj, before: dict | None, after: dict | None) -> None:
     record(
         action=action,
         entity=obj._meta.label,
@@ -111,7 +111,7 @@ def create_service(
             description=description.strip(),
         )
         _save_validated(service, DUPLICATE_SERVICE)
-        _audit(membership, "servicio.crear", service, before=None, after=_service_snapshot(service))
+        _audit(membership, "servicio.crear", obj=service, before=None, after=_service_snapshot(service))
     return service
 
 
@@ -143,7 +143,7 @@ def update_service(
         _save_validated(service, DUPLICATE_SERVICE)
         after = _service_snapshot(service)
         if after != before:
-            _audit(membership, "servicio.editar", service, before=before, after=after)
+            _audit(membership, "servicio.editar", obj=service, before=before, after=after)
     return service
 
 
@@ -157,7 +157,7 @@ def _set_service_active(membership: Membership, public_id: UUID | str, *, active
         service.is_active = active
         service.save(update_fields=["is_active", "updated_at"])
         action = "servicio.activar" if active else "servicio.desactivar"
-        _audit(membership, action, service, before=before, after=_service_snapshot(service))
+        _audit(membership, action, obj=service, before=before, after=_service_snapshot(service))
     return service
 
 
@@ -177,7 +177,7 @@ def soft_delete_service(membership: Membership, public_id: UUID | str) -> Servic
         service = _live_service_for_update(public_id)
         before = _service_snapshot(service)
         service.soft_delete(by=membership.user)
-        _audit(membership, "servicio.eliminar", service, before=before, after=_service_snapshot(service))
+        _audit(membership, "servicio.eliminar", obj=service, before=before, after=_service_snapshot(service))
     return service
 
 
@@ -189,7 +189,7 @@ def create_category(membership: Membership, *, name: str) -> ServiceCategory:
     with transaction.atomic():
         category = ServiceCategory(barbershop_id=membership.barbershop_id, name=name.strip())
         _save_validated(category, DUPLICATE_CATEGORY)
-        _audit(membership, "categoria_servicio.crear", category, before=None, after=_category_snapshot(category))
+        _audit(membership, "categoria_servicio.crear", obj=category, before=None, after=_category_snapshot(category))
     return category
 
 
@@ -202,7 +202,7 @@ def update_category(membership: Membership, public_id: UUID | str, *, name: str)
         _save_validated(category, DUPLICATE_CATEGORY)
         after = _category_snapshot(category)
         if after != before:
-            _audit(membership, "categoria_servicio.editar", category, before=before, after=after)
+            _audit(membership, "categoria_servicio.editar", obj=category, before=before, after=after)
     return category
 
 
@@ -217,5 +217,5 @@ def soft_delete_category(membership: Membership, public_id: UUID | str) -> Servi
         live_services.update(category=None, updated_at=timezone.now())
         category.soft_delete(by=membership.user)
         after = {**_category_snapshot(category), "detached_services": detached}
-        _audit(membership, "categoria_servicio.eliminar", category, before=before, after=after)
+        _audit(membership, "categoria_servicio.eliminar", obj=category, before=before, after=after)
     return category

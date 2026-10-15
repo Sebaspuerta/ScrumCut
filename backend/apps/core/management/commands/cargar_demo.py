@@ -85,7 +85,7 @@ def _build_catalog(shop: Barbershop, password: str, today: date) -> SimpleNamesp
     owner = _owner(shop, password)
     branch = Branch.objects.create(name="Principal")
     barbers = [
-        staff.create_barber(owner, {"display_name": name}, "percentage", rate)
+        staff.create_barber(owner, {"display_name": name}, commission_type="percentage", commission_value=rate)
         for name, rate in (("Julián R.", 40), ("Camilo O.", 40), ("Santiago P.", 35))
     ]
     services = [
@@ -95,7 +95,7 @@ def _build_catalog(shop: Barbershop, password: str, today: date) -> SimpleNamesp
     blade = inventory.create_product(
         owner, {"name": "Cuchilla", "product_type": "consumible", "purchase_cost": D("1000")}, initial_stock=900
     )
-    inventory.add_consumable(owner, services[0].public_id, blade.public_id, 1)
+    inventory.add_consumable(owner, services[0].public_id, product=blade.public_id, quantity=1)
     products = [
         _product(owner, "Cera mate", "11000", "25000", 400),
         _product(owner, "Aceite para barba", "18000", "35000", 40, minimum_stock=30),
@@ -114,8 +114,8 @@ def _sell(world: SimpleNamespace, rng: random.Random) -> None:
     sales.quick_register(
         world.owner,
         world.branch.public_id,
-        rng.choice(world.barbers).public_id,
-        rng.choice(METHODS),
+        barber=rng.choice(world.barbers).public_id,
+        method=rng.choice(METHODS),
         service=None if item else rng.choice(world.services).public_id,
         **item,
     )
@@ -123,7 +123,7 @@ def _sell(world: SimpleNamespace, rng: random.Random) -> None:
 
 def _open_day(world: SimpleNamespace, day: date) -> CashSession:
     with at(_moment(day, OPENING_HOUR)):
-        session = cash.open_session(world.owner, world.branch.public_id, D("200000"))
+        session = cash.open_session(world.owner, world.branch.public_id, opening_amount=D("200000"))
     # La base se registra con la hora real de la apertura simulada.
     CashSession.objects.filter(pk=session.pk).update(opened_at=_moment(day, OPENING_HOUR))
     return session
@@ -157,7 +157,7 @@ def _close_day(world: SimpleNamespace, session: CashSession, day: date, rng: ran
             description="Aseo",
         )
         counted = expected_cash(session) + D(rng.choice((0, 0, 0, -2000, 5000)))
-        cash.close_session(world.owner, session.public_id, counted)
+        cash.close_session(world.owner, session.public_id, counted_amount=counted)
 
 
 def _build_history(world: SimpleNamespace, days: int, rng: random.Random) -> None:
@@ -186,4 +186,4 @@ def _overdue_debt(owner: Membership, today: date) -> None:
     client = clients.create_client(
         owner, {"full_name": "Cliente de ejemplo"}, data_consent_at=timezone.now(), data_policy_version="demo"
     )
-    receivables.create_manual(owner, client.public_id, D("180000"), due_date=today - timedelta(days=7))
+    receivables.create_manual(owner, client.public_id, total=D("180000"), due_date=today - timedelta(days=7))

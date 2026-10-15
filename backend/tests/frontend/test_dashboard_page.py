@@ -89,9 +89,11 @@ def _sales_in_export(client, branch) -> list:
 
 def test_exportar_una_sede_no_incluye_las_ventas_de_otra(world, owner_client):
     norte = Branch.objects.create(name="Norte")
-    cash.open_session(world.cashier, norte.public_id, Decimal("0"))
+    cash.open_session(world.cashier, norte.public_id, opening_amount=Decimal("0"))
     sell(world, world.ana, service=world.corte)  # en Centro
-    sales.quick_register(world.cashier, norte.public_id, world.beto.public_id, "efectivo", product=world.cera.public_id)
+    sales.quick_register(
+        world.cashier, norte.public_id, barber=world.beto.public_id, method="efectivo", product=world.cera.public_id
+    )
 
     assert _sales_in_export(owner_client, world.branch) == ["Corte"]
     assert _sales_in_export(owner_client, norte) == ["Cera"]

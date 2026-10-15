@@ -20,7 +20,9 @@ FIXED = CommissionType.FIXED
 
 
 def _create(actor, name="Ana", commission_type=PCT, value=Decimal("40"), **data) -> Barber:
-    return services.create_barber(actor, {"display_name": name, **data}, commission_type, value)
+    return services.create_barber(
+        actor, {"display_name": name, **data}, commission_type=commission_type, commission_value=value
+    )
 
 
 def _service(name="Corte") -> Service:
@@ -76,13 +78,13 @@ def test_una_membresia_no_se_vincula_a_dos_barberos(owner, member, in_shop):
     with pytest.raises(ValidationError):
         _create(owner, name="Caro", membership=login.public_id)
     with pytest.raises(ValidationError):
-        services.update_barber(owner, other.public_id, {"membership": login.public_id})
+        services.update_barber(owner, other.public_id, data={"membership": login.public_id})
 
 
 def test_desvincular_libera_la_membresia(owner, member, in_shop):
     login = member(Role.BARBER, in_shop)
     ana = _create(owner, name="Ana", membership=login.public_id)
-    services.update_barber(owner, ana.public_id, {"membership": None})
+    services.update_barber(owner, ana.public_id, data={"membership": None})
     assert _create(owner, name="Beto", membership=login.public_id).membership == login
 
 
@@ -143,7 +145,7 @@ def test_el_dueno_borra_un_barbero_y_desaparece(owner):
     with pytest.raises(Barber.DoesNotExist):
         selectors.get_barber(owner, barber.public_id)
     with pytest.raises(Barber.DoesNotExist):
-        services.update_barber(owner, barber.public_id, {"phone": "1"})
+        services.update_barber(owner, barber.public_id, data={"phone": "1"})
     assert AuditLog.objects.get(action="barbero.eliminar").after["deleted_at"] is not None
 
 
@@ -166,7 +168,7 @@ def test_cambiar_la_comision_no_altera_lo_resuelto_para_una_fecha_pasada(owner):
     before_change = timezone.now()
     starts = before_change + timedelta(days=1)
 
-    services.set_commission(owner, barber.public_id, PCT, Decimal("50"), valid_from=starts)
+    services.set_commission(owner, barber.public_id, commission_type=PCT, value=Decimal("50"), valid_from=starts)
 
     assert selectors.resolve_commission(barber, None, before_change) == (PCT, Decimal("40.00"))
     assert selectors.resolve_commission(barber, None, starts + timedelta(hours=1)) == (PCT, Decimal("50.00"))
@@ -175,7 +177,7 @@ def test_cambiar_la_comision_no_altera_lo_resuelto_para_una_fecha_pasada(owner):
 
 def test_sin_fecha_la_regla_nueva_vale_desde_ahora(owner):
     barber = _create(owner)
-    rule = services.set_commission(owner, barber.public_id, FIXED, Decimal("5000"))
+    rule = services.set_commission(owner, barber.public_id, commission_type=FIXED, value=Decimal("5000"))
     assert rule.valid_from <= timezone.now()
     assert selectors.resolve_commission(barber, None, timezone.now()) == (FIXED, Decimal("5000.00"))
     assert AuditLog.objects.get(action="comision.crear").after["value"] == "5000.00"
@@ -189,13 +191,17 @@ def test_sin_fecha_la_regla_nueva_vale_desde_ahora(owner):
 def test_no_se_aceptan_vigencias_pasadas_ni_sin_zona(owner, valid_from):
     barber = _create(owner)
     with pytest.raises(ValidationError):
-        services.set_commission(owner, barber.public_id, PCT, Decimal("10"), valid_from=valid_from)
+        services.set_commission(
+            owner, barber.public_id, commission_type=PCT, value=Decimal("10"), valid_from=valid_from
+        )
 
 
 def test_la_regla_del_servicio_gana_sobre_la_general(owner):
     barber = _create(owner, value=Decimal("40"))
     corte, barba = _service("Corte"), _service("Barba")
-    services.set_commission(owner, barber.public_id, FIXED, Decimal("8000"), service=corte.public_id)
+    services.set_commission(
+        owner, barber.public_id, commission_type=FIXED, value=Decimal("8000"), service=corte.public_id
+    )
     now = timezone.now()
 
     assert selectors.resolve_commission(barber, corte, now) == (FIXED, Decimal("8000.00"))
@@ -215,10 +221,10 @@ def test_sin_reglas_la_comision_es_cero(in_shop):
 def test_limites_del_valor_de_comision(owner, commission_type, value, valid):
     barber = _create(owner)
     if valid:
-        services.set_commission(owner, barber.public_id, commission_type, value)
+        services.set_commission(owner, barber.public_id, commission_type=commission_type, value=value)
     else:
         with pytest.raises(ValidationError):
-            services.set_commission(owner, barber.public_id, commission_type, value)
+            services.set_commission(owner, barber.public_id, commission_type=commission_type, value=value)
 
 
 def test_una_regla_de_comision_no_se_edita_ni_se_borra(owner):
@@ -241,9 +247,9 @@ def test_una_regla_de_comision_no_se_edita_ni_se_borra(owner):
 
 def test_el_administrador_gestiona_pero_no_elimina(admin):
     barber = _create(admin)
-    services.update_barber(admin, barber.public_id, {"alias": "La rápida"})
+    services.update_barber(admin, barber.public_id, data={"alias": "La rápida"})
     services.deactivate_barber(admin, barber.public_id)
-    services.set_commission(admin, barber.public_id, PCT, Decimal("45"))
+    services.set_commission(admin, barber.public_id, commission_type=PCT, value=Decimal("45"))
     with pytest.raises(PermissionDenied):
         services.soft_delete_barber(admin, barber.public_id)
 
@@ -255,9 +261,9 @@ def test_los_demas_roles_no_escriben(member, in_shop, owner, role):
     with pytest.raises(PermissionDenied):
         _create(actor, name="Otro")
     with pytest.raises(PermissionDenied):
-        services.update_barber(actor, barber.public_id, {"phone": "1"})
+        services.update_barber(actor, barber.public_id, data={"phone": "1"})
     with pytest.raises(PermissionDenied):
-        services.set_commission(actor, barber.public_id, PCT, Decimal("99"))
+        services.set_commission(actor, barber.public_id, commission_type=PCT, value=Decimal("99"))
     with pytest.raises(PermissionDenied):
         services.soft_delete_barber(actor, barber.public_id)
 
@@ -323,7 +329,7 @@ def test_cada_barberia_ve_solo_su_personal(member, shop, other_shop):
         with pytest.raises(Barber.DoesNotExist):
             selectors.get_barber(theirs, mine.public_id)
         with pytest.raises(Barber.DoesNotExist):
-            services.set_commission(theirs, mine.public_id, PCT, Decimal("99"))
+            services.set_commission(theirs, mine.public_id, commission_type=PCT, value=Decimal("99"))
         # Fuera de su barbería, las reglas de Ana no son visibles: falla cerrado.
         assert selectors.resolve_commission(mine, None, timezone.now()) == (PCT, Decimal("0"))
 
@@ -339,4 +345,6 @@ def test_no_se_usan_sedes_ni_servicios_de_otra_barberia(member, shop, other_shop
         barber = _create(owner, branch=Branch.objects.create(name="Centro").public_id)
         assert barber.branch.name == "Centro"
         with pytest.raises(ValidationError):
-            services.set_commission(owner, barber.public_id, FIXED, Decimal("1"), service=foreign_service.public_id)
+            services.set_commission(
+                owner, barber.public_id, commission_type=FIXED, value=Decimal("1"), service=foreign_service.public_id
+            )

@@ -20,7 +20,7 @@ def test_cierres_con_esperado_contado_y_diferencia_guardados(world):
     cash.register_manual_movement(
         w.cashier, w.session.public_id, kind="gasto", amount=D("5000"), payment_method="efectivo", description="Aseo"
     )
-    cash.close_session(w.cashier, w.session.public_id, D("69000"))
+    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("69000"))
 
     [closing] = cash_closings(w.owner)
 

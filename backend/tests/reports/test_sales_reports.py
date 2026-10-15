@@ -55,8 +55,8 @@ def test_cambiar_comision_y_costo_despues_de_cerrar_no_cambia_los_reportes(world
     sell(w, w.ana, product=w.cera)
     before = (sales.sales_by_barber(w.owner), sales.top_products(w.owner), income.income_statement(w.owner))
 
-    staff.set_commission(w.owner, w.ana.public_id, "percentage", 10)
-    inventory.update_product(w.owner, w.cera.public_id, {"purchase_cost": D("1")})
+    staff.set_commission(w.owner, w.ana.public_id, commission_type="percentage", value=10)
+    inventory.update_product(w.owner, w.cera.public_id, data={"purchase_cost": D("1")})
 
     after = (sales.sales_by_barber(w.owner), sales.top_products(w.owner), income.income_statement(w.owner))
     assert after == before

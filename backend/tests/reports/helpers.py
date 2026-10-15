@@ -14,8 +14,8 @@ def sell(w, barber, *, service=None, product=None, quantity=1, method="efectivo"
     return sales.quick_register(
         w.cashier,
         w.branch.public_id,
-        barber.public_id,
-        method,
+        barber=barber.public_id,
+        method=method,
         service=service and service.public_id,
         product=product and product.public_id,
         quantity=quantity,

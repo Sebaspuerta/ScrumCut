@@ -23,11 +23,11 @@ D = Decimal
 
 
 def _debt(w, total="30000", **kwargs):
-    return services.create_manual(w.cashier, w.laura.public_id, D(total), **kwargs)
+    return services.create_manual(w.cashier, w.laura.public_id, total=D(total), **kwargs)
 
 
 def _pay(w, debt, amount, method="efectivo"):
-    return services.add_payment(w.cashier, debt.public_id, D(amount), method, w.branch.public_id)
+    return services.add_payment(w.cashier, debt.public_id, amount=D(amount), method=method, branch=w.branch.public_id)
 
 
 def _code(excinfo) -> str:
@@ -80,9 +80,9 @@ def test_abonos_rechazados(world, case):
     elif case == "pagado":
         _pay(world, debt, "30000")
     elif case == "anulado":
-        services.cancel_receivable(world.owner, debt.public_id, "Error de digitación")
+        services.cancel_receivable(world.owner, debt.public_id, reason="Error de digitación")
     elif case == "sin_caja":
-        cash.close_session(world.cashier, world.session.public_id, D("50000"))
+        cash.close_session(world.cashier, world.session.public_id, counted_amount=D("50000"))
     elif case == "metodo_apagado":
         settings = BarbershopSettings.objects.get()
         settings.enabled_payment_methods = ["nequi"]
@@ -99,17 +99,17 @@ def test_abonos_rechazados(world, case):
 def test_anular_un_fiado_exige_permiso_y_que_no_tenga_abonos(world):
     debt = _debt(world)
     with pytest.raises(PermissionDenied):
-        services.cancel_receivable(world.cashier, debt.public_id, "Error")
+        services.cancel_receivable(world.cashier, debt.public_id, reason="Error")
     with pytest.raises(ValidationError):
-        services.cancel_receivable(world.owner, debt.public_id, "  ")
+        services.cancel_receivable(world.owner, debt.public_id, reason="  ")
 
     paid = _debt(world, total="5000")
     _pay(world, paid, "1000")
     with pytest.raises(ValidationError) as excinfo:
-        services.cancel_receivable(world.owner, paid.public_id, "Error")
+        services.cancel_receivable(world.owner, paid.public_id, reason="Error")
     assert _code(excinfo) == "has_payments"
 
-    cancelled = services.cancel_receivable(world.owner, debt.public_id, "Error de digitación")
+    cancelled = services.cancel_receivable(world.owner, debt.public_id, reason="Error de digitación")
     assert (cancelled.status, cancelled.balance) == (ReceivableStatus.CANCELLED, D("0"))
 
 
@@ -159,7 +159,7 @@ def test_lista_y_permisos_de_lectura(world, member):
     viewer = member(Role.VIEWER, world.shop)
     assert selectors.get_receivable(viewer, debt.public_id) == debt
     with pytest.raises(PermissionDenied):
-        services.create_manual(viewer, world.laura.public_id, D("1000"))
+        services.create_manual(viewer, world.laura.public_id, total=D("1000"))
 
 
 def test_otra_barberia_no_ve_ni_abona_fiados_ajenos(world, member, other_shop):

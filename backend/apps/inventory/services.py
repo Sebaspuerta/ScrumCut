@@ -49,7 +49,7 @@ class ProductData(TypedDict, total=False):
     supplier: str
 
 
-def _audit(actor: Membership, action: str, obj, *, before: dict | None, after: dict | None) -> None:
+def _audit(actor: Membership, action: str, *, obj, before: dict | None, after: dict | None) -> None:
     record(
         action=action,
         entity=obj._meta.label,
@@ -194,7 +194,7 @@ def apply_stock_movement(
 
 
 def register_entry(
-    membership: Membership, product: UUID | str, quantity: int, reason: str, unit_cost: Decimal | None = None
+    membership: Membership, product: UUID | str, *, quantity: int, reason: str, unit_cost: Decimal | None = None
 ) -> StockMovement:
     """Regla 33: entrada con cantidad > 0 y motivo."""
     ensure_permission(membership, "inventario.ajustar")
@@ -207,7 +207,7 @@ def register_entry(
         )
 
 
-def register_adjustment(membership: Membership, product: UUID | str, quantity: int, reason: str) -> StockMovement:
+def register_adjustment(membership: Membership, product: UUID | str, *, quantity: int, reason: str) -> StockMovement:
     """Regla 34: ajuste con signo y motivo; nunca deja el stock negativo."""
     ensure_permission(membership, "inventario.ajustar")
     with transaction.atomic():
@@ -220,7 +220,7 @@ def register_adjustment(membership: Membership, product: UUID | str, quantity: i
 # ── Productos ────────────────────────────────────────────────────────────────
 
 
-def create_product(membership: Membership, data: ProductData, initial_stock: int = 0) -> Product:
+def create_product(membership: Membership, data: ProductData, *, initial_stock: int = 0) -> Product:
     """El stock inicial, si lo hay, entra como un movimiento "Inventario inicial"."""
     ensure_permission(membership, "inventario.crear")
     if initial_stock < 0:
@@ -229,7 +229,7 @@ def create_product(membership: Membership, data: ProductData, initial_stock: int
         product = Product(barbershop_id=membership.barbershop_id)
         _apply(product, data)
         _save_validated(product, "Ya existe un producto con ese nombre.")
-        _audit(membership, "producto.crear", product, before=None, after=_product_snapshot(product))
+        _audit(membership, "producto.crear", obj=product, before=None, after=_product_snapshot(product))
         if initial_stock:
             apply_stock_movement(
                 product,
@@ -241,7 +241,7 @@ def create_product(membership: Membership, data: ProductData, initial_stock: int
     return product
 
 
-def update_product(membership: Membership, public_id: UUID | str, data: ProductData) -> Product:
+def update_product(membership: Membership, public_id: UUID | str, *, data: ProductData) -> Product:
     """Defecto 15: `current_stock` no se acepta aquí (TypeError); usa entradas o ajustes."""
     ensure_permission(membership, "inventario.editar")
     with transaction.atomic():
@@ -251,7 +251,7 @@ def update_product(membership: Membership, public_id: UUID | str, data: ProductD
         _save_validated(product, "Ya existe un producto con ese nombre.")
         after = _product_snapshot(product)
         if after != before:
-            _audit(membership, "producto.editar", product, before=before, after=after)
+            _audit(membership, "producto.editar", obj=product, before=before, after=after)
     return product
 
 
@@ -265,7 +265,7 @@ def _set_product_active(membership: Membership, public_id: UUID | str, *, active
         product.is_active = active
         product.save(update_fields=["is_active", "updated_at"])
         action = "producto.activar" if active else "producto.desactivar"
-        _audit(membership, action, product, before=before, after=_product_snapshot(product))
+        _audit(membership, action, obj=product, before=before, after=_product_snapshot(product))
     return product
 
 
@@ -280,7 +280,7 @@ def activate_product(membership: Membership, public_id: UUID | str) -> Product:
 def _soft_delete_locked_product(membership: Membership, product: Product) -> None:
     before = _product_snapshot(product)
     product.soft_delete(by=membership.user)
-    _audit(membership, "producto.eliminar", product, before=before, after=_product_snapshot(product))
+    _audit(membership, "producto.eliminar", obj=product, before=before, after=_product_snapshot(product))
 
 
 def soft_delete_product(membership: Membership, public_id: UUID | str) -> Product:
@@ -292,7 +292,7 @@ def soft_delete_product(membership: Membership, public_id: UUID | str) -> Produc
     return product
 
 
-def upload_product_photo(membership: Membership, public_id: UUID | str, upload) -> Product:
+def upload_product_photo(membership: Membership, public_id: UUID | str, *, upload) -> Product:
     """Regla 36: el formato se decide con Pillow sobre el contenido, nunca por la extensión.
 
     `upload` es un archivo (por ejemplo `UploadedFile`). Se guarda recortado al
@@ -332,7 +332,7 @@ def upload_product_photo(membership: Membership, public_id: UUID | str, upload) 
             product.photo.delete(save=False)
         product.photo.save("foto.png", ContentFile(buffer.getvalue()), save=False)
         product.save(update_fields=["photo", "updated_at"])
-        _audit(membership, "producto.foto", product, before=before, after=_product_snapshot(product))
+        _audit(membership, "producto.foto", obj=product, before=before, after=_product_snapshot(product))
     return product
 
 
@@ -344,7 +344,7 @@ def create_category(membership: Membership, *, name: str) -> ProductCategory:
     with transaction.atomic():
         category = ProductCategory(barbershop_id=membership.barbershop_id, name=(name or "").strip())
         _save_validated(category, "Ya existe una categoría con ese nombre.")
-        _audit(membership, "categoria_producto.crear", category, before=None, after=_category_snapshot(category))
+        _audit(membership, "categoria_producto.crear", obj=category, before=None, after=_category_snapshot(category))
     return category
 
 
@@ -357,7 +357,7 @@ def update_category(membership: Membership, public_id: UUID | str, *, name: str)
         _save_validated(category, "Ya existe una categoría con ese nombre.")
         after = _category_snapshot(category)
         if after != before:
-            _audit(membership, "categoria_producto.editar", category, before=before, after=after)
+            _audit(membership, "categoria_producto.editar", obj=category, before=before, after=after)
     return category
 
 
@@ -381,7 +381,7 @@ def soft_delete_category(membership: Membership, public_id: UUID | str, *, delet
         category.soft_delete(by=membership.user)
         key = "deleted_products" if delete_products else "uncategorized_products"
         after = {**_category_snapshot(category), key: affected}
-        _audit(membership, "categoria_producto.eliminar", category, before=before, after=after)
+        _audit(membership, "categoria_producto.eliminar", obj=category, before=before, after=after)
     return category
 
 
@@ -389,7 +389,7 @@ def soft_delete_category(membership: Membership, public_id: UUID | str, *, delet
 
 
 def add_consumable(
-    membership: Membership, service: UUID | str, product: UUID | str, quantity: int
+    membership: Membership, service: UUID | str, *, product: UUID | str, quantity: int
 ) -> ServiceConsumable:
     """Servicio y producto activos y vivos; un solo registro por par; cantidad > 0."""
     ensure_permission(membership, "servicios.editar")
@@ -406,11 +406,11 @@ def add_consumable(
             barbershop_id=membership.barbershop_id, service=target_service, product=target_product, quantity=quantity
         )
         _save_validated(consumable, "Ese producto ya es insumo del servicio.")
-        _audit(membership, "insumo.crear", consumable, before=None, after=_consumable_snapshot(consumable))
+        _audit(membership, "insumo.crear", obj=consumable, before=None, after=_consumable_snapshot(consumable))
     return consumable
 
 
-def update_consumable(membership: Membership, public_id: UUID | str, quantity: int) -> ServiceConsumable:
+def update_consumable(membership: Membership, public_id: UUID | str, *, quantity: int) -> ServiceConsumable:
     ensure_permission(membership, "servicios.editar")
     with transaction.atomic():
         consumable = ServiceConsumable.objects.select_for_update().get(public_id=public_id)
@@ -418,7 +418,7 @@ def update_consumable(membership: Membership, public_id: UUID | str, quantity: i
         consumable.quantity = quantity
         consumable.full_clean()
         consumable.save(update_fields=["quantity", "updated_at"])
-        _audit(membership, "insumo.editar", consumable, before=before, after=_consumable_snapshot(consumable))
+        _audit(membership, "insumo.editar", obj=consumable, before=before, after=_consumable_snapshot(consumable))
     return consumable
 
 
@@ -427,5 +427,5 @@ def remove_consumable(membership: Membership, public_id: UUID | str) -> None:
     ensure_permission(membership, "servicios.editar")
     with transaction.atomic():
         consumable = ServiceConsumable.objects.select_for_update().get(public_id=public_id)
-        _audit(membership, "insumo.eliminar", consumable, before=_consumable_snapshot(consumable), after=None)
+        _audit(membership, "insumo.eliminar", obj=consumable, before=_consumable_snapshot(consumable), after=None)
         consumable.delete()

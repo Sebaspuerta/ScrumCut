@@ -21,7 +21,9 @@ def make_overdue_debt(owner, name="Laura"):
     client = clients.create_client(
         owner, {"full_name": name}, data_consent_at=timezone.now(), data_policy_version="2026-10"
     )
-    return receivables.create_manual(owner, client.public_id, Decimal("30000"), due_date=TODAY - timedelta(days=1))
+    return receivables.create_manual(
+        owner, client.public_id, total=Decimal("30000"), due_date=TODAY - timedelta(days=1)
+    )
 
 
 def alert_for(product=None, receivable=None) -> Alert:

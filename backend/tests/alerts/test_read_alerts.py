@@ -48,7 +48,7 @@ def test_lista_no_leidas_primero_sin_resueltas_y_conteo(owner, cashier):
     cera, gel, talco = (make_product(owner, name) for name in ("Cera", "Gel", "Talco"))
     services.generate_alerts(TODAY)
     services.mark_as_read(cashier, alert_for(product=cera).public_id)
-    inventory.register_entry(owner, talco.public_id, 5, "Compra")
+    inventory.register_entry(owner, talco.public_id, quantity=5, reason="Compra")
     services.generate_alerts(TODAY)  # resuelve la de Talco; la de Cera, leída y aún agotada, sigue abierta
 
     page = selectors.list_alerts(cashier)
@@ -61,7 +61,7 @@ def test_lista_no_leidas_primero_sin_resueltas_y_conteo(owner, cashier):
 def test_marcar_una_alerta_resuelta_no_hace_nada(owner, cashier):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    inventory.register_entry(owner, product.public_id, 10, "Compra")
+    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra")
     services.generate_alerts(TODAY)
 
     alert = services.mark_as_read(cashier, alert_for(product=product).public_id)

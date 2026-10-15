@@ -70,7 +70,7 @@ def _order_snapshot(order: Order) -> dict:
     }
 
 
-def _audit(actor: Membership, action: str, order: Order, *, before: dict | None, after: dict) -> None:
+def _audit(actor: Membership, action: str, *, order: Order, before: dict | None, after: dict) -> None:
     record(
         action=action,
         entity=order._meta.label,
@@ -96,7 +96,7 @@ def _require_editable(order: Order) -> None:
         raise ValidationError(NOT_EDITABLE, code="not_editable")
 
 
-def _get_or_invalid(queryset, field: str, message: str, **lookup):
+def _get_or_invalid(queryset, field: str, *, message: str, **lookup):
     try:
         return queryset.get(**lookup)
     except queryset.model.DoesNotExist as exc:
@@ -107,7 +107,7 @@ def _active_barber(public_id: UUID | str) -> Barber:
     return _get_or_invalid(
         Barber.objects,
         "barber",
-        "El barbero no existe o está inactivo.",
+        message="El barbero no existe o está inactivo.",
         public_id=public_id,
         deleted_at__isnull=True,
         is_active=True,
@@ -136,13 +136,15 @@ def create_order(
 ) -> Order:
     """El número sale del consecutivo de la barbería, bloqueado para que no se repita."""
     ensure_permission(membership, "comandas.crear")
-    target_branch = _get_or_invalid(Branch.objects, "branch", "La sede no existe.", public_id=branch, is_active=True)
+    target_branch = _get_or_invalid(
+        Branch.objects, "branch", message="La sede no existe.", public_id=branch, is_active=True
+    )
     target_client = None
     if client is not None:
         target_client = _get_or_invalid(
             Client.objects,
             "client",
-            "El cliente no existe.",
+            message="El cliente no existe.",
             public_id=client,
             deleted_at__isnull=True,
             anonymized_at__isnull=True,
@@ -168,7 +170,7 @@ def create_order(
         )
         order.full_clean()
         order.save()
-        _audit(membership, "comanda.crear", order, before=None, after=_order_snapshot(order))
+        _audit(membership, "comanda.crear", order=order, before=None, after=_order_snapshot(order))
     return order
 
 
@@ -197,7 +199,7 @@ def add_item(
             catalog_service = _get_or_invalid(
                 Service.objects,
                 "service",
-                "El servicio no existe o está inactivo.",
+                message="El servicio no existe o está inactivo.",
                 public_id=service,
                 deleted_at__isnull=True,
                 is_active=True,
@@ -211,7 +213,7 @@ def add_item(
             catalog_product = _get_or_invalid(
                 Product.objects,
                 "product",
-                "El producto no existe o está inactivo.",
+                message="El producto no existe o está inactivo.",
                 public_id=product,
                 deleted_at__isnull=True,
                 is_active=True,
@@ -228,14 +230,14 @@ def add_item(
         _audit(
             membership,
             "comanda.agregar_item",
-            locked,
+            order=locked,
             before=before,
             after={**_order_snapshot(locked), "item": item.name},
         )
     return item
 
 
-def update_item_quantity(membership: Membership, order: UUID | str, item: UUID | str, quantity: int) -> OrderItem:
+def update_item_quantity(membership: Membership, order: UUID | str, *, item: UUID | str, quantity: int) -> OrderItem:
     ensure_permission(membership, "comandas.editar")
     if not isinstance(quantity, int) or quantity <= 0:
         raise ValidationError({"quantity": "La cantidad debe ser un entero mayor que cero."})
@@ -252,14 +254,14 @@ def update_item_quantity(membership: Membership, order: UUID | str, item: UUID |
         _audit(
             membership,
             "comanda.editar_item",
-            locked,
+            order=locked,
             before=before,
             after={**_order_snapshot(locked), "item": line.name},
         )
     return line
 
 
-def remove_item(membership: Membership, order: UUID | str, item: UUID | str) -> None:
+def remove_item(membership: Membership, order: UUID | str, *, item: UUID | str) -> None:
     """Una línea de una comanda abierta es borrador: se borra físicamente y queda en la auditoría."""
     ensure_permission(membership, "comandas.editar")
     with transaction.atomic():
@@ -271,11 +273,15 @@ def remove_item(membership: Membership, order: UUID | str, item: UUID | str) -> 
         line.delete()
         _recalculate(locked)
         _audit(
-            membership, "comanda.quitar_item", locked, before=before, after={**_order_snapshot(locked), "item": name}
+            membership,
+            "comanda.quitar_item",
+            order=locked,
+            before=before,
+            after={**_order_snapshot(locked), "item": name},
         )
 
 
-def set_discount(membership: Membership, order: UUID | str, amount: Decimal, reason: str = "") -> Order:
+def set_discount(membership: Membership, order: UUID | str, *, amount: Decimal, reason: str = "") -> Order:
     """Descuento entre 0 y el subtotal, con motivo si es mayor que cero (defecto 5).
 
     Una cortesía es un descuento igual al subtotal con su motivo (decisión 4).
@@ -290,7 +296,7 @@ def set_discount(membership: Membership, order: UUID | str, amount: Decimal, rea
         locked.total = locked.subtotal - locked.discount
         locked.full_clean()
         locked.save(update_fields=["discount", "discount_reason", "total", "updated_at"])
-        _audit(membership, "comanda.descontar", locked, before=before, after=_order_snapshot(locked))
+        _audit(membership, "comanda.descontar", order=locked, before=before, after=_order_snapshot(locked))
     return locked
 
 
@@ -303,7 +309,7 @@ def _move(membership: Membership, order: UUID | str, *, source: str, target: str
         before = _order_snapshot(locked)
         locked.status = target
         locked.save(update_fields=["status", "updated_at"])
-        _audit(membership, action, locked, before=before, after=_order_snapshot(locked))
+        _audit(membership, action, order=locked, before=before, after=_order_snapshot(locked))
     return locked
 
 
@@ -465,7 +471,7 @@ def _mark_closed(
     order.amount_paid = paid
     order.commission_total = sum((line.commission_amount for line in lines), _ZERO)
     if balance > 0:
-        receivables.create_from_order(order, balance, membership, due_date)
+        receivables.create_from_order(order, balance, actor=membership, due_date=due_date)
         order.payment_status = PaymentStatus.CREDIT
     else:
         order.payment_status = PaymentStatus.PAID
@@ -477,7 +483,7 @@ def _mark_closed(
 
 
 def _close_locked(
-    membership: Membership, order: Order, payments: list[dict], *, as_credit: bool, due_date: date | None
+    membership: Membership, order: Order, *, payments: list[dict], as_credit: bool, due_date: date | None
 ) -> Order:
     _require_editable(order)
     lines = list(order.items.select_related("service", "product", "barber").order_by("pk"))
@@ -507,8 +513,8 @@ def _close_locked(
 def close_order(
     membership: Membership,
     order: UUID | str,
-    payments: Iterable[dict] = (),
     *,
+    payments: Iterable[dict] = (),
     as_credit: bool = False,
     due_date: date | None = None,
 ) -> Order:
@@ -522,17 +528,17 @@ def close_order(
     with transaction.atomic():
         locked = _locked_order(membership, order)
         before = _order_snapshot(locked)
-        _close_locked(membership, locked, cleaned, as_credit=as_credit, due_date=due_date)
-        _audit(membership, "comanda.cerrar", locked, before=before, after=_order_snapshot(locked))
+        _close_locked(membership, locked, payments=cleaned, as_credit=as_credit, due_date=due_date)
+        _audit(membership, "comanda.cerrar", order=locked, before=before, after=_order_snapshot(locked))
     return locked
 
 
 def quick_register(
     membership: Membership,
     branch: UUID | str,
+    *,
     barber: UUID | str,
     method: str,
-    *,
     service: UUID | str | None = None,
     product: UUID | str | None = None,
     quantity: int = 1,
@@ -545,13 +551,13 @@ def quick_register(
         add_item(membership, order.public_id, service=service, product=product, quantity=quantity)
         order.refresh_from_db()
         payments = [{"method": method, "amount": order.total, "reference": reference}] if order.total else []
-        return close_order(membership, order.public_id, payments)
+        return close_order(membership, order.public_id, payments=payments)
 
 
 # ── Anulación ────────────────────────────────────────────────────────────────
 
 
-def cancel_order(membership: Membership, order: UUID | str, reason: str) -> Order:
+def cancel_order(membership: Membership, order: UUID | str, *, reason: str) -> Order:
     """Abierta o en espera: se anula sin efectos (`comandas.editar`).
 
     Cerrada (`comandas.anular`, defecto 12): se anula su fiado si no tiene abonos,
@@ -569,7 +575,7 @@ def cancel_order(membership: Membership, order: UUID | str, reason: str) -> Orde
             ensure_permission(membership, "comandas.editar")
         elif locked.status == OrderStatus.CLOSED:
             ensure_permission(membership, "comandas.anular")
-            _reverse_closed(membership, locked, reason)
+            _reverse_closed(membership, locked, reason=reason)
         else:
             raise ValidationError("La comanda ya está anulada.", code="already_cancelled")
         locked.status = OrderStatus.CANCELLED
@@ -578,12 +584,18 @@ def cancel_order(membership: Membership, order: UUID | str, reason: str) -> Orde
         locked.cancel_reason = reason
         locked.full_clean()
         locked.save()
-        _audit(membership, "comanda.anular", locked, before=before, after={**_order_snapshot(locked), "reason": reason})
+        _audit(
+            membership,
+            "comanda.anular",
+            order=locked,
+            before=before,
+            after={**_order_snapshot(locked), "reason": reason},
+        )
     return locked
 
 
-def _reverse_closed(membership: Membership, order: Order, reason: str) -> None:
-    receivables.cancel_for_order(order, membership, reason)
+def _reverse_closed(membership: Membership, order: Order, *, reason: str) -> None:
+    receivables.cancel_for_order(order, membership, reason=reason)
 
     payments = list(order.payments.order_by("pk"))
     if payments:

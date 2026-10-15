@@ -83,8 +83,18 @@ def world(member, in_shop):
     beto_login = member(Role.BARBER, in_shop, email="beto@a.test")
     branch = Branch.objects.create(name="Centro")
 
-    ana = staff.create_barber(owner, {"display_name": "Ana", "membership": ana_login.public_id}, "percentage", 40)
-    beto = staff.create_barber(owner, {"display_name": "Beto", "membership": beto_login.public_id}, "percentage", 50)
+    ana = staff.create_barber(
+        owner,
+        {"display_name": "Ana", "membership": ana_login.public_id},
+        commission_type="percentage",
+        commission_value=40,
+    )
+    beto = staff.create_barber(
+        owner,
+        {"display_name": "Beto", "membership": beto_login.public_id},
+        commission_type="percentage",
+        commission_value=50,
+    )
 
     corte = catalog.create_service(owner, name="Corte", price=Decimal("25000"), duration_minutes=30)
     barba = catalog.create_service(owner, name="Barba", price=Decimal("15000"), duration_minutes=20)
@@ -93,7 +103,7 @@ def world(member, in_shop):
         {"name": "Cuchilla", "product_type": "consumible", "purchase_cost": Decimal("1000")},
         initial_stock=10,
     )
-    inventory.add_consumable(owner, corte.public_id, cuchilla.public_id, 1)
+    inventory.add_consumable(owner, corte.public_id, product=cuchilla.public_id, quantity=1)
     cera = inventory.create_product(
         owner,
         {"name": "Cera", "product_type": "venta", "purchase_cost": Decimal("8000"), "sale_price": Decimal("20000")},
@@ -105,7 +115,7 @@ def world(member, in_shop):
         data_consent_at=timezone.now(),
         data_policy_version="2026-10",
     )
-    session = cash.open_session(cashier, branch.public_id, Decimal("50000"))
+    session = cash.open_session(cashier, branch.public_id, opening_amount=Decimal("50000"))
     return SimpleNamespace(
         shop=in_shop,
         owner=owner,

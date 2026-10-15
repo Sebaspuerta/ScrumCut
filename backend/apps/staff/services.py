@@ -43,7 +43,7 @@ class BarberData(TypedDict, total=False):
     membership: UUID | str | None
 
 
-def _audit(actor: Membership, action: str, obj, *, before: dict | None, after: dict | None) -> None:
+def _audit(actor: Membership, action: str, *, obj, before: dict | None, after: dict | None) -> None:
     record(
         action=action,
         entity=obj._meta.label,
@@ -143,7 +143,7 @@ def _save_validated(barber: Barber) -> None:
 
 
 def _create_rule(
-    barber: Barber, commission_type: str, value, *, service: Service | None, valid_from: datetime
+    barber: Barber, commission_type: str, *, value, service: Service | None, valid_from: datetime
 ) -> CommissionRule:
     rule = CommissionRule(
         barbershop_id=barber.barbershop_id,
@@ -161,20 +161,20 @@ def _create_rule(
 # ── Barberos ─────────────────────────────────────────────────────────────────
 
 
-def create_barber(membership_actor: Membership, data: BarberData, commission_type: str, commission_value) -> Barber:
+def create_barber(membership_actor: Membership, data: BarberData, *, commission_type: str, commission_value) -> Barber:
     """Crea el barbero y su regla de comisión general, vigente desde ahora."""
     ensure_permission(membership_actor, "barberos.crear")
     with transaction.atomic():
         barber = Barber(barbershop_id=membership_actor.barbershop_id)
         _apply(barber, data)
         _save_validated(barber)
-        rule = _create_rule(barber, commission_type, commission_value, service=None, valid_from=timezone.now())
+        rule = _create_rule(barber, commission_type, value=commission_value, service=None, valid_from=timezone.now())
         after = {**_barber_snapshot(barber), "commission": _rule_snapshot(rule)}
-        _audit(membership_actor, "barbero.crear", barber, before=None, after=after)
+        _audit(membership_actor, "barbero.crear", obj=barber, before=None, after=after)
     return barber
 
 
-def update_barber(membership_actor: Membership, public_id: UUID | str, data: BarberData) -> Barber:
+def update_barber(membership_actor: Membership, public_id: UUID | str, *, data: BarberData) -> Barber:
     """Solo cambia las claves presentes en `data`. `membership=None` desvincula."""
     ensure_permission(membership_actor, "barberos.editar")
     with transaction.atomic():
@@ -184,7 +184,7 @@ def update_barber(membership_actor: Membership, public_id: UUID | str, data: Bar
         _save_validated(barber)
         after = _barber_snapshot(barber)
         if after != before:
-            _audit(membership_actor, "barbero.editar", barber, before=before, after=after)
+            _audit(membership_actor, "barbero.editar", obj=barber, before=before, after=after)
     return barber
 
 
@@ -198,7 +198,7 @@ def _set_barber_active(membership_actor: Membership, public_id: UUID | str, *, a
         barber.is_active = active
         barber.save(update_fields=["is_active", "updated_at"])
         action = "barbero.activar" if active else "barbero.desactivar"
-        _audit(membership_actor, action, barber, before=before, after=_barber_snapshot(barber))
+        _audit(membership_actor, action, obj=barber, before=before, after=_barber_snapshot(barber))
     return barber
 
 
@@ -226,7 +226,7 @@ def soft_delete_barber(membership_actor: Membership, public_id: UUID | str) -> B
         barber.save(update_fields=["membership", "updated_at"])
         barber.soft_delete(by=membership_actor.user)
         after = {**_barber_snapshot(barber), "unlinked_membership": before["membership"]}
-        _audit(membership_actor, "barbero.eliminar", barber, before=before, after=after)
+        _audit(membership_actor, "barbero.eliminar", obj=barber, before=before, after=after)
     return barber
 
 
@@ -236,6 +236,7 @@ def soft_delete_barber(membership_actor: Membership, public_id: UUID | str) -> B
 def set_commission(
     membership_actor: Membership,
     barber: UUID | str,
+    *,
     commission_type: str,
     value,
     service: UUID | str | None = None,
@@ -256,6 +257,8 @@ def set_commission(
         raise ValidationError({"valid_from": "Una comisión no puede empezar en el pasado."})
     with transaction.atomic():
         target = _live_barber_for_update(barber)
-        rule = _create_rule(target, commission_type, value, service=_resolve_service(service), valid_from=valid_from)
-        _audit(membership_actor, "comision.crear", rule, before=None, after=_rule_snapshot(rule))
+        rule = _create_rule(
+            target, commission_type, value=value, service=_resolve_service(service), valid_from=valid_from
+        )
+        _audit(membership_actor, "comision.crear", obj=rule, before=None, after=_rule_snapshot(rule))
     return rule

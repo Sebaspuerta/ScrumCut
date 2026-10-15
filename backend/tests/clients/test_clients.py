@@ -111,7 +111,7 @@ def test_el_documento_queda_cifrado_en_la_base_y_se_descifra(owner):
 @pytest.mark.django_db
 def test_quitar_el_documento_borra_cifrado_y_huella(owner):
     client = _create(owner, document=DOCUMENT)
-    services.update_client(owner, client.public_id, {"document": ""})
+    services.update_client(owner, client.public_id, data={"document": ""})
     client.refresh_from_db()
     assert (client.document_number, client.document_number_encrypted, client.document_hash) == ("", "", "")
 
@@ -119,8 +119,8 @@ def test_quitar_el_documento_borra_cifrado_y_huella(owner):
 @pytest.mark.django_db
 def test_la_auditoria_no_guarda_el_documento_en_claro(owner):
     client = _create(owner, document=DOCUMENT)
-    services.update_client(owner, client.public_id, {"document": "99887766"})
-    services.update_client(owner, client.public_id, {"full_name": "Laura G."})
+    services.update_client(owner, client.public_id, data={"document": "99887766"})
+    services.update_client(owner, client.public_id, data={"full_name": "Laura G."})
 
     logs = {log.action: log for log in AuditLog.objects.all()}
     for log in AuditLog.objects.all():
@@ -166,7 +166,7 @@ def test_editar_hacia_el_telefono_de_otro_falla(owner):
     first = _create(owner, phone="3001234567")
     second = _create(owner, name="Otra", phone="3110000000")
     with pytest.raises(ValidationError) as excinfo:
-        services.update_client(owner, second.public_id, {"phone": "300 123 4567"})
+        services.update_client(owner, second.public_id, data={"phone": "300 123 4567"})
     assert _duplicate_of(excinfo) == str(first.public_id)
 
 
@@ -281,7 +281,7 @@ def test_busqueda_por_nombre_telefono_y_documento(owner):
 def test_crean_y_editan_pero_solo_el_dueno_elimina(member, in_shop, owner, role):
     actor = member(role, in_shop)
     client = _create(actor, phone="3001234567")
-    services.update_client(actor, client.public_id, {"notes": "Prefiere tijera"})
+    services.update_client(actor, client.public_id, data={"notes": "Prefiere tijera"})
     with pytest.raises(PermissionDenied):
         services.soft_delete_client(actor, client.public_id)
     assert services.soft_delete_client(owner, client.public_id).is_deleted
@@ -294,7 +294,7 @@ def test_el_consultor_solo_lee(member, in_shop, owner):
     with pytest.raises(PermissionDenied):
         _create(viewer, name="Otra")
     with pytest.raises(PermissionDenied):
-        services.update_client(viewer, client.public_id, {"notes": "x"})
+        services.update_client(viewer, client.public_id, data={"notes": "x"})
     assert selectors.get_client(viewer, client.public_id) == client
     assert list(selectors.list_clients(viewer)) == [client]
 
@@ -323,7 +323,7 @@ def test_cada_barberia_ve_solo_sus_clientes_y_puede_repetir_telefono(member, sho
         with pytest.raises(Client.DoesNotExist):
             selectors.get_client(theirs, mine.public_id)
         with pytest.raises(Client.DoesNotExist):
-            services.update_client(theirs, mine.public_id, {"notes": "x"})
+            services.update_client(theirs, mine.public_id, data={"notes": "x"})
 
 
 # ── Posibles duplicados por nombre ───────────────────────────────────────────
@@ -406,7 +406,7 @@ def test_anonimizar_es_irreversible(owner):
     with pytest.raises(ValidationError):
         services.anonymize_client(owner, client.public_id)
     with pytest.raises(ValidationError):
-        services.update_client(owner, client.public_id, {"full_name": "Laura otra vez"})
+        services.update_client(owner, client.public_id, data={"full_name": "Laura otra vez"})
 
 
 @pytest.mark.django_db

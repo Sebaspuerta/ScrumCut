@@ -42,7 +42,7 @@ def _resolve_stale(open_alerts: dict[AlertKey, int], conditions: dict[AlertKey, 
 
 
 def _create_missing(
-    barbershop: Barbershop, open_alerts: dict[AlertKey, int], conditions: dict[AlertKey, str]
+    barbershop: Barbershop, open_alerts: dict[AlertKey, int], *, conditions: dict[AlertKey, str]
 ) -> list[Alert]:
     new_alerts = []
     for (alert_type, reference_id), message in conditions.items():
@@ -69,7 +69,7 @@ def generate_alerts(today: date) -> dict:
         conditions = current_conditions(today)
         open_alerts = _open_alerts()
         resolved = _resolve_stale(open_alerts, conditions)
-        new_alerts = _create_missing(barbershop, open_alerts, conditions)
+        new_alerts = _create_missing(barbershop, open_alerts, conditions=conditions)
         summary = {
             "created": dict.fromkeys(AlertType.values, 0) | Counter(alert.alert_type for alert in new_alerts),
             "resolved": resolved,

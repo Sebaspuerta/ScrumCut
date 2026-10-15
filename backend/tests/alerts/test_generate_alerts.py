@@ -21,8 +21,8 @@ pytestmark = pytest.mark.django_db
 
 def pay_debt(owner, debt):
     branch = Branch.objects.create(name="Centro")
-    cash.open_session(owner, branch.public_id, Decimal("0"))
-    receivables.add_payment(owner, debt.public_id, debt.balance, "efectivo", branch.public_id)
+    cash.open_session(owner, branch.public_id, opening_amount=Decimal("0"))
+    receivables.add_payment(owner, debt.public_id, amount=debt.balance, method="efectivo", branch=branch.public_id)
 
 
 # ── Creación por tipo ────────────────────────────────────────────────────────
@@ -57,7 +57,9 @@ def test_por_vencer_dentro_de_la_ventana_e_incluye_vencidos(owner):
 
 def test_fiado_vencido_se_marca_y_genera_alerta(owner):
     late = make_overdue_debt(owner)
-    on_time = receivables.create_manual(owner, late.client.public_id, Decimal("1000"), due_date=TODAY + timedelta(5))
+    on_time = receivables.create_manual(
+        owner, late.client.public_id, total=Decimal("1000"), due_date=TODAY + timedelta(5)
+    )
 
     result = services.generate_alerts(TODAY)
 
@@ -113,7 +115,7 @@ def test_una_alerta_leida_sigue_abierta_y_no_se_duplica(owner, cashier):
 def test_reponer_el_stock_resuelve_agotado(owner):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    inventory.register_entry(owner, product.public_id, 10, "Compra")
+    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra")
 
     result = services.generate_alerts(TODAY)
 
@@ -125,7 +127,7 @@ def test_reponer_el_stock_resuelve_agotado(owner):
 def test_pasar_de_stock_bajo_a_agotado_cambia_la_alerta(owner):
     product = make_product(owner, "Gel", stock=2, minimum_stock=3)
     services.generate_alerts(TODAY)
-    inventory.register_adjustment(owner, product.public_id, -2, "Conteo")
+    inventory.register_adjustment(owner, product.public_id, quantity=-2, reason="Conteo")
 
     services.generate_alerts(TODAY)
 
@@ -142,7 +144,7 @@ def test_un_producto_que_ya_no_aplica_resuelve_su_alerta(owner, change):
     elif change == "inactivo":
         inventory.deactivate_product(owner, product.public_id)
     else:
-        inventory.update_product(owner, product.public_id, {"expiration_date": TODAY + timedelta(days=90)})
+        inventory.update_product(owner, product.public_id, data={"expiration_date": TODAY + timedelta(days=90)})
 
     assert services.generate_alerts(TODAY)["resolved"] == 1
 
@@ -159,16 +161,16 @@ def test_pagar_el_fiado_resuelve_fiado_vencido(owner):
 def test_anular_el_fiado_resuelve_fiado_vencido(owner):
     debt = make_overdue_debt(owner)
     services.generate_alerts(TODAY)
-    receivables.cancel_receivable(owner, debt.public_id, "Error de digitación")
+    receivables.cancel_receivable(owner, debt.public_id, reason="Error de digitación")
     assert services.generate_alerts(TODAY)["resolved"] == 1
 
 
 def test_si_la_condicion_vuelve_se_crea_una_alerta_nueva(owner):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    inventory.register_entry(owner, product.public_id, 2, "Compra")
+    inventory.register_entry(owner, product.public_id, quantity=2, reason="Compra")
     services.generate_alerts(TODAY)
-    inventory.register_adjustment(owner, product.public_id, -2, "Venta sin registrar")
+    inventory.register_adjustment(owner, product.public_id, quantity=-2, reason="Venta sin registrar")
 
     result = services.generate_alerts(TODAY)
 
@@ -181,14 +183,14 @@ def test_una_alerta_leida_se_resuelve_y_conserva_quien_la_leyo(owner, cashier):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
     read = services.mark_as_read(cashier, alert_for(product=product).public_id)
-    inventory.register_entry(owner, product.public_id, 10, "Compra")
+    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra")
 
     assert services.generate_alerts(TODAY)["resolved"] == 1
     resolved = Alert.objects.get(pk=read.pk)
     assert resolved.resolved_at is not None
     assert (resolved.read_at, resolved.read_by) == (read.read_at, cashier)
 
-    inventory.register_adjustment(owner, product.public_id, -10, "Conteo")
+    inventory.register_adjustment(owner, product.public_id, quantity=-10, reason="Conteo")
     services.generate_alerts(TODAY)
     new = Alert.objects.get(product=product, resolved_at__isnull=True)
     assert new.pk != read.pk and not new.is_read

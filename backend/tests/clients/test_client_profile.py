@@ -20,7 +20,7 @@ D = Decimal
 def _visit(w, client, service, amount):
     order = sales.create_order(w.cashier, w.branch.public_id, client=client.public_id, barber=w.ana.public_id)
     sales.add_item(w.cashier, order.public_id, service=service.public_id)
-    return sales.close_order(w.cashier, order.public_id, [{"method": "efectivo", "amount": amount}])
+    return sales.close_order(w.cashier, order.public_id, payments=[{"method": "efectivo", "amount": amount}])
 
 
 def _client(w, name):
@@ -59,12 +59,12 @@ def test_deudor_manda_sobre_lo_demas(world):
     pedro = _client(world, "Pedro Ruiz")
     for _ in range(3):
         _visit(world, pedro, world.barba, "15000")
-    receivables.create_manual(world.cashier, pedro.public_id, D("7000"))
+    receivables.create_manual(world.cashier, pedro.public_id, total=D("7000"))
     profile = client_profile(world.cashier, pedro.public_id)
     assert (profile["balance"], profile["status"]) == (D("7000"), ClientStatus.DEBTOR)
 
 
 def test_las_comandas_anuladas_no_cuentan(world):
     order = _visit(world, world.laura, world.barba, "15000")
-    sales.cancel_order(world.owner, order.public_id, "Error")
+    sales.cancel_order(world.owner, order.public_id, reason="Error")
     assert client_profile(world.cashier, world.laura.public_id)["visits"] == 0

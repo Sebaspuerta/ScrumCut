@@ -26,7 +26,7 @@ ALREADY_OPEN = "Ya hay una caja abierta en esta sede. Ciérrala antes de abrir o
 MANUAL_KINDS = (MovementKind.MANUAL_INCOME, MovementKind.EXPENSE, MovementKind.WITHDRAWAL, MovementKind.ADJUSTMENT)
 
 
-def _audit(actor: Membership, action: str, session: CashSession, *, before: dict | None, after: dict | None) -> None:
+def _audit(actor: Membership, action: str, *, session: CashSession, before: dict | None, after: dict | None) -> None:
     record(
         action=action,
         entity=session._meta.label,
@@ -109,7 +109,9 @@ def record_money(
 # ── Sesiones ─────────────────────────────────────────────────────────────────
 
 
-def open_session(membership: Membership, branch: UUID | str, opening_amount: Decimal, notes: str = "") -> CashSession:
+def open_session(
+    membership: Membership, branch: UUID | str, *, opening_amount: Decimal, notes: str = ""
+) -> CashSession:
     """Regla 21 por sede (decisión 2). La base garantiza la unicidad aun con solicitudes simultáneas."""
     ensure_permission(membership, "caja.abrir")
     try:
@@ -132,12 +134,12 @@ def open_session(membership: Membership, branch: UUID | str, opening_amount: Dec
                 session.save()
         except IntegrityError as exc:
             raise ValidationError(ALREADY_OPEN, code="already_open") from exc
-        _audit(membership, "caja.abrir", session, before=None, after=_session_snapshot(session))
+        _audit(membership, "caja.abrir", session=session, before=None, after=_session_snapshot(session))
     return session
 
 
 def close_session(
-    membership: Membership, session: UUID | str, counted_amount: Decimal, notes: str | None = None
+    membership: Membership, session: UUID | str, *, counted_amount: Decimal, notes: str | None = None
 ) -> CashSession:
     """Arqueo (regla 24): esperado = base + entradas en efectivo − salidas en efectivo.
 
@@ -157,7 +159,7 @@ def close_session(
             target.notes = notes.strip()
         target.full_clean()
         target.save()
-        _audit(membership, "caja.cerrar", target, before=before, after=_session_snapshot(target))
+        _audit(membership, "caja.cerrar", session=target, before=before, after=_session_snapshot(target))
     return target
 
 

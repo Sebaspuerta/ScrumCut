@@ -99,7 +99,9 @@ def test_el_ticket_se_compara_con_el_periodo_anterior_del_mismo_largo(world):
 
 def test_fiados_pendientes_con_vencidos_y_clientes(world):
     w = world
-    receivables.create_manual(w.cashier, w.laura.public_id, D("30000"), due_date=timezone.localdate() - timedelta(1))
+    receivables.create_manual(
+        w.cashier, w.laura.public_id, total=D("30000"), due_date=timezone.localdate() - timedelta(1)
+    )
 
     debts = _dashboard(w)["kpis"]["receivables"]
 
@@ -152,7 +154,7 @@ def test_la_cascada_de_caja_cuadra_con_el_arqueo(world):
 def test_al_cerrar_la_caja_aparece_el_contado_y_la_diferencia(world):
     w = world
     sell(w, w.ana, service=w.corte)
-    cash.close_session(w.cashier, w.session.public_id, D("74000"))
+    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("74000"))
 
     flow = _dashboard(w)["cash_flow"]
 
@@ -162,6 +164,6 @@ def test_al_cerrar_la_caja_aparece_el_contado_y_la_diferencia(world):
 
 def test_sin_caja_hoy_no_hay_cuadre(world):
     w = world
-    cash.close_session(w.cashier, w.session.public_id, D("50000"))
+    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("50000"))
     with mock.patch("django.utils.timezone.now", return_value=timezone.now() + timedelta(days=1)):
         assert executive_dashboard(w.owner, None, None, w.branch)["cash_flow"] is None
