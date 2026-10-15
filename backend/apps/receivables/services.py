@@ -24,25 +24,18 @@ from apps.tenancy.models import BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
 _CENTS = Decimal("0.01")
+OTHER_BRANCH_PAYMENT = "Este fiado se abona en su sede de origen."
 
 
-def _audit(
-    actor: Membership,
-    action: str,
-    *,
-    receivable: Receivable,
-    before: dict | None,
-    after: dict,
-    branch: Branch | None = None,
-) -> None:
-    """La sede del evento es la de origen del fiado, salvo en un abono: la de la caja donde entró."""
+def _audit(actor: Membership, action: str, *, receivable: Receivable, before: dict | None, after: dict) -> None:
+    """La sede del evento es la de origen del fiado: ahí nace, se abona y se anula (decisión 3)."""
     record(
         action=action,
         entity=receivable._meta.label,
         entity_id=str(receivable.public_id),
         actor=actor.user,
         barbershop=actor.barbershop,
-        branch=branch or receivable.origin_branch,
+        branch=receivable.origin_branch,
         before=before,
         after=after,
     )
@@ -153,7 +146,7 @@ def _locked_open_receivable(public_id: UUID | str, amount: Decimal) -> Receivabl
 def _record_payment(
     locked: Receivable, session, *, membership: Membership, amount: Decimal, method: str
 ) -> ReceivablePayment:
-    """El dinero entra a la caja de la sesión; esa es la sede del abono (no se guarda aparte)."""
+    """El dinero entra a la caja de la sesión, que es de la sede de origen del fiado (no se guarda aparte)."""
     movement = record_money(
         session,
         MovementKind.RECEIVABLE_PAYMENT,
@@ -186,7 +179,8 @@ def add_payment(
 ) -> ReceivablePayment:
     """Regla 27 con el defecto 24 corregido: monto ≤ saldo, solo a fiados vivos, con caja abierta.
 
-    El abono entra al libro de caja de la sede (activa) con cualquier método (un solo libro).
+    Decisión 3 de docs/sedes.md: el abono entra solo a la caja de la sede de origen del fiado,
+    que debe estar activa; ninguna operación de dinero cruza sedes. Cualquier método, un solo libro.
     """
     ensure_permission(membership, "fiados.abonar")
     amount = Decimal(amount)
@@ -195,14 +189,14 @@ def add_payment(
     target_branch = _active_branch(branch)
     with transaction.atomic():
         locked = _locked_open_receivable(receivable, amount)
+        if locked.origin_branch_id != target_branch.pk:
+            raise ValidationError({"branch": OTHER_BRANCH_PAYMENT})
         session = open_session_for(target_branch)
         if session is None:
             raise ValidationError("No hay una caja abierta en esta sede para recibir el abono.", code="no_open_session")
         before = _snapshot(locked)
         payment = _record_payment(locked, session, membership=membership, amount=amount, method=method)
-        _audit(
-            membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked), branch=target_branch
-        )
+        _audit(membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked))
     return payment
 
 

@@ -139,7 +139,7 @@ def _catalog(owner: Membership, today: date) -> SimpleNamespace:
 
 
 def _manual_debt(owner: Membership, centro: Branch, today: date):
-    """Un fiado manual de Centro, vencido hace una semana; se abona en parte en la caja de Norte."""
+    """Un fiado manual de Centro, vencido hace una semana; se abona en parte en su caja (decisión 3)."""
     client = clients.create_client(
         owner, {"full_name": "Cliente de ejemplo"}, data_consent_at=timezone.now(), data_policy_version="demo"
     )
@@ -220,15 +220,15 @@ def _close_day(world: SimpleNamespace, session: CashSession, day: date, rng: ran
         cash.close_session(world.owner, session.public_id, counted_amount=counted)
 
 
-def _pay_debt_in_norte(world: SimpleNamespace, day: date) -> None:
-    """El fiado es de Centro, pero el abono entra a la caja de Norte, donde se pagó."""
+def _pay_debt(world: SimpleNamespace, day: date) -> None:
+    """Un fiado se abona solo en su sede de origen: el de ejemplo es de Centro."""
     with at(_moment(day, LAST_SALE_HOUR)):
         receivables.add_payment(
             world.owner,
             world.debt.public_id,
             amount=DEBT_PAYMENT,
             method="efectivo",
-            branch=world.branches["Norte"].public_id,
+            branch=world.debt.origin_branch.public_id,
         )
 
 
@@ -236,8 +236,8 @@ def _past_day(world: SimpleNamespace, day: date, rng: random.Random, *, pay_debt
     for branch in world.branches:
         session = _open_day(world, branch, day)
         _sell_day(world, branch, day, _moment(day, LAST_SALE_HOUR), rng)
-        if pay_debt and branch == "Norte":
-            _pay_debt_in_norte(world, day)
+        if pay_debt and world.branches[branch] == world.debt.origin_branch:
+            _pay_debt(world, day)
         _close_day(world, session, day, rng)
 
 

@@ -13,14 +13,13 @@ from apps.cash import services as cash
 from apps.inventory import services as inventory
 from apps.receivables import services as receivables
 from apps.receivables.models import ReceivableStatus
-from apps.tenancy.models import Branch
 from tests.alerts.helpers import TODAY, alert_for, make_overdue_debt, make_product, open_types
 
 pytestmark = pytest.mark.django_db
 
 
 def pay_debt(owner, debt):
-    branch = Branch.objects.create(name="Centro")
+    branch = debt.origin_branch  # un fiado se abona solo en su sede de origen
     cash.open_session(owner, branch.public_id, opening_amount=Decimal("0"))
     receivables.add_payment(owner, debt.public_id, amount=debt.balance, method="efectivo", branch=branch.public_id)
 

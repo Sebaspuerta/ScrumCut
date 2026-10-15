@@ -19,12 +19,13 @@ La sede (`tenancy.Branch`) es una división operativa dentro de la barbería. La
 | Decisión | Estado |
 |---|---|
 | Inventario con existencias por sede y traslados entre sedes | NUEVO (S4b). Hoy el stock es por barbería: `inventory.Product.current_stock`. |
-| Precio de servicio opcional por sede; si no hay, rige `catalog.Service.price` | NUEVO (S4a) |
+| Precio por sede de servicios y productos; si la sede no definió precio, rige el del catálogo (`catalog.Service.price`, `inventory.Product.sale_price`). Decisión 17. | NUEVO (S4a) |
 | La comisión es del barbero (`staff.CommissionRule`) y no cambia según la sede | YA EXISTE. `CommissionRule` no tiene sede. |
 | Al iniciar sesión, el usuario entra a la última sede que usó, si sigue siendo válida | NUEVO (S2) |
 | Límite de sedes según el plan: `Barbershop.max_branches`, por defecto 1 | NUEVO (S1). No existe ninguna noción de plan. |
-| Clientes (`clients.Client`), servicios (`catalog.Service`) y productos (`inventory.Product`) son compartidos en la barbería | YA EXISTE. Ninguno tiene sede. |
-| Los fiados son del cliente, pero guardan la sede donde se originaron | CAMBIA (S1). Ver la decisión 3. |
+| Servicios (`catalog.Service`) y productos (`inventory.Product`) son un catálogo común de la barbería | YA EXISTE. Ninguno tiene sede. |
+| Los datos de la persona de un cliente (`clients.Client`) son de la barbería; su historial, sus fiados y su nivel son de cada sede (decisiones 15 y 16) | CAMBIA (S2). Hoy el historial y los fiados no se filtran por sede. |
+| Un fiado es de su sede de origen y solo se abona en ella | CAMBIA (S1). Ver la decisión 3. |
 
 ## Datos
 
@@ -56,7 +57,8 @@ Todas heredan de `TenantScopedModel`, terminan con `EnableTenantRLS` y llevan la
 | `BranchHours` (horario) | tenancy | sede, día de la semana (0–6), abre, cierra, cerrado | Único `(branch, weekday)`. CHECK `closed OR opens_at < closes_at`. | S1 |
 | `MembershipBranch` (acceso del Cajero a sedes) | tenancy | membresía, sede | Único `(membership, branch)`. Solo para el rol Cajero (decisión 1). | S1 |
 | `BarberBranch` (barbero ↔ sede) | staff | barbero, sede | Único `(barber, branch)`. Reemplaza a `Barber.branch` (decisión 2). | S1 |
-| `ServiceBranchPrice` (precio por sede) | catalog | servicio, sede, precio (`DecimalField(14, 2)`) | Único `(service, branch)`. CHECK `price >= 0`. | S4a |
+| `ServiceBranchPrice` (precio de servicio por sede) | catalog | servicio, sede, precio (`DecimalField(14, 2)`) | Único `(service, branch)`. CHECK `price >= 0`. | S4a |
+| `ProductBranchPrice` (precio de producto por sede) | inventory | producto, sede, precio (`DecimalField(14, 2)`) | Único `(product, branch)`. CHECK `price >= 0`. | S4a |
 | `StockLevel` (existencias por sede) | inventory | producto, sede, cantidad | Único `(product, branch)`. CHECK `quantity >= 0`. | S4b |
 | `StockTransfer` (traslado) | inventory | producto, sede origen, sede destino, cantidad, motivo, quién | CHECK `quantity > 0` y `origin <> destination`. Solo-agregar (regla 9); sus dos `StockMovement` lo respaldan. | S4b |
 
@@ -174,7 +176,10 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 | Un barbero sin sedes no se puede elegir en comandas | NUEVO (`sales.services._active_barber`) | S1 |
 | Barbero nuevo: con una sola sede activa queda en ella; con varias, `create_barber` exige sus sedes (`ValidationError` si no vienen) | NUEVO | S1 |
 | El fiado manual toma como `origin_branch` la sede activa al crearlo; el de una comanda, `order.branch` | NUEVO | S1 |
-| La sede del abono es la de la caja donde entra (`cash_movement.session.branch`), que puede ser distinta de `origin_branch`. Los selectores de abonos por sede filtran por esa sesión. | NUEVO | S1 |
+| Un fiado se abona solo en su sede de origen: `add_payment` rechaza con `ValidationError` una caja de otra sede. La sede del abono sigue saliendo de `cash_movement.session.branch`, que así siempre es `origin_branch`. Ninguna operación de dinero cruza sedes. | NUEVO | S1 |
+| Una sede nunca ve el historial (comandas y visitas) ni los fiados de un cliente en otra sede; cualquier sede encuentra a la persona por documento para no duplicarla | NUEVO | S2 |
+| Nivel del cliente (VIP, frecuente, inactivo) por sede, con las visitas y el gasto de esa sede | CAMBIA (hoy es por barbería) | S2 |
+| Precios por sede de servicios y productos: los cambian solo Dueño y Administrador (`servicios.editar`, `inventario.editar`); sin precio de la sede, rige el del catálogo. La comanda copia el precio de su sede al cerrar (regla 10). | NUEVO | S4a |
 | El consumo de inventario al cerrar una comanda descuenta de `StockLevel` de `order.branch` | CAMBIA (`sales.services.close_order`) | S4b |
 | Traslado de inventario | NUEVO. Atómico, con `select_for_update` sobre los dos `StockLevel` (en orden fijo por id, para evitar bloqueos cruzados). Exige cantidad > 0 y origen ≠ destino, y no deja el origen en negativo. | S4b |
 | Alertas de producto (agotado, stock bajo y por vencer) por (tipo, producto, sede) | CAMBIA. Hoy `uq_alert_open_per_product` es por (tipo, producto). Agotado y stock bajo comparan el `StockLevel` de la sede con `Product.minimum_stock`. Por vencer solo se genera en las sedes donde la existencia es > 0. | S4b |
@@ -200,7 +205,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - Al crear una barbería existe su "Sede principal"; si falla la creación, no queda ni la barbería ni la sede.
 - `max_branches` impide crear y reactivar sedes por encima del límite; desactivar una sede libera cupo.
 - `add_payment` y `current_session` rechazan una sede inactiva.
-- El selector de abonos por sede obtiene la sede por `cash_movement.session.branch`: un abono de un fiado de la sede A cobrado en la caja de la sede B aparece en B.
+- Un abono a un fiado de la sede A en la caja de la sede B se rechaza; en la caja de A funciona y el dinero queda en esa caja.
 - El consolidado (modo "todas") es igual a la suma de las sedes.
 - El rechazo por pestañas cruzadas.
 - Traslados: atomicidad, concurrencia y no negativos.
@@ -212,9 +217,9 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 | Fase | Contenido | Ya hecho | Tamaño |
 |---|---|---|---|
 | S1 | Modelo de datos. Ver el detalle debajo de esta tabla. | `Branch` con nombre único, dirección, teléfono y activa. Sede obligatoria en `Order` y `CashSession`. Una caja abierta por sede. RLS en `tenancy_branch`. Los servicios de caja, comandas, abonos y personal ya reciben una sede. | Grande |
-| S2 | Solo backend: `request.branch_scope`, middleware, cambio de sede por POST y selectores con alcance. Tablero y Excel con el alcance, sin `?sede=`, con el ayudante único de filtro y los indicadores sumados en modo "todas" (decisión 10). | El tablero y el Excel ya filtran por una sede; los selectores de `apps/reports` y el Excel ya aceptan `branch=None` (todas). | Grande |
+| S2 | Solo backend: `request.branch_scope`, middleware, cambio de sede por POST y selectores con alcance. Tablero y Excel con el alcance, sin `?sede=`, con el ayudante único de filtro y los indicadores sumados en modo "todas" (decisión 10). Nivel del cliente por sede (decisión 16) y filtro por sede del historial y los fiados del cliente (decisión 15). | El tablero y el Excel ya filtran por una sede; los selectores de `apps/reports` y el Excel ya aceptan `branch=None` (todas). | Grande |
 | S3 | Ajustes → Sedes, selector de sede en la barra superior y modo "todas" en el encabezado (requiere maqueta aprobada). Va inmediatamente después de S2. | Nada | Grande |
-| S4a | Caja, comandas, gastos y precios por sede (`ServiceBranchPrice`). Escritura solo en modo "una" y rechazo por pestañas cruzadas. | Caja y comandas ya operan por sede. Los gastos ya van por `CashMovement` dentro de la sesión de la sede. | Mediana |
+| S4a | Caja, comandas, gastos y precios por sede de servicios y productos (`ServiceBranchPrice` y `ProductBranchPrice`; decisión 17). Escritura solo en modo "una" y rechazo por pestañas cruzadas. | Caja y comandas ya operan por sede. Los gastos ya van por `CashMovement` dentro de la sesión de la sede. | Mediana |
 | S4b | Inventario por sede (decisión 6): `StockLevel`, `StockMovement.branch`, consumo por `order.branch`, alertas con `Alert.branch`, sin `Product.current_stock`, y traslados. | Nada: stock, movimientos y alertas son por barbería. | Grande |
 | S5 | Comparativo por sede y cuadre de caja por sede en el tablero (requiere maqueta aprobada). | Los indicadores del modo "todas" llegan en S2. | Mediana |
 
@@ -241,11 +246,11 @@ Resuelven los conflictos que dejó el diagnóstico.
 2. **`Barber.branch` pasa a `BarberBranch` (muchos a muchos).**
    - Decisión: en la migración, un barbero con sede nula queda asignado a todas las sedes activas de su barbería. Después, un barbero sin sedes no se puede elegir en comandas. Un barbero nuevo queda en la única sede activa; si hay varias, se indican al crearlo.
    - Motivo: hoy la sede nula equivale en la práctica a "trabaja en cualquiera"; asignarle todas conserva ese comportamiento sin dejar un caso especial en el código.
-3. **Sede de origen del fiado y sede del abono.**
-   - Decisión: `Receivable.origin_branch` es la sede de la comanda o, si el fiado es manual, la sede activa al crearlo. `ReceivablePayment` no lleva sede propia: la del abono es `cash_movement.session.branch`, la caja donde entró el dinero, que puede ser otra.
+3. **Sede de origen del fiado y sede del abono** (corregida).
+   - Decisión: `Receivable.origin_branch` es la sede de la comanda o, si el fiado es manual, la sede activa al crearlo. Un fiado se abona **solo en su sede de origen**: la caja que recibe el abono es la de esa sede, y `add_payment` rechaza cualquier otra. Ninguna operación de dinero cruza sedes.
+   - `ReceivablePayment` no lleva sede propia: la del abono es `cash_movement.session.branch`, que con esta regla siempre coincide con `origin_branch`.
    - Datos existentes: `origin_branch` desde la comanda o la Sede principal. Los abonos no necesitan migración: `cash_movement` ya es obligatorio.
-   - Motivo de no guardar la sede del abono: es la misma razón de la decisión 4; una segunda copia exigiría garantizar que coincida con la de la sesión.
-   - Motivo: el fiado es del cliente y se puede pagar en cualquier sede, pero cada reporte por sede necesita saber dónde nació la deuda y dónde entró el dinero.
+   - Motivo: los fiados son de cada sede (decisión 15), así que la deuda y el dinero que la paga quedan en la misma caja, y el cuadre de una sede no depende de lo que se cobre en otra. Guardar aparte la sede del abono sería una segunda copia que habría que mantener igual a la de la sesión (decisión 4).
 4. **`CashMovement` no lleva sede.**
    - Decisión: la hereda de su sesión, y los índices por sede y fecha van en `CashSession`.
    - Motivo: guardarla dos veces exigiría garantizar que coincidan (una FK compuesta `(session_id, branch_id)`). Filtrar por sesión ya resuelve el reporte.
@@ -284,6 +289,18 @@ Resuelven los conflictos que dejó el diagnóstico.
 14. **Defecto de sede activa.**
     - Decisión: `receivables.add_payment` y `cash.selectors.current_session` deben exigir una sede activa. Se corrige en S1.
     - Motivo: caja, comandas y personal ya lo exigen; una sede desactivada no debe recibir dinero.
+15. **Clientes: la persona es de la barbería; lo demás, de cada sede.**
+    - Decisión: los datos de la persona (nombre, documento, correo, teléfono y autorización de datos) son de la barbería y se registran una sola vez; cualquier sede la encuentra por documento para no duplicarla. El historial de comandas y visitas, los fiados y el nivel del cliente son de cada sede, y una sede nunca ve el historial ni los fiados de otra.
+    - Motivo: la misma persona puede atenderse en varias sedes sin repetir su registro ni su autorización de datos (Ley 1581), mientras que lo que hizo en cada sede pertenece a la operación de esa sede.
+16. **Nivel del cliente por sede.**
+    - Decisión: VIP, frecuente e inactivo se calculan por sede, con las visitas y el gasto de esa sede. Se implementa en S2, con el alcance de sede.
+    - Motivo: el nivel sirve para atender al cliente en la sede donde está; mezclar sedes daría un VIP que esa sede no reconoce. Depende de `request.branch_scope`, que llega en S2.
+17. **Precios por sede.**
+    - Decisión: el catálogo de servicios y productos es común a la barbería, pero cada sede tiene sus propios precios de servicios y de productos. Si una sede no definió precio, rige el del catálogo. Solo Dueño y Administrador cambian precios. Se implementa en S4a.
+    - Motivo: las sedes pueden tener precios distintos sin duplicar el catálogo, y el precio del catálogo evita que una sede nueva arranque sin precios.
+18. **Barberos por sede.**
+    - Decisión: un barbero normalmente pertenece a una sede; Dueño y Administrador pueden rotarlo o asignarlo a otra. El modelo `BarberBranch` actual lo cubre (`tenancy.services.set_barber_branches`).
+    - Motivo: rotar personal entre sedes es parte de la operación, y con la relación muchos a muchos no hace falta otro modelo.
 
 ## Trabajo futuro
 

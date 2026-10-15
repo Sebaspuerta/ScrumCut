@@ -1,4 +1,7 @@
-"""Sede de los fiados y de los abonos, y sede activa obligatoria para el dinero (decisiones 3 y 14)."""
+"""Sede de los fiados y de los abonos, y sede activa obligatoria para el dinero (decisiones 3 y 14).
+
+Un fiado se abona solo en su sede de origen: ninguna operación de dinero cruza sedes.
+"""
 
 from decimal import Decimal
 
@@ -35,22 +38,38 @@ def test_el_fiado_de_una_comanda_guarda_la_sede_de_la_comanda(world, norte):
     assert Receivable.objects.get(order=order).origin_branch == norte
 
 
-def test_un_abono_de_un_fiado_de_centro_cobrado_en_norte_aparece_en_norte(world, norte):
+def _paid_in(world, branch: Branch) -> list[Decimal]:
+    return [row["amount"] for row in cash_movements(world.owner, branch=branch) if row["kind"] == "abono_fiado"]
+
+
+def test_un_fiado_de_centro_no_se_abona_en_la_caja_de_norte(world, norte):
     debt = _manual_debt(world, world.branch)
 
-    receivables.add_payment(world.cashier, debt.public_id, amount=D("10000"), method="efectivo", branch=norte.public_id)
+    with pytest.raises(ValidationError) as error:
+        receivables.add_payment(
+            world.cashier, debt.public_id, amount=D("10000"), method="efectivo", branch=norte.public_id
+        )
 
-    def paid_in(branch):
-        rows = cash_movements(world.owner, branch=branch)
-        return [row["amount"] for row in rows if row["kind"] == "abono_fiado"]
+    assert error.value.message_dict["branch"] == [receivables.OTHER_BRANCH_PAYMENT]
+    debt.refresh_from_db()
+    assert debt.balance == D("30000") and not debt.payments.exists()
+    assert _paid_in(world, norte) == []
 
-    assert paid_in(norte) == [D("10000")]
-    assert paid_in(world.branch) == []
-    assert debt.payments.get().cash_movement.session.branch == norte
+
+def test_un_fiado_se_abona_en_su_sede_y_el_dinero_queda_en_su_caja(world, norte):
+    debt = _manual_debt(world, world.branch)
+
+    receivables.add_payment(
+        world.cashier, debt.public_id, amount=D("10000"), method="efectivo", branch=world.branch.public_id
+    )
+
+    assert _paid_in(world, world.branch) == [D("10000")]
+    assert _paid_in(world, norte) == []
+    assert debt.payments.get().cash_movement.session == world.session
 
 
 def test_un_abono_no_entra_a_una_sede_desactivada(world, norte):
-    debt = _manual_debt(world, world.branch)
+    debt = _manual_debt(world, norte)
     cash.close_session(world.cashier, cash_selectors.open_session_for(norte).public_id, counted_amount=D("0"))
     tenancy.deactivate_branch(world.owner, norte.public_id)
 

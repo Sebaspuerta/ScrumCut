@@ -23,16 +23,16 @@ def test_caja_y_comanda_quedan_con_su_sede(world, norte):
     assert _branch_of("comanda.crear", order.public_id) == norte
 
 
-def test_el_fiado_queda_con_su_origen_y_el_abono_con_la_caja_donde_entro(world, norte):
+def test_el_fiado_y_su_abono_quedan_con_la_sede_de_origen(world):
     debt = receivables.create_manual(
         world.cashier, world.laura.public_id, total=Decimal("30000"), branch=world.branch.public_id
     )
     receivables.add_payment(
-        world.cashier, debt.public_id, amount=Decimal("1000"), method="efectivo", branch=norte.public_id
+        world.cashier, debt.public_id, amount=Decimal("1000"), method="efectivo", branch=world.branch.public_id
     )
 
     assert _branch_of("fiado.crear", debt.public_id) == world.branch
-    assert _branch_of("fiado.abonar", debt.public_id) == norte
+    assert _branch_of("fiado.abonar", debt.public_id) == world.branch
 
 
 def test_los_eventos_de_sede_la_llevan_y_los_de_acceso_no(world, norte):
