@@ -148,7 +148,14 @@ def _sell_day(world: SimpleNamespace, day: date, until: datetime, rng: random.Ra
 
 def _close_day(world: SimpleNamespace, session: CashSession, day: date, rng: random.Random) -> None:
     with at(_moment(day, 20)):
-        cash.register_manual_movement(world.owner, session.public_id, "gasto", D("15000"), "efectivo", "Aseo")
+        cash.register_manual_movement(
+            world.owner,
+            session.public_id,
+            kind="gasto",
+            amount=D("15000"),
+            payment_method="efectivo",
+            description="Aseo",
+        )
         counted = expected_cash(session) + D(rng.choice((0, 0, 0, -2000, 5000)))
         cash.close_session(world.owner, session.public_id, counted)
 

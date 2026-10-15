@@ -32,7 +32,15 @@ def session(cashier, branch):
 
 
 def _money(session, kind, direction, method, amount, actor):
-    return services.record_money(session, kind, direction, method, Decimal(amount), f"{kind} de prueba", actor)
+    return services.record_money(
+        session,
+        kind,
+        direction=direction,
+        method=method,
+        amount=Decimal(amount),
+        description=f"{kind} de prueba",
+        actor=actor,
+    )
 
 
 # ── Apertura (regla 21, decisión 2, defecto 17) ──────────────────────────────
@@ -141,11 +149,22 @@ def test_el_contado_no_puede_ser_negativo(cashier, session):
 
 def test_movimientos_manuales_toman_el_sentido_del_tipo(cashier, session):
     expense = services.register_manual_movement(
-        cashier, session.public_id, MovementKind.EXPENSE, Decimal("8000"), CASH, "Café"
+        cashier,
+        session.public_id,
+        kind=MovementKind.EXPENSE,
+        amount=Decimal("8000"),
+        payment_method=CASH,
+        description="Café",
     )
     assert expense.direction == Direction.OUT
     adjustment = services.register_manual_movement(
-        cashier, session.public_id, MovementKind.ADJUSTMENT, Decimal("500"), CASH, "Sobrante", direction=Direction.IN
+        cashier,
+        session.public_id,
+        kind=MovementKind.ADJUSTMENT,
+        amount=Decimal("500"),
+        payment_method=CASH,
+        description="Sobrante",
+        direction=Direction.IN,
     )
     assert adjustment.direction == Direction.IN
 
@@ -163,7 +182,13 @@ def test_movimientos_manuales_toman_el_sentido_del_tipo(cashier, session):
 def test_movimientos_manuales_invalidos(cashier, session, kind, amount, description, direction):
     with pytest.raises(ValidationError):
         services.register_manual_movement(
-            cashier, session.public_id, kind, Decimal(amount), CASH, description, direction=direction
+            cashier,
+            session.public_id,
+            kind=kind,
+            amount=Decimal(amount),
+            payment_method=CASH,
+            description=description,
+            direction=direction,
         )
     assert not CashMovement.objects.exists()
 
@@ -180,7 +205,14 @@ def test_un_metodo_no_habilitado_se_rechaza(cashier, session):
     with pytest.raises(ValidationError):
         _money(session, MovementKind.SALE, Direction.IN, NEQUI, "1000", cashier)
     with pytest.raises(ValidationError):
-        services.register_manual_movement(cashier, session.public_id, MovementKind.EXPENSE, Decimal("1"), NEQUI, "x")
+        services.register_manual_movement(
+            cashier,
+            session.public_id,
+            kind=MovementKind.EXPENSE,
+            amount=Decimal("1"),
+            payment_method=NEQUI,
+            description="x",
+        )
     assert _money(session, MovementKind.SALE, Direction.IN, CARD, "1000", cashier).pk
 
 
@@ -213,7 +245,14 @@ def test_el_barbero_no_maneja_caja(member, in_shop, branch, session):
     with pytest.raises(PermissionDenied):
         services.open_session(barber, Branch.objects.create(name="Norte").public_id, Decimal("0"))
     with pytest.raises(PermissionDenied):
-        services.register_manual_movement(barber, session.public_id, MovementKind.EXPENSE, Decimal("1"), CASH, "x")
+        services.register_manual_movement(
+            barber,
+            session.public_id,
+            kind=MovementKind.EXPENSE,
+            amount=Decimal("1"),
+            payment_method=CASH,
+            description="x",
+        )
     with pytest.raises(PermissionDenied):
         services.close_session(barber, session.public_id, Decimal("0"))
     with pytest.raises(PermissionDenied):
@@ -231,7 +270,14 @@ def test_el_consultor_ve_pero_no_opera(member, in_shop, branch, session):
 def test_el_administrador_opera_la_caja(member, in_shop, branch):
     admin = member(Role.ADMIN, in_shop)
     session = services.open_session(admin, branch.public_id, Decimal("0"))
-    services.register_manual_movement(admin, session.public_id, MovementKind.MANUAL_INCOME, Decimal("1"), CASH, "x")
+    services.register_manual_movement(
+        admin,
+        session.public_id,
+        kind=MovementKind.MANUAL_INCOME,
+        amount=Decimal("1"),
+        payment_method=CASH,
+        description="x",
+    )
     assert services.close_session(admin, session.public_id, Decimal("1")).difference == Decimal("0")
 
 

@@ -9,8 +9,20 @@ target-version = "py312"
 extend-exclude = ["*/migrations/*"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP", "S", "DJ", "BLE", "RET", "SIM"]
+# Preview solo para las reglas nombradas en select (hoy PLR0917); el formateador no entra en preview.
+preview = true
+explicit-preview-rules = true
+select = [
+    "E", "F", "W", "I", "B", "UP", "S", "DJ", "BLE", "RET", "SIM",
+    "C90", "PLR0911", "PLR0912", "PLR0915", "PLR0917", "ERA", "T20", "PIE", "PERF", "N",
+]
 ignore = ["S101"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-positional-args = 6
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S105", "S106", "S107"]

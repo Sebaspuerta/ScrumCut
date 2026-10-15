@@ -30,7 +30,12 @@ def _workbook(world, *dates):
     sell(world, world.beto, product=world.cera)
     for text in FORMULA_LIKE:
         cash.register_manual_movement(
-            world.cashier, world.session.public_id, "gasto", Decimal("1000"), "efectivo", text
+            world.cashier,
+            world.session.public_id,
+            kind="gasto",
+            amount=Decimal("1000"),
+            payment_method="efectivo",
+            description=text,
         )
     return load_workbook(BytesIO(build_business_report(world.owner, *dates)))
 

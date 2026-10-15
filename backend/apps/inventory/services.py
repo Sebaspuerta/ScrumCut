@@ -149,6 +149,7 @@ def _clean_reason(reason: str) -> str:
 def apply_stock_movement(
     product: Product,
     delta: int,
+    *,
     movement_type: str,
     reason: str,
     actor: Membership,
@@ -201,7 +202,9 @@ def register_entry(
         raise ValidationError({"quantity": "La cantidad de una entrada debe ser mayor que cero."})
     with transaction.atomic():
         target = Product.objects.get(public_id=product, deleted_at__isnull=True)
-        return apply_stock_movement(target, quantity, MovementType.ENTRY, reason, membership, unit_cost)
+        return apply_stock_movement(
+            target, quantity, movement_type=MovementType.ENTRY, reason=reason, actor=membership, unit_cost=unit_cost
+        )
 
 
 def register_adjustment(membership: Membership, product: UUID | str, quantity: int, reason: str) -> StockMovement:
@@ -209,7 +212,9 @@ def register_adjustment(membership: Membership, product: UUID | str, quantity: i
     ensure_permission(membership, "inventario.ajustar")
     with transaction.atomic():
         target = Product.objects.get(public_id=product, deleted_at__isnull=True)
-        return apply_stock_movement(target, quantity, MovementType.ADJUSTMENT, reason, membership)
+        return apply_stock_movement(
+            target, quantity, movement_type=MovementType.ADJUSTMENT, reason=reason, actor=membership
+        )
 
 
 # ── Productos ────────────────────────────────────────────────────────────────
@@ -226,7 +231,13 @@ def create_product(membership: Membership, data: ProductData, initial_stock: int
         _save_validated(product, "Ya existe un producto con ese nombre.")
         _audit(membership, "producto.crear", product, before=None, after=_product_snapshot(product))
         if initial_stock:
-            apply_stock_movement(product, initial_stock, MovementType.ENTRY, "Inventario inicial", membership)
+            apply_stock_movement(
+                product,
+                initial_stock,
+                movement_type=MovementType.ENTRY,
+                reason="Inventario inicial",
+                actor=membership,
+            )
     return product
 
 

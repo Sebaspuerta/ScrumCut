@@ -202,7 +202,7 @@ def test_dos_salidas_simultaneas_no_venden_la_ultima_unidad_dos_veces(member, sh
         try:
             with tenant_context(shop.pk):
                 barrier.wait()
-                services.apply_stock_movement(product, -1, MovementType.SALE, "Venta", owner)
+                services.apply_stock_movement(product, -1, movement_type=MovementType.SALE, reason="Venta", actor=owner)
             outcomes.append("ok")
         except ValidationError:
             outcomes.append("sin_stock")

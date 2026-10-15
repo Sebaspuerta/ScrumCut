@@ -69,6 +69,23 @@ Legal (Colombia, Ley 1581 de 2012)
 - Solo cookies esenciales (regla 13), por eso no hay banner de consentimiento. Cualquier cookie no esencial (analítica, publicidad) exige primero aprobación de Sebastián y un banner que pida consentimiento antes de cargarla.
 - Ningún texto legal se redacta como definitivo sin aprobación de Sebastián.
 
+## Estándar de código
+
+- Capas: las vistas solo reciben, validan formato y responden; la lógica de negocio va en services (escriben) y selectors (leen). Los modelos no conocen la presentación.
+- Una función hace una cosa. Si pasa de ~30 líneas o necesita un comentario para separar partes, se divide. Un archivo de más de ~400 líneas se divide por responsabilidad.
+- Nombres que dicen qué es y para qué, en el idioma del dominio. Sin abreviaturas crípticas ni números mágicos: constantes con nombre.
+- Sin código muerto, sin código comentado, sin print, sin TODO sueltos. Los comentarios explican el porqué, nunca repiten el qué.
+- Firmas públicas tipadas. Los servicios con más de dos parámetros usan argumentos solo por nombre (*).
+- Errores: excepciones específicas. Nunca except Exception silencioso. ValidationError con mensajes claros en español para el usuario.
+- Escrituras de varias tablas dentro de transaction.atomic. select_for_update cuando hay concurrencia. Las reglas críticas también como restricción en la base de datos.
+- Consultas: sin N+1 (select_related y prefetch_related) y agregaciones en la base de datos, no en Python. assertNumQueries en los selectores del tablero y de los reportes.
+- Una regla, una implementación: antes de crear un ayudante, buscar si ya existe. Sin duplicar lógica.
+- Sin dependencias nuevas sin aprobación de Sebastián.
+- Pruebas: toda regla de negocio y todo defecto corregido tienen su prueba. El nombre de la prueba describe el comportamiento.
+- Frontend: módulos ES pequeños sin variables globales, CSS solo con tokens, HTML semántico y accesible, sin estilos ni scripts en línea.
+- noqa y nosec solo con su justificación en la misma línea.
+- Antes de entregar cualquier tarea: autorrevisión contra esta lista, e informar cualquier excepción con su motivo.
+
 ## Antes de pedir revisión
 
 ```bash

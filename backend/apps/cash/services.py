@@ -76,6 +76,7 @@ def _check_method_enabled(method: str) -> None:
 def record_money(
     session: CashSession,
     kind: str,
+    *,
     direction: str,
     method: str,
     amount: Decimal,
@@ -163,6 +164,7 @@ def close_session(
 def register_manual_movement(
     membership: Membership,
     session: UUID | str,
+    *,
     kind: str,
     amount: Decimal,
     payment_method: str,
@@ -183,4 +185,12 @@ def register_manual_movement(
     elif direction not in Direction.values:
         raise ValidationError({"direction": "Indica si el ajuste entra o sale."})
     target = CashSession.objects.get(public_id=session)
-    return record_money(target, kind, direction, payment_method, amount, description, membership)
+    return record_money(
+        target,
+        kind,
+        direction=direction,
+        method=payment_method,
+        amount=amount,
+        description=description,
+        actor=membership,
+    )

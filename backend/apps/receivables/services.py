@@ -130,11 +130,11 @@ def add_payment(
         movement = record_money(
             session,
             MovementKind.RECEIVABLE_PAYMENT,
-            Direction.IN,
-            method,
-            amount,
-            f"Abono a fiado de {locked.client}",
-            membership,
+            direction=Direction.IN,
+            method=method,
+            amount=amount,
+            description=f"Abono a fiado de {locked.client}",
+            actor=membership,
         )
         payment = ReceivablePayment(
             barbershop_id=locked.barbershop_id,

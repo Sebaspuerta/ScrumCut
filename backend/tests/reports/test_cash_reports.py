@@ -17,7 +17,9 @@ def test_cierres_con_esperado_contado_y_diferencia_guardados(world):
     w = world
     sell(w, w.ana, service=w.corte)  # efectivo
     sell(w, w.beto, service=w.barba, method="nequi")  # no entra al esperado
-    cash.register_manual_movement(w.cashier, w.session.public_id, "gasto", D("5000"), "efectivo", "Aseo")
+    cash.register_manual_movement(
+        w.cashier, w.session.public_id, kind="gasto", amount=D("5000"), payment_method="efectivo", description="Aseo"
+    )
     cash.close_session(w.cashier, w.session.public_id, D("69000"))
 
     [closing] = cash_closings(w.owner)
@@ -33,7 +35,9 @@ def test_cierres_con_esperado_contado_y_diferencia_guardados(world):
 def test_movimientos_de_caja_del_periodo(world):
     w = world
     sell(w, w.ana, service=w.corte)
-    cash.register_manual_movement(w.cashier, w.session.public_id, "gasto", D("5000"), "efectivo", "Aseo")
+    cash.register_manual_movement(
+        w.cashier, w.session.public_id, kind="gasto", amount=D("5000"), payment_method="efectivo", description="Aseo"
+    )
 
     rows = [(row["kind"], row["direction"], row["amount"]) for row in cash_movements(w.owner)]
 

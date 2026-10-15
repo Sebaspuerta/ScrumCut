@@ -127,7 +127,9 @@ def test_la_cascada_de_caja_cuadra_con_el_arqueo(world):
     sell(w, w.ana, service=w.corte)  # +25 000 en efectivo
     sell(w, w.beto, service=w.barba, method="nequi")  # no entra a la caja
     for kind, amount in (("ingreso_manual", "1000"), ("gasto", "4000"), ("retiro", "9000")):
-        cash.register_manual_movement(w.cashier, w.session.public_id, kind, D(amount), "efectivo", "Prueba")
+        cash.register_manual_movement(
+            w.cashier, w.session.public_id, kind=kind, amount=D(amount), payment_method="efectivo", description="Prueba"
+        )
 
     flow = _dashboard(w)["cash_flow"]
     steps = {step["label"]: step for step in flow["steps"]}

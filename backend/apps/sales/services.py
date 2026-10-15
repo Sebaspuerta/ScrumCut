@@ -12,7 +12,7 @@ alcance del rol lanza `DoesNotExist`; los datos inválidos, `ValidationError`.
 """
 
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, datetime
 from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 from uuid import UUID
 
@@ -358,25 +358,22 @@ def _commission(line: OrderItem, now) -> None:
     line.commission_amount = amount.quantize(_CENTS, rounding=ROUND_HALF_UP)
 
 
-def _close_locked(
-    membership: Membership, order: Order, payments: list[dict], *, as_credit: bool, due_date: date | None
-) -> Order:
-    _require_editable(order)
-    lines = list(order.items.select_related("service", "product", "barber").order_by("pk"))
-    if not lines:
-        raise ValidationError("La comanda no tiene ítems.", code="empty_order")
+def _assign_service_barbers(order: Order, lines: list[OrderItem]) -> None:
     for line in lines:
-        if line.item_type == ItemType.SERVICE:
-            barber = line.barber or order.barber
-            if barber is None or barber.is_deleted or not barber.is_active:
-                raise ValidationError(
-                    "Cada servicio necesita un barbero activo: %(name)s no lo tiene.",
-                    code="missing_barber",
-                    params={"name": line.name},
-                )
-            line.barber = barber
+        if line.item_type != ItemType.SERVICE:
+            continue
+        barber = line.barber or order.barber
+        if barber is None or barber.is_deleted or not barber.is_active:
+            raise ValidationError(
+                "Cada servicio necesita un barbero activo: %(name)s no lo tiene.",
+                code="missing_barber",
+                params={"name": line.name},
+            )
+        line.barber = barber
 
-    _recalculate(order)
+
+def _validated_balance(order: Order, payments: list[dict], *, as_credit: bool) -> tuple[Decimal, Decimal]:
+    """Lo pagado y el saldo. Un saldo solo se acepta como fiado y con cliente."""
     paid = sum((payment["amount"] for payment in payments), _ZERO)
     if paid > order.total:
         raise ValidationError("Los pagos superan el total de la comanda.", code="overpaid")
@@ -385,54 +382,86 @@ def _close_locked(
         raise ValidationError("La comanda tiene saldo: cóbrala completa o ciérrala como fiado.", code="unpaid_balance")
     if balance > 0 and order.client_id is None:
         raise ValidationError("Un fiado necesita un cliente.", code="credit_without_client")
+    return paid, balance
 
-    now = timezone.now()
-    reference = _stock_reference(order)
-    reason = f"Comanda #{order.number}"
-    for line, share in zip(lines, _distribute_discount(lines, order.discount), strict=True):
-        line.line_discount = share
-        if line.item_type == ItemType.PRODUCT:
-            line.name = line.product.name
-            movement = apply_stock_movement(
-                line.product, -line.quantity, MovementType.SALE, reason, membership, reference=reference
-            )
-            line.unit_cost = movement.unit_cost
-            line.commission_type, line.commission_rate, line.commission_amount = "", None, _ZERO
-        else:
-            line.name = line.service.name
-            consumables_cost = _ZERO
-            for consumable in consumables_for(line.service):
-                used = consumable.quantity * line.quantity
-                movement = apply_stock_movement(
-                    consumable.product, -used, MovementType.SERVICE, reason, membership, reference=reference
-                )
-                consumables_cost += movement.unit_cost * used
-            line.unit_cost = _ZERO
-            line.consumables_cost = consumables_cost
-            _commission(line, now)
-        line.full_clean()
-        line.save()
 
-    if payments:
-        session = open_session_for(order.branch)
-        if session is None:
-            raise ValidationError("No hay una caja abierta en esta sede para recibir el pago.", code="no_open_session")
-        for payment in payments:
-            movement = record_money(
-                session, MovementKind.SALE, Direction.IN, payment["method"], payment["amount"], reason, membership
-            )
-            receipt = Payment(
-                barbershop_id=order.barbershop_id,
-                order=order,
-                cash_movement=movement,
-                method=payment["method"],
-                amount=payment["amount"],
-                reference=payment["reference"],
-                received_by=membership.user,
-            )
-            receipt.full_clean()
-            receipt.save()
+def _settle_product_line(line: OrderItem, membership: Membership, *, reason: str, reference: str) -> None:
+    """El costo copiado es el del movimiento de stock; un producto no lleva comisión."""
+    line.name = line.product.name
+    movement = apply_stock_movement(
+        line.product,
+        -line.quantity,
+        movement_type=MovementType.SALE,
+        reason=reason,
+        actor=membership,
+        reference=reference,
+    )
+    line.unit_cost = movement.unit_cost
+    line.commission_type, line.commission_rate, line.commission_amount = "", None, _ZERO
 
+
+def _settle_service_line(
+    line: OrderItem, membership: Membership, *, reason: str, reference: str, now: datetime
+) -> None:
+    """El costo de un servicio es el de sus insumos, que se descuentan del stock."""
+    line.name = line.service.name
+    consumables_cost = _ZERO
+    for consumable in consumables_for(line.service):
+        used = consumable.quantity * line.quantity
+        movement = apply_stock_movement(
+            consumable.product,
+            -used,
+            movement_type=MovementType.SERVICE,
+            reason=reason,
+            actor=membership,
+            reference=reference,
+        )
+        consumables_cost += movement.unit_cost * used
+    line.unit_cost = _ZERO
+    line.consumables_cost = consumables_cost
+    _commission(line, now)
+
+
+def _record_sale_payments(order: Order, payments: list[dict], *, membership: Membership, reason: str) -> None:
+    if not payments:
+        return
+    session = open_session_for(order.branch)
+    if session is None:
+        raise ValidationError("No hay una caja abierta en esta sede para recibir el pago.", code="no_open_session")
+    for payment in payments:
+        movement = record_money(
+            session,
+            MovementKind.SALE,
+            direction=Direction.IN,
+            method=payment["method"],
+            amount=payment["amount"],
+            description=reason,
+            actor=membership,
+        )
+        receipt = Payment(
+            barbershop_id=order.barbershop_id,
+            order=order,
+            cash_movement=movement,
+            method=payment["method"],
+            amount=payment["amount"],
+            reference=payment["reference"],
+            received_by=membership.user,
+        )
+        receipt.full_clean()
+        receipt.save()
+
+
+def _mark_closed(
+    order: Order,
+    lines: list[OrderItem],
+    *,
+    membership: Membership,
+    paid: Decimal,
+    balance: Decimal,
+    due_date: date | None,
+    now: datetime,
+) -> None:
+    """El saldo que queda pasa a ser un fiado del cliente."""
     order.amount_paid = paid
     order.commission_total = sum((line.commission_amount for line in lines), _ZERO)
     if balance > 0:
@@ -445,6 +474,33 @@ def _close_locked(
     order.closed_by = membership.user
     order.full_clean()
     order.save()
+
+
+def _close_locked(
+    membership: Membership, order: Order, payments: list[dict], *, as_credit: bool, due_date: date | None
+) -> Order:
+    _require_editable(order)
+    lines = list(order.items.select_related("service", "product", "barber").order_by("pk"))
+    if not lines:
+        raise ValidationError("La comanda no tiene ítems.", code="empty_order")
+    _assign_service_barbers(order, lines)
+    _recalculate(order)
+    paid, balance = _validated_balance(order, payments, as_credit=as_credit)
+
+    now = timezone.now()
+    reference = _stock_reference(order)
+    reason = f"Comanda #{order.number}"
+    for line, share in zip(lines, _distribute_discount(lines, order.discount), strict=True):
+        line.line_discount = share
+        if line.item_type == ItemType.PRODUCT:
+            _settle_product_line(line, membership, reason=reason, reference=reference)
+        else:
+            _settle_service_line(line, membership, reason=reason, reference=reference, now=now)
+        line.full_clean()
+        line.save()
+
+    _record_sale_payments(order, payments, membership=membership, reason=reason)
+    _mark_closed(order, lines, membership=membership, paid=paid, balance=balance, due_date=due_date, now=now)
     return order
 
 
@@ -540,11 +596,11 @@ def _reverse_closed(membership: Membership, order: Order, reason: str) -> None:
             record_money(
                 session,
                 MovementKind.REFUND,
-                Direction.OUT,
-                payment.method,
-                payment.amount,
-                f"Devolución comanda #{order.number}",
-                membership,
+                direction=Direction.OUT,
+                method=payment.method,
+                amount=payment.amount,
+                description=f"Devolución comanda #{order.number}",
+                actor=membership,
             )
 
     reference = _stock_reference(order)
@@ -555,9 +611,9 @@ def _reverse_closed(membership: Membership, order: Order, reason: str) -> None:
         apply_stock_movement(
             movement.product,
             -movement.quantity,
-            MovementType.REVERSAL,
-            f"Anulación comanda #{order.number}",
-            membership,
+            movement_type=MovementType.REVERSAL,
+            reason=f"Anulación comanda #{order.number}",
+            actor=membership,
             unit_cost=movement.unit_cost,
             reference=reference,
         )
