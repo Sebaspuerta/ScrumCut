@@ -24,6 +24,18 @@ python manage.py runserver
 
 El `.env` vive en la raíz del repositorio; `manage.py` y las pruebas lo cargan desde ahí en desarrollo.
 
+## Pruebas
+
+Desde `backend/`:
+
+```bash
+pytest                    # reutiliza la base de pruebas (--reuse-db va en pyproject.toml)
+pytest --create-db        # la crea de nuevo: después de agregar o cambiar migraciones
+pytest -m "not slow"      # sin las pruebas lentas de migraciones; CI siempre las corre
+```
+
+Nunca corras dos procesos de pytest a la vez: comparten la base de pruebas.
+
 ## Estructura
 
 ```

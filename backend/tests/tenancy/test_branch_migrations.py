@@ -15,7 +15,8 @@ from django.utils import timezone
 
 from tests.rls_support import postgres_only
 
-pytestmark = [pytest.mark.django_db(transaction=True), postgres_only]
+# slow: en local se pueden saltar con -m "not slow"; CI las corre siempre.
+pytestmark = [pytest.mark.django_db(transaction=True), postgres_only, pytest.mark.slow]
 
 TENANCY_BEFORE = [("tenancy", "0003_order_number_and_credit_limit")]
 TENANCY_AFTER = [("tenancy", "0005_main_branch_and_plan")]

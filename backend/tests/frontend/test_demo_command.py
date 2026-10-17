@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from django.core.management import CommandError, call_command
 from django.test import override_settings
+from django.utils import timezone
 
 from apps.alerts.models import Alert
 from apps.cash.models import CashSession
@@ -24,29 +25,31 @@ def test_se_niega_a_correr_fuera_de_desarrollo():
     assert not Barbershop.objects.exists()
 
 
-@override_settings(DEBUG=True)
+BOGOTA = ZoneInfo("America/Bogota")
+
+
+def _demo_at(hour: int, out: StringIO | None = None) -> Barbershop:
+    """Miércoles 14 de octubre de 2026 a la hora dada en Bogotá: lunes y martes completos y hoy hasta esa hora."""
+    moment = datetime(2026, 10, 14, hour, tzinfo=BOGOTA)
+    with override_settings(DEBUG=True), mock.patch("django.utils.timezone.now", return_value=moment):
+        call_command("cargar_demo", "--dias", "3", stdout=out or StringIO())
+    return Barbershop.objects.get(slug="demo")
+
+
 def test_carga_ventas_cajas_y_alertas_y_no_se_repite():
     out = StringIO()
-    call_command("cargar_demo", "--dias", "8", stdout=out)
+    shop = _demo_at(12, out)  # con la hora fija, el resultado no depende del día en que corre la prueba
 
-    shop = Barbershop.objects.get(slug="demo")
     with tenant_context(shop.pk):
-        closed_days = {order.closed_at.date() for order in Order.objects.filter(status=OrderStatus.CLOSED)}
-        assert len(closed_days) >= 5  # 8 días menos el domingo
-        assert CashSession.objects.filter(closed_at__isnull=False).count() >= 5
+        closed = Order.objects.filter(status=OrderStatus.CLOSED)
+        closed_days = {timezone.localtime(order.closed_at, BOGOTA).date() for order in closed}
+        assert closed_days == {date(2026, 10, 12), date(2026, 10, 13), date(2026, 10, 14)}
+        assert CashSession.objects.filter(closed_at__isnull=False).count() == 4  # lunes y martes, en las 2 sedes
         assert Alert.objects.exists()
     assert "demo-dueno@scrumcut.test" in out.getvalue()
 
-    with pytest.raises(CommandError):
+    with override_settings(DEBUG=True), pytest.raises(CommandError):
         call_command("cargar_demo", stdout=StringIO())
-
-
-def _demo_at(hour: int) -> Barbershop:
-    """Miércoles 14 de octubre de 2026 a la hora dada en Bogotá."""
-    moment = datetime(2026, 10, 14, hour, tzinfo=ZoneInfo("America/Bogota"))
-    with override_settings(DEBUG=True), mock.patch("django.utils.timezone.now", return_value=moment):
-        call_command("cargar_demo", "--dias", "3", stdout=StringIO())
-    return Barbershop.objects.get(slug="demo")
 
 
 def test_antes_de_la_apertura_no_hay_caja_ni_ventas_de_hoy():

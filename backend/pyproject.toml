@@ -36,7 +36,11 @@ max-positional-args = 2
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py"]
-addopts = "-q --strict-markers"
+# --reuse-db: en local se conserva la base de pruebas entre corridas. CI pasa --create-db.
+addopts = "-q --strict-markers --reuse-db"
+markers = [
+    "slow: pruebas lentas (migraciones con datos); en local se saltan con -m \"not slow\", CI las corre",
+]
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv"]

@@ -95,6 +95,9 @@ pytest
 DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py check --deploy --fail-level WARNING
 ```
 
+Pruebas:
+- Nunca correr dos procesos de pytest a la vez contra la misma base de pruebas. Si una corrida pasa a segundo plano, esperar a que termine antes de lanzar otra.
+
 Luego: `deslop` y `/slop-check` (anti-slop) sobre el cambio, y veredicto de Thermos antes de fusionar a `main`.
 Cambios en permisos, pagos, migraciones o seguridad requieren aprobación humana.
 

@@ -64,7 +64,8 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test
       - name: Pruebas
-        run: pytest
+        # Base de pruebas nueva en cada corrida y todas las pruebas, también las marcadas slow.
+        run: pytest --create-db
       - name: Base desechable para el chequeo de despliegue
         # El chequeo legal lee la base: se migra y se publican documentos de prueba, solo aquí.
         run: python manage.py migrate --noinput && python manage.py publicar_documentos_ci
