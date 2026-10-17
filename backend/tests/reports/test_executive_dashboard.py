@@ -12,6 +12,7 @@ from apps.cash.selectors import expected_cash
 from apps.core.formatting import format_variation
 from apps.receivables import services as receivables
 from apps.reports.selectors.dashboard import executive_dashboard
+from tests.conftest import scope_of
 from tests.reports.helpers import BOGOTA, close_at, sell
 
 pytestmark = pytest.mark.django_db
@@ -20,7 +21,7 @@ D = Decimal
 
 
 def _dashboard(w, date_from=None, date_to=None):
-    return executive_dashboard(w.owner, date_from, date_to, w.branch)
+    return executive_dashboard(w.owner, date_from, date_to, scope=scope_of(w.owner, w.branch))
 
 
 def _sell_on(w, days_ago, **item):
@@ -103,7 +104,7 @@ def test_fiados_pendientes_con_vencidos_y_clientes(world):
         w.cashier,
         w.laura.public_id,
         total=D("30000"),
-        branch=w.branch.public_id,
+        scope=scope_of(w.cashier, w.branch),
         due_date=timezone.localdate() - timedelta(1),
     )
 
@@ -170,4 +171,4 @@ def test_sin_caja_hoy_no_hay_cuadre(world):
     w = world
     cash.close_session(w.cashier, w.session.public_id, counted_amount=D("50000"))
     with mock.patch("django.utils.timezone.now", return_value=timezone.now() + timedelta(days=1)):
-        assert executive_dashboard(w.owner, None, None, w.branch)["cash_flow"] is None
+        assert executive_dashboard(w.owner, None, None, scope=scope_of(w.owner, w.branch))["cash_flow"] is None

@@ -1,4 +1,5 @@
-"""Qué entra en un reporte: el período en la zona de la barbería y las comandas cerradas visibles.
+"""Qué entra en un reporte: el período en la zona de la barbería, la sede del alcance y las comandas
+cerradas visibles.
 
 Regla 49 con el defecto 28 corregido: los días se interpretan en `Barbershop.timezone`,
 no en UTC ni en una zona fija. Comisiones y costos salen de lo copiado en cada línea
@@ -15,7 +16,8 @@ from django.db.models.functions import Coalesce
 
 from apps.sales.models import Order, OrderItem, OrderStatus
 from apps.sales.selectors import day_bounds, period_dates, scoped_orders
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.branch_scope import BranchScope
+from apps.tenancy.models import Membership
 
 NET_SALE = F("line_total") - F("line_discount")
 LINE_COST = F("unit_cost") * F("quantity") + F("consumables_cost")
@@ -28,16 +30,17 @@ class Period:
     start: datetime
     end: datetime
     tz: ZoneInfo
-    branch: Branch | None = None  # None: todas las sedes
+    scope: BranchScope  # una sede o todas (docs/sedes.md, fase S2)
 
 
 def resolve_period(
-    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, *, scope: BranchScope
 ) -> Period:
+    scope.check(membership)
     date_from, date_to = period_dates(membership, date_from, date_to)
     tz_name = membership.barbershop.timezone
     start, end = day_bounds(tz_name, date_from, date_to)
-    return Period(date_from, date_to, start, end, ZoneInfo(tz_name), branch)
+    return Period(date_from, date_to, start, end, ZoneInfo(tz_name), scope)
 
 
 def money_sum(expression, condition: Q | None = None) -> Coalesce:
@@ -53,7 +56,7 @@ def closed_orders(membership: Membership, period: Period) -> QuerySet[Order]:
     orders = scoped_orders(membership).filter(
         status=OrderStatus.CLOSED, closed_at__gte=period.start, closed_at__lt=period.end
     )
-    return orders.filter(branch=period.branch) if period.branch else orders
+    return period.scope.apply(orders)
 
 
 def closed_items(membership: Membership, period: Period) -> QuerySet[OrderItem]:

@@ -15,11 +15,24 @@ from apps.core.tenant_context import tenant_context
 from apps.inventory import services as inventory
 from apps.legal.models import LegalDocument
 from apps.staff import services as staff
-from apps.tenancy.models import Barbershop, Branch, Membership
+from apps.tenancy.branch_scope import ALL, BranchScope, resolve_scope
+from apps.tenancy.models import Barbershop, Branch, Membership, MembershipBranch
 from apps.tenancy.roles import Role
 
 # Se genera en cada corrida: una contraseña literal en el código la marca gitleaks como secreto.
 TEST_PASSWORD = secrets.token_urlsafe(18)
+
+
+def scope_of(membership: Membership, branch: Branch | None = None, *, everything: bool = False) -> BranchScope:
+    """El alcance de una membresía como lo arma el middleware (docs/sedes.md, fase S2).
+
+    Con `branch`, esa sede; con `everything`, "todas"; sin nada, el valor por defecto del rol.
+    Si lo pedido no está permitido, la prueba falla aquí en vez de seguir con otra sede.
+    """
+    requested = ALL if everything else (str(branch.public_id) if branch else None)
+    scope = resolve_scope(membership, requested)
+    assert requested is None or scope.token == requested, f"{membership.role} no puede usar {requested}"
+    return scope
 
 
 @pytest.fixture
@@ -84,6 +97,7 @@ def world(member, in_shop):
     branch = Branch.objects.get()  # la Sede principal de toda barbería nueva
     branch.name = "Centro"
     branch.save(update_fields=["name", "updated_at"])
+    MembershipBranch.objects.create(membership=cashier, branch=branch)  # el cajero entra a Centro
 
     ana = staff.create_barber(
         owner,
@@ -117,7 +131,7 @@ def world(member, in_shop):
         data_consent_at=timezone.now(),
         data_policy_version="2026-10",
     )
-    session = cash.open_session(cashier, branch.public_id, opening_amount=Decimal("50000"))
+    session = cash.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("50000"))
     return SimpleNamespace(
         shop=in_shop,
         owner=owner,

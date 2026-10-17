@@ -11,6 +11,7 @@ from apps.clients.selectors import ClientStatus, client_profile
 from apps.receivables import services as receivables
 from apps.sales import services as sales
 from apps.sales.models import Order
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -18,7 +19,9 @@ D = Decimal
 
 
 def _visit(w, client, service, amount):
-    order = sales.create_order(w.cashier, w.branch.public_id, client=client.public_id, barber=w.ana.public_id)
+    order = sales.create_order(
+        w.cashier, scope_of(w.cashier, w.branch), client=client.public_id, barber=w.ana.public_id
+    )
     sales.add_item(w.cashier, order.public_id, service=service.public_id)
     return sales.close_order(w.cashier, order.public_id, payments=[{"method": "efectivo", "amount": amount}])
 
@@ -30,7 +33,7 @@ def _client(w, name):
 
 
 def test_cliente_sin_visitas_es_nuevo(world):
-    profile = client_profile(world.cashier, world.laura.public_id)
+    profile = client_profile(world.cashier, world.laura.public_id, scope=scope_of(world.cashier))
     assert (profile["visits"], profile["spent"], profile["last_visit"], profile["balance"]) == (0, D("0"), None, D("0"))
     assert profile["status"] == ClientStatus.NEW
 
@@ -38,33 +41,38 @@ def test_cliente_sin_visitas_es_nuevo(world):
 def test_frecuente_con_tres_visitas(world):
     for _ in range(3):
         _visit(world, world.laura, world.barba, "15000")
-    profile = client_profile(world.cashier, world.laura.public_id)
+    profile = client_profile(world.cashier, world.laura.public_id, scope=scope_of(world.cashier))
     assert (profile["visits"], profile["spent"], profile["status"]) == (3, D("45000"), ClientStatus.FREQUENT)
 
 
 def test_vip_por_gasto(world):
     for _ in range(8):
         _visit(world, world.laura, world.corte, "25000")
-    profile = client_profile(world.cashier, world.laura.public_id)
+    profile = client_profile(world.cashier, world.laura.public_id, scope=scope_of(world.cashier))
     assert (profile["spent"], profile["status"]) == (D("200000"), ClientStatus.VIP)
 
 
 def test_inactivo_sin_visitas_recientes(world):
     order = _visit(world, world.laura, world.barba, "15000")
     Order.objects.filter(pk=order.pk).update(closed_at=timezone.now() - timedelta(days=91))
-    assert client_profile(world.cashier, world.laura.public_id)["status"] == ClientStatus.INACTIVE
+    assert (
+        client_profile(world.cashier, world.laura.public_id, scope=scope_of(world.cashier))["status"]
+        == ClientStatus.INACTIVE
+    )
 
 
 def test_deudor_manda_sobre_lo_demas(world):
     pedro = _client(world, "Pedro Ruiz")
     for _ in range(3):
         _visit(world, pedro, world.barba, "15000")
-    receivables.create_manual(world.cashier, pedro.public_id, total=D("7000"), branch=world.branch.public_id)
-    profile = client_profile(world.cashier, pedro.public_id)
+    receivables.create_manual(
+        world.cashier, pedro.public_id, total=D("7000"), scope=scope_of(world.cashier, world.branch)
+    )
+    profile = client_profile(world.cashier, pedro.public_id, scope=scope_of(world.cashier))
     assert (profile["balance"], profile["status"]) == (D("7000"), ClientStatus.DEBTOR)
 
 
 def test_las_comandas_anuladas_no_cuentan(world):
     order = _visit(world, world.laura, world.barba, "15000")
     sales.cancel_order(world.owner, order.public_id, reason="Error")
-    assert client_profile(world.cashier, world.laura.public_id)["visits"] == 0
+    assert client_profile(world.cashier, world.laura.public_id, scope=scope_of(world.cashier))["visits"] == 0

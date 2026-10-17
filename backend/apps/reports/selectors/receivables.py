@@ -6,16 +6,18 @@ from apps.receivables.models import OPEN_STATUSES, Receivable
 from apps.receivables.selectors import receivables_summary
 from apps.reports.scope import money_sum
 from apps.sales.selectors import local_today
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 
-def receivables_report(membership: Membership) -> dict:
-    """Vencido por fecha de vencimiento, no por el estado guardado (regla 29)."""
+def receivables_report(membership: Membership, *, scope: BranchScope) -> dict:
+    """Vencido por fecha de vencimiento, no por el estado guardado (regla 29). Por la sede de origen."""
     ensure_permission(membership, "reportes.ver")
+    scope.check(membership)
     overdue = Q(due_date__lt=local_today(membership))
     by_client = (
-        Receivable.objects.filter(status__in=OPEN_STATUSES, balance__gt=0)
+        scope.apply(Receivable.objects.filter(status__in=OPEN_STATUSES, balance__gt=0), "origin_branch")
         .values("client__public_id", "client__full_name")
         .annotate(
             receivables=Count("pk"),
@@ -25,4 +27,4 @@ def receivables_report(membership: Membership) -> dict:
         )
         .order_by("-pending_balance", "client__full_name")
     )
-    return {"summary": receivables_summary(membership), "by_client": list(by_client)}
+    return {"summary": receivables_summary(membership, scope=scope), "by_client": list(by_client)}

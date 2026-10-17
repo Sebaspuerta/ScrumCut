@@ -10,7 +10,7 @@ from apps.reports.excel.builder import build_business_report
 from apps.reports.forms import PeriodFilterForm
 from apps.reports.selectors.dashboard import executive_dashboard
 from apps.sales.selectors import local_today, my_cuts_today, period_dates
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.models import Membership
 from apps.tenancy.permissions import require_permission
 from apps.tenancy.roles import role_has_permission
 
@@ -21,8 +21,7 @@ XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def _filters(request: HttpRequest, membership: Membership) -> PeriodFilterForm:
-    branches = Branch.objects.filter(is_active=True).order_by("name")
-    return PeriodFilterForm(request.GET, branches=branches, today=local_today(membership))
+    return PeriodFilterForm(request.GET, today=local_today(membership))
 
 
 @require_GET
@@ -36,7 +35,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         return render(request, TEMPLATE, {"state": "cuts", "cuts": my_cuts_today(membership)})
     form = _filters(request, membership)
     try:
-        data = executive_dashboard(membership, *form.dates(), form.branch())
+        data = executive_dashboard(membership, *form.dates(), scope=request.branch_scope)
     except Exception:  # noqa: BLE001 — cualquier falla muestra el error genérico (regla 12); el detalle va al log
         logger.exception("No se pudo armar el tablero de la barbería %s", membership.barbershop_id)
         return render(request, TEMPLATE, {"state": "error", "form": form})
@@ -46,13 +45,15 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 @require_GET
 @require_permission("reportes.exportar")
 def export(request: HttpRequest) -> HttpResponse:
-    """El Excel de la sede y el período que se ven en el tablero. El nombre lleva barbería, sede y fechas."""
+    """El Excel del alcance y el período que se ven en el tablero. El nombre lleva barbería, sede y fechas;
+    en "todas", sin sede."""
     membership = request.membership
+    scope = request.branch_scope
     form = _filters(request, membership)
-    branch = form.branch()
     date_from, date_to = period_dates(membership, *form.dates())
-    response = HttpResponse(build_business_report(membership, date_from, date_to, branch), content_type=XLSX)
-    sede = f"-{slugify(branch.name)}" if branch else ""
+    report = build_business_report(membership, date_from, date_to, scope=scope)
+    response = HttpResponse(report, content_type=XLSX)
+    sede = f"-{slugify(scope.branch.name)}" if scope.branch else ""
     name = f"scrumcut-{membership.barbershop.slug}{sede}-{date_from:%Y%m%d}-{date_to:%Y%m%d}.xlsx"
     response["Content-Disposition"] = f'attachment; filename="{name}"'
     return response

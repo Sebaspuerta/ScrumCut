@@ -20,6 +20,7 @@ from apps.sales.models import Order, OrderStatus, Payment, PaymentStatus
 from apps.staff import services as staff
 from apps.tenancy.models import BarbershopSettings, Branch
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -29,7 +30,7 @@ D = Decimal
 def _order(w, actor=None, **kwargs):
     actor = actor or w.cashier
     kwargs.setdefault("barber", w.ana.public_id)
-    return services.create_order(actor, w.branch.public_id, **kwargs)
+    return services.create_order(actor, scope_of(actor, w.branch), **kwargs)
 
 
 def _sold_corte(w, actor=None, **kwargs):
@@ -60,7 +61,7 @@ def test_el_numero_es_consecutivo_por_barberia(world, member, other_shop):
     assert (first.number, second.number) == (1, 2)
     with tenant_context(other_shop.pk):
         other_owner = member(Role.OWNER, other_shop)
-        other = services.create_order(other_owner, Branch.objects.create(name="Otra").public_id)
+        other = services.create_order(other_owner, scope_of(other_owner, Branch.objects.create(name="Otra")))
     assert other.number == 1
     assert BarbershopSettings.objects.get().next_order_number == 3
 
@@ -193,7 +194,7 @@ def test_metodo_no_habilitado_rechazado(world):
 
 
 def test_servicio_sin_barbero_activo_no_se_cierra(world):
-    order = services.create_order(world.cashier, world.branch.public_id)
+    order = services.create_order(world.cashier, scope_of(world.cashier, world.branch))
     services.add_item(world.cashier, order.public_id, service=world.barba.public_id)
     with pytest.raises(ValidationError) as excinfo:
         services.close_order(world.cashier, order.public_id, payments=_cash("15000"))
@@ -240,7 +241,9 @@ def test_el_limite_de_credito_cuenta_la_deuda_total_del_cliente(world):
     settings = BarbershopSettings.objects.get()
     settings.max_credit_per_client = D("20000")
     settings.save()
-    receivables.create_manual(world.cashier, world.laura.public_id, total=D("8000"), branch=world.branch.public_id)
+    receivables.create_manual(
+        world.cashier, world.laura.public_id, total=D("8000"), scope=scope_of(world.cashier, world.branch)
+    )
     order = _sold_corte(world, client=world.laura.public_id)
     with pytest.raises(ValidationError) as excinfo:
         services.close_order(world.cashier, order.public_id, payments=_cash("10000"), as_credit=True)
@@ -281,7 +284,11 @@ def test_dos_cierres_simultaneos_cierran_una_sola_vez(world):
 
 def test_registro_rapido_cobra_completo_en_un_paso(world):
     order = services.quick_register(
-        world.cashier, world.branch.public_id, barber=world.ana.public_id, method="nequi", service=world.corte.public_id
+        world.cashier,
+        scope_of(world.cashier, world.branch),
+        barber=world.ana.public_id,
+        method="nequi",
+        service=world.corte.public_id,
     )
     assert (order.status, order.payment_status, order.amount_paid) == (
         OrderStatus.CLOSED,
@@ -290,7 +297,7 @@ def test_registro_rapido_cobra_completo_en_un_paso(world):
     )
     product_sale = services.quick_register(
         world.cashier,
-        world.branch.public_id,
+        scope_of(world.cashier, world.branch),
         barber=world.ana.public_id,
         method="efectivo",
         product=world.cera.public_id,
@@ -339,7 +346,7 @@ def test_no_se_anula_una_comanda_cuyo_fiado_tiene_abonos(world):
     order = _closed_full_order(world, payments=_cash("5000"), as_credit=True)
     debt = Receivable.objects.get(order=order)
     receivables.add_payment(
-        world.cashier, debt.public_id, amount=D("1000"), method="efectivo", branch=world.branch.public_id
+        world.cashier, debt.public_id, amount=D("1000"), method="efectivo", scope=scope_of(world.cashier, world.branch)
     )
     with pytest.raises(ValidationError) as excinfo:
         services.cancel_order(world.owner, order.public_id, reason="Error")
@@ -375,17 +382,19 @@ def test_anular_una_abierta_no_tiene_efectos_y_el_barbero_puede_con_la_suya(worl
 
 def test_el_barbero_ve_y_opera_solo_sus_comandas(world):
     mine = _sold_corte(world, barber=world.ana.public_id)
-    created_by_me = services.create_order(world.ana_login, world.branch.public_id, barber=world.beto.public_id)
+    created_by_me = services.create_order(
+        world.ana_login, scope_of(world.ana_login, world.branch), barber=world.beto.public_id
+    )
     theirs = _sold_corte(world, barber=world.beto.public_id)
 
-    visible = {order.number for order in selectors.list_orders(world.ana_login)}
+    visible = {order.number for order in selectors.list_orders(world.ana_login, scope=scope_of(world.ana_login))}
     assert visible == {mine.number, created_by_me.number}
-    assert selectors.get_order(world.ana_login, mine.public_id) == mine
+    assert selectors.get_order(world.ana_login, mine.public_id, scope=scope_of(world.ana_login)) == mine
     with pytest.raises(Order.DoesNotExist):
-        selectors.get_order(world.ana_login, theirs.public_id)
+        selectors.get_order(world.ana_login, theirs.public_id, scope=scope_of(world.ana_login))
     with pytest.raises(Order.DoesNotExist):
         services.close_order(world.ana_login, theirs.public_id, payments=_cash("25000"))
-    assert {order.number for order in selectors.list_orders(world.cashier)} == {
+    assert {order.number for order in selectors.list_orders(world.cashier, scope=scope_of(world.cashier))} == {
         mine.number,
         created_by_me.number,
         theirs.number,
@@ -393,7 +402,7 @@ def test_el_barbero_ve_y_opera_solo_sus_comandas(world):
 
 
 def test_el_barbero_que_crea_queda_como_principal(world):
-    order = services.create_order(world.ana_login, world.branch.public_id)
+    order = services.create_order(world.ana_login, scope_of(world.ana_login, world.branch))
     assert order.barber == world.ana
 
 
@@ -403,10 +412,15 @@ def test_lista_paginada_y_filtrada(world):
     closed = _sold_corte(world, barber=world.beto.public_id)
     services.close_order(world.cashier, closed.public_id, payments=_cash("25000"))
 
-    page = selectors.list_orders(world.cashier, page_size=2)
+    page = selectors.list_orders(world.cashier, page_size=2, scope=scope_of(world.cashier))
     assert (page.paginator.count, len(page.object_list), page.has_next()) == (4, 2, True)
-    assert [o.number for o in selectors.list_orders(world.cashier, status=OrderStatus.CLOSED)] == [closed.number]
-    assert [o.number for o in selectors.list_orders(world.cashier, barber=world.beto.public_id)] == [closed.number]
+    assert [
+        o.number for o in selectors.list_orders(world.cashier, status=OrderStatus.CLOSED, scope=scope_of(world.cashier))
+    ] == [closed.number]
+    assert [
+        o.number
+        for o in selectors.list_orders(world.cashier, barber=world.beto.public_id, scope=scope_of(world.cashier))
+    ] == [closed.number]
 
 
 def test_nombres_marcados_si_se_borro_lo_vendido(world):
@@ -416,7 +430,7 @@ def test_nombres_marcados_si_se_borro_lo_vendido(world):
     staff.soft_delete_barber(world.owner, world.beto.public_id)
     world.beto.refresh_from_db()
 
-    detail = selectors.get_order(world.owner, order.public_id)
+    detail = selectors.get_order(world.owner, order.public_id, scope=scope_of(world.owner))
     names = sorted(selectors.item_display_name(item) for item in detail.items.all())
     assert names == ["Cera (eliminado)", "Corte"]
     assert selectors.barber_display_name(world.beto) == "Beto (eliminado)"
@@ -467,8 +481,8 @@ def test_otra_barberia_no_ve_ni_toca_comandas_ajenas(world, member, other_shop):
     order = _sold_corte(world)
     with tenant_context(other_shop.pk):
         outsider = member(Role.OWNER, other_shop)
-        assert selectors.list_orders(outsider).paginator.count == 0
+        assert selectors.list_orders(outsider, scope=scope_of(outsider)).paginator.count == 0
         with pytest.raises(Order.DoesNotExist):
-            selectors.get_order(outsider, order.public_id)
+            selectors.get_order(outsider, order.public_id, scope=scope_of(outsider))
         with pytest.raises(Order.DoesNotExist):
             services.cancel_order(outsider, order.public_id, reason="Ajena")

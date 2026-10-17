@@ -8,8 +8,10 @@ from apps.cash import selectors, services
 from apps.cash.choices import PaymentMethod
 from apps.cash.models import CashMovement, CashSession, Direction, MovementKind
 from apps.core.tenant_context import tenant_context
-from apps.tenancy.models import BarbershopSettings, Branch
+from apps.tenancy.branch_scope import ONE, BranchScope, resolve_scope
+from apps.tenancy.models import BarbershopSettings, Branch, MembershipBranch
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -21,14 +23,20 @@ def cashier(member, in_shop):
     return member(Role.CASHIER, in_shop)
 
 
+def _grant(cashier, branch: Branch) -> Branch:
+    """El cajero opera solo en sus sedes (decisión 1 de docs/sedes.md)."""
+    MembershipBranch.objects.create(membership=cashier, branch=branch)
+    return branch
+
+
 @pytest.fixture
-def branch(in_shop):
-    return Branch.objects.create(name="Centro")
+def branch(in_shop, cashier):
+    return _grant(cashier, Branch.objects.create(name="Centro"))
 
 
 @pytest.fixture
 def session(cashier, branch):
-    return services.open_session(cashier, branch.public_id, opening_amount=Decimal("100000"))
+    return services.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("100000"))
 
 
 def _money(session, kind, direction, method, amount, actor):
@@ -47,7 +55,9 @@ def _money(session, kind, direction, method, amount, actor):
 
 
 def test_abrir_caja_y_auditarla(cashier, branch):
-    session = services.open_session(cashier, branch.public_id, opening_amount=Decimal("50000"), notes=" Turno mañana ")
+    session = services.open_session(
+        cashier, scope_of(cashier, branch), opening_amount=Decimal("50000"), notes=" Turno mañana "
+    )
     assert session.is_open
     assert (session.opened_by, session.opening_amount, session.notes) == (
         cashier.user,
@@ -60,11 +70,11 @@ def test_abrir_caja_y_auditarla(cashier, branch):
 
 def test_una_sola_caja_abierta_por_sede(cashier, branch, session):
     with pytest.raises(ValidationError) as excinfo:
-        services.open_session(cashier, branch.public_id, opening_amount=Decimal("0"))
+        services.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("0"))
     assert excinfo.value.error_list[0].code == "already_open"
 
-    other_branch = Branch.objects.create(name="Norte")
-    assert services.open_session(cashier, other_branch.public_id, opening_amount=Decimal("0")).is_open
+    other_branch = _grant(cashier, Branch.objects.create(name="Norte"))
+    assert services.open_session(cashier, scope_of(cashier, other_branch), opening_amount=Decimal("0")).is_open
 
 
 def test_la_base_impide_dos_cajas_abiertas_aunque_se_salte_la_verificacion(cashier, branch, session, monkeypatch):
@@ -72,18 +82,21 @@ def test_la_base_impide_dos_cajas_abiertas_aunque_se_salte_la_verificacion(cashi
     monkeypatch.setattr(services, "_open_session_in", lambda branch: None)
     monkeypatch.setattr(CashSession, "full_clean", lambda self, *args, **kwargs: None)
     with pytest.raises(ValidationError) as excinfo:
-        services.open_session(cashier, branch.public_id, opening_amount=Decimal("0"))
+        services.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("0"))
     assert excinfo.value.error_list[0].code == "already_open"
     assert CashSession.objects.filter(branch=branch, closed_at__isnull=True).count() == 1
 
 
 def test_no_se_abre_con_base_negativa_ni_en_una_sede_ajena(cashier, member, other_shop):
+    centro = _grant(cashier, Branch.objects.create(name="Centro"))
     with pytest.raises(ValidationError):
-        services.open_session(cashier, Branch.objects.create(name="Centro").public_id, opening_amount=Decimal("-1"))
+        services.open_session(cashier, scope_of(cashier, centro), opening_amount=Decimal("-1"))
     with tenant_context(other_shop.pk):
         foreign = Branch.objects.create(name="Ajena")
+    # Un alcance alterado con una sede de otra barbería: el servicio vuelve a leerla y no la encuentra.
+    altered = BranchScope(cashier.pk, ONE, foreign, frozenset({foreign.pk}))
     with pytest.raises(ValidationError):
-        services.open_session(cashier, foreign.public_id, opening_amount=Decimal("0"))
+        services.open_session(cashier, altered, opening_amount=Decimal("0"))
 
 
 # ── Arqueo (regla 24, defectos 18, 20, 21, 23) ───────────────────────────────
@@ -136,7 +149,7 @@ def test_una_caja_cerrada_no_recibe_movimientos_ni_se_cierra_dos_veces(cashier, 
     with pytest.raises(ValidationError):
         _money(session, MovementKind.SALE, Direction.IN, CASH, "1000", cashier)
     assert selectors.current_session(cashier, branch.public_id) is None
-    assert services.open_session(cashier, branch.public_id, opening_amount=Decimal("0")).is_open
+    assert services.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("0")).is_open
 
 
 def test_el_contado_no_puede_ser_negativo(cashier, session):
@@ -245,7 +258,7 @@ def test_un_movimiento_de_caja_no_se_edita_ni_se_borra(cashier, session):
 def test_el_barbero_no_maneja_caja(member, in_shop, branch, session):
     barber = member(Role.BARBER, in_shop)
     with pytest.raises(PermissionDenied):
-        services.open_session(barber, Branch.objects.create(name="Norte").public_id, opening_amount=Decimal("0"))
+        services.open_session(barber, resolve_scope(barber), opening_amount=Decimal("0"))
     with pytest.raises(PermissionDenied):
         services.register_manual_movement(
             barber,
@@ -271,7 +284,7 @@ def test_el_consultor_ve_pero_no_opera(member, in_shop, branch, session):
 
 def test_el_administrador_opera_la_caja(member, in_shop, branch):
     admin = member(Role.ADMIN, in_shop)
-    session = services.open_session(admin, branch.public_id, opening_amount=Decimal("0"))
+    session = services.open_session(admin, scope_of(admin, branch), opening_amount=Decimal("0"))
     services.register_manual_movement(
         admin,
         session.public_id,
@@ -288,8 +301,9 @@ def test_el_administrador_opera_la_caja(member, in_shop, branch):
 
 def test_otra_barberia_no_ve_ni_cierra_una_caja_ajena(member, shop, other_shop):
     with tenant_context(shop.pk):
-        branch = Branch.objects.create(name="Centro")
-        mine = services.open_session(member(Role.CASHIER, shop), branch.public_id, opening_amount=Decimal("0"))
+        cashier = member(Role.CASHIER, shop)
+        branch = _grant(cashier, Branch.objects.create(name="Centro"))
+        mine = services.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("0"))
     with tenant_context(other_shop.pk):
         theirs = member(Role.OWNER, other_shop)
         with pytest.raises(CashSession.DoesNotExist):

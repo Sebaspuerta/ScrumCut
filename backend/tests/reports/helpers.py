@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 from apps.sales import services as sales
 from apps.sales.models import Order
+from tests.conftest import scope_of
 
 BOGOTA = ZoneInfo("America/Bogota")
 
@@ -13,7 +14,7 @@ def sell(w, barber, *, service=None, product=None, quantity=1, method="efectivo"
     """Un registro rápido cobrado completo por el cajero."""
     return sales.quick_register(
         w.cashier,
-        w.branch.public_id,
+        scope_of(w.cashier, w.branch),
         barber=barber.public_id,
         method=method,
         service=service and service.public_id,

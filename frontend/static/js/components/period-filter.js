@@ -1,4 +1,4 @@
-// Filtro de período y sede del tablero: aplica al cambiar, salvo el rango, que espera las dos fechas.
+// Filtro de período del tablero: aplica al cambiar, salvo el rango, que espera las dos fechas.
 export default () => ({
   custom: false,
 

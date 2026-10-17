@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 
 from apps.core.tenant_context import tenant_context
 from apps.tenancy import selectors
+from apps.tenancy.branch_scope import resolve_scope
 
 SESSION_KEY = "active_barbershop_id"
 
@@ -45,3 +46,27 @@ class ActiveBarbershopMiddleware:
             return memberships[0]
         # Cero o varias: la vista de selección de barbería decide (fase 1).
         return None
+
+
+BRANCH_SESSION_KEY = "active_branch"
+
+
+class BranchScopeMiddleware:
+    """Fija `request.branch_scope` en cada petición, validado contra las sedes permitidas (docs/sedes.md).
+
+    Va después de ActiveBarbershopMiddleware, así que ya corre dentro de tenant_context. Si lo
+    guardado en la sesión dejó de valer (sede desactivada, acceso retirado), se reemplaza.
+    """
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        request.branch_scope = None
+        membership = getattr(request, "membership", None)
+        if membership is not None:
+            stored = request.session.get(BRANCH_SESSION_KEY)
+            request.branch_scope = resolve_scope(membership, stored)
+            if request.branch_scope.token != stored:
+                request.session[BRANCH_SESSION_KEY] = request.branch_scope.token
+        return self.get_response(request)

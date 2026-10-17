@@ -10,6 +10,7 @@ from apps.clients import services as clients
 from apps.inventory import services as inventory
 from apps.receivables import services as receivables
 from apps.tenancy.models import Branch
+from tests.conftest import scope_of
 
 TODAY = timezone.localdate()
 
@@ -27,7 +28,7 @@ def make_overdue_debt(owner, name="Laura"):
         owner,
         client.public_id,
         total=Decimal("30000"),
-        branch=main_branch.public_id,
+        scope=scope_of(owner, main_branch),
         due_date=TODAY - timedelta(days=1),
     )
 

@@ -9,15 +9,16 @@ from collections.abc import Callable, Iterable
 from typing import TypedDict
 from uuid import UUID
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Model, QuerySet
 
 from apps.audit.models import record
 from apps.cash.models import CashSession
 from apps.staff.models import Barber, BarberBranch
+from apps.tenancy.branch_scope import BranchScope, resolve_scope
 from apps.tenancy.models import Barbershop, Branch, Membership, MembershipBranch
-from apps.tenancy.permissions import ensure_permission
+from apps.tenancy.permissions import ensure_member, ensure_permission
 from apps.tenancy.roles import Role
 from apps.tenancy.selectors import active_branches
 
@@ -206,3 +207,21 @@ def set_barber_branches(membership: Membership, barber: UUID | str, *, branches:
         )
         _audit(membership, "sede.barbero", obj=target, before=change["before"], after=change["after"])
     return target
+
+
+# ── Cambio de sede (fase S2) ─────────────────────────────────────────────────
+
+
+def choose_branch(membership: Membership, choice: str) -> BranchScope:
+    """El alcance elegido: el public_id de una sede permitida o "todas" con `sedes.ver`; si no, PermissionDenied.
+
+    Una sede elegida queda como la última usada, para volver a ella al iniciar sesión.
+    """
+    ensure_member(membership)
+    scope = resolve_scope(membership, choice)
+    if scope.token != choice:
+        raise PermissionDenied
+    if scope.branch is not None and membership.last_branch_id != scope.branch.pk:
+        membership.last_branch = scope.branch
+        membership.save(update_fields=["last_branch", "updated_at"])
+    return scope

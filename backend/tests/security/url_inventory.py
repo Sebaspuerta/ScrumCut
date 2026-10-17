@@ -17,6 +17,7 @@ PUBLIC_VIEWS = {
 LOGIN_ONLY_VIEWS = {
     "home": "Tablero: con reportes.ver muestra todo; sin ese permiso, solo los cortes propios del barbero.",
     "logout_everywhere": "Actúa sobre la propia cuenta, no sobre datos de una barbería.",
+    "switch_branch": "Cambia el alcance propio; la sede se valida contra las permitidas del rol (403 si no).",
 }
 
 _SAMPLES = {"int": "1", "uuid": "00000000-0000-0000-0000-000000000000"}

@@ -20,6 +20,7 @@ from apps.cash.services import record_money
 from apps.clients.models import Client
 from apps.receivables.models import OPEN_STATUSES, Receivable, ReceivablePayment, ReceivableStatus
 from apps.receivables.selectors import client_balance
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -53,13 +54,17 @@ def _snapshot(receivable: Receivable) -> dict:
     }
 
 
-def _check_credit_limit(client: Client, amount: Decimal) -> None:
-    """Bloquea al cliente para que dos fiados simultáneos no pasen juntos el límite."""
+def _check_credit_limit(client: Client, amount: Decimal, *, branch: Branch) -> None:
+    """Bloquea al cliente para que dos fiados simultáneos no pasen juntos el límite.
+
+    Cuenta la deuda de la sede: los fiados son de cada sede (decisión 15), y el mensaje
+    no debe revelar lo que el cliente debe en otra.
+    """
     Client.objects.select_for_update().get(pk=client.pk)
     limit = BarbershopSettings.objects.get().max_credit_per_client
     if limit is None:
         return
-    debt = client_balance(client)
+    debt = client_balance(client, branch=branch)
     if debt + amount > limit:
         raise ValidationError(
             "El cliente superaría su límite de crédito: debe %(debt)s y el límite es %(limit)s.",
@@ -78,7 +83,7 @@ def _create(
     due_date=None,
     notes="",
 ) -> Receivable:
-    _check_credit_limit(client, total)
+    _check_credit_limit(client, total, branch=origin_branch)
     receivable = Receivable(
         barbershop_id=client.barbershop_id,
         client=client,
@@ -96,14 +101,6 @@ def _create(
     return receivable
 
 
-def _active_branch(public_id: UUID | str) -> Branch:
-    """Decisión 14 de docs/sedes.md: una sede desactivada no recibe fiados ni dinero."""
-    try:
-        return Branch.objects.get(public_id=public_id, is_active=True)
-    except Branch.DoesNotExist as exc:
-        raise ValidationError({"branch": "La sede no existe o está inactiva."}) from exc
-
-
 def create_from_order(order, amount: Decimal, *, actor: Membership, due_date: date | None = None) -> Receivable:
     """Saldo de una comanda cerrada como fiado, con la sede de la comanda. La usa sales, que ya validó."""
     return _create(order.client, amount, actor=actor, origin_branch=order.branch, order=order, due_date=due_date)
@@ -113,21 +110,21 @@ def create_manual(
     membership: Membership,
     client: UUID | str,
     *,
+    scope: BranchScope,
     total: Decimal,
-    branch: UUID | str,
     due_date: date | None = None,
     notes: str = "",
 ) -> Receivable:
     """Regla 26: fiado sin comanda, a un cliente vivo y no anonimizado, con total > 0.
 
-    `branch` es la sede activa al crearlo: queda como su sede de origen (decisión 3).
+    Nace en la sede del alcance, que queda como su sede de origen (decisión 3); en "todas", no.
     """
     ensure_permission(membership, "fiados.crear")
     try:
         target = Client.objects.get(public_id=client, deleted_at__isnull=True, anonymized_at__isnull=True)
     except Client.DoesNotExist as exc:
         raise ValidationError({"client": "El cliente no existe."}) from exc
-    origin = _active_branch(branch)
+    origin = scope.branch_for_write(membership)
     with transaction.atomic():
         return _create(target, total, actor=membership, origin_branch=origin, due_date=due_date, notes=notes)
 
@@ -175,18 +172,19 @@ def _record_payment(
 
 
 def add_payment(
-    membership: Membership, receivable: UUID | str, *, amount: Decimal, method: str, branch: UUID | str
+    membership: Membership, receivable: UUID | str, *, scope: BranchScope, amount: Decimal, method: str
 ) -> ReceivablePayment:
     """Regla 27 con el defecto 24 corregido: monto ≤ saldo, solo a fiados vivos, con caja abierta.
 
-    Decisión 3 de docs/sedes.md: el abono entra solo a la caja de la sede de origen del fiado,
-    que debe estar activa; ninguna operación de dinero cruza sedes. Cualquier método, un solo libro.
+    Decisión 3 de docs/sedes.md: el abono entra solo a la caja de la sede de origen del fiado, que
+    debe ser la del alcance y estar activa; ninguna operación de dinero cruza sedes. Cualquier método,
+    un solo libro.
     """
     ensure_permission(membership, "fiados.abonar")
     amount = Decimal(amount)
     if amount <= 0:
         raise ValidationError({"amount": "El abono debe ser mayor que cero."})
-    target_branch = _active_branch(branch)
+    target_branch = scope.branch_for_write(membership)
     with transaction.atomic():
         locked = _locked_open_receivable(receivable, amount)
         if locked.origin_branch_id != target_branch.pk:

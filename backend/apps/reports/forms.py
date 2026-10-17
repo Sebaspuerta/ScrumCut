@@ -9,7 +9,10 @@ MAX_RANGE_DAYS = 366
 
 
 class PeriodFilterForm(forms.Form):
-    """Período por GET: ?periodo=30d|mes|rango&desde=&hasta=&sede=. Sin datos válidos: los últimos 30 días."""
+    """Período por GET: ?periodo=30d|mes|rango&desde=&hasta=. Sin datos válidos: los últimos 30 días.
+
+    La sede no viaja en la URL: es el alcance de la sesión (request.branch_scope, docs/sedes.md).
+    """
 
     periodo = forms.ChoiceField(
         label="Período",
@@ -18,13 +21,10 @@ class PeriodFilterForm(forms.Form):
     )
     desde = forms.DateField(label="Desde", required=False, widget=forms.DateInput({"type": "date"}, "%Y-%m-%d"))
     hasta = forms.DateField(label="Hasta", required=False, widget=forms.DateInput({"type": "date"}, "%Y-%m-%d"))
-    sede = forms.ChoiceField(label="Sede", required=False)
 
-    def __init__(self, data, *, branches, today: date) -> None:
+    def __init__(self, data, *, today: date) -> None:
         super().__init__(data or {})  # siempre ligado: sin filtros, todo vacío y válido
-        self.branches = list(branches)
         self.today = today
-        self.fields["sede"].choices = [(str(branch.public_id), branch.name) for branch in self.branches]
 
     def clean(self) -> dict:
         cleaned = super().clean()
@@ -49,10 +49,3 @@ class PeriodFilterForm(forms.Form):
         if chosen == "rango":
             return self.cleaned_data["desde"], self.cleaned_data["hasta"]
         return None, None
-
-    def branch(self):
-        """La sede elegida (aunque el rango no sea válido) o, si no hay una válida, la primera."""
-        self.is_valid()
-        chosen = self.cleaned_data.get("sede")
-        default = self.branches[0] if self.branches else None
-        return next((branch for branch in self.branches if str(branch.public_id) == chosen), default)

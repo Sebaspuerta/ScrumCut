@@ -15,7 +15,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from apps.reports.excel.sheets import SHEETS, Sheet
 from apps.reports.scope import Period, resolve_period
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.branch_scope import BranchScope
+from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 MONEY_FORMAT = "#,##0.00"
@@ -44,7 +45,7 @@ def _append(sheet: Worksheet, values: list, period: Period) -> None:
 def _write(book: Workbook, content: Sheet, shop_name: str, period: Period) -> None:
     sheet = book.create_sheet(content.title)
     _append(sheet, [shop_name], period)
-    branch = f" · Sede {period.branch.name}" if period.branch else ""
+    branch = f" · Sede {period.scope.branch.name}" if period.scope.branch else ""
     _append(sheet, [f"{content.title} del {period.date_from:%Y-%m-%d} al {period.date_to:%Y-%m-%d}{branch}"], period)
     sheet.append([])
     sheet.append(content.header)
@@ -55,14 +56,14 @@ def _write(book: Workbook, content: Sheet, shop_name: str, period: Period) -> No
 
 
 def build_business_report(
-    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, *, scope: BranchScope
 ) -> bytes:
-    """Sin sede, toda la barbería; con sede, lo mismo que el tablero filtrado por ella.
+    """Lo mismo que el tablero con el alcance de sede: una sede, o todas en modo "todas".
 
-    Los fiados son siempre de toda la barbería: un fiado es del cliente, no de una sede.
+    Los fiados también van por sede: se leen por su sede de origen (decisión 15).
     """
     ensure_permission(membership, "reportes.exportar")
-    period = resolve_period(membership, date_from, date_to, branch)
+    period = resolve_period(membership, date_from, date_to, scope=scope)
     book = Workbook()
     book.remove(book.active)
     for build_sheet in SHEETS:

@@ -6,19 +6,20 @@ from django.db.models import F
 
 from apps.cash.models import CashMovement, MovementKind
 from apps.reports.scope import closed_items, money_sum, resolve_period
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.branch_scope import BranchScope
+from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 
 def income_statement(
-    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, *, scope: BranchScope
 ) -> dict:
     """Las comandas anuladas ya no cuentan como venta, así que sus devoluciones no se restan otra vez.
 
     Los retiros son dinero que sale de la caja hacia el dueño, no un gasto del negocio.
     """
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to, branch)
+    period = resolve_period(membership, date_from, date_to, scope=scope)
     lines = closed_items(membership, period).aggregate(
         gross_sales=money_sum("line_total"),
         discounts=money_sum("line_discount"),
@@ -29,8 +30,7 @@ def income_statement(
     expenses = CashMovement.objects.filter(
         kind=MovementKind.EXPENSE, created_at__gte=period.start, created_at__lt=period.end
     )
-    if branch is not None:
-        expenses = expenses.filter(session__branch=branch)
+    expenses = period.scope.apply(expenses, "session__branch")
     expenses = expenses.aggregate(total=money_sum("amount"))["total"]
     net_sales = lines["gross_sales"] - lines["discounts"]
     gross_profit = net_sales - lines["product_cost"] - lines["consumables_cost"] - lines["commissions"]

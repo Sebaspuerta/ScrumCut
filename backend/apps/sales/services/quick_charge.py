@@ -7,13 +7,14 @@ from django.db import transaction
 from apps.sales.models import Order
 from apps.sales.services.closing import close_order
 from apps.sales.services.open_orders import add_item, create_order
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 
 def quick_register(
     membership: Membership,
-    branch: UUID | str,
+    scope: BranchScope,
     *,
     barber: UUID | str,
     method: str,
@@ -25,7 +26,7 @@ def quick_register(
     """Regla 17: un corte o un producto, cobrado completo, en una sola transacción."""
     ensure_permission(membership, "comandas.cerrar")
     with transaction.atomic():
-        order = create_order(membership, branch, barber=barber)
+        order = create_order(membership, scope, barber=barber)
         add_item(membership, order.public_id, service=service, product=product, quantity=quantity)
         order.refresh_from_db()
         payments = [{"method": method, "amount": order.total, "reference": reference}] if order.total else []

@@ -27,6 +27,7 @@ from apps.receivables import services as receivables
 from apps.sales import services as sales
 from apps.staff import services as staff
 from apps.tenancy import services as tenancy
+from apps.tenancy.branch_scope import BranchScope, resolve_scope
 from apps.tenancy.models import Barbershop, Branch, Membership
 from apps.tenancy.roles import Role
 
@@ -81,6 +82,11 @@ class Command(BaseCommand):
 
 
 # ── Barbería, sedes y personal ───────────────────────────────────────────────
+
+
+def _scope(owner: Membership, branch: Branch) -> BranchScope:
+    """El dueño opera cada sede con su alcance, como lo armaría el middleware al elegirla."""
+    return resolve_scope(owner, str(branch.public_id))
 
 
 def _person(shop: Barbershop, email: str, name: str, password: str, role: Role) -> Membership:
@@ -144,7 +150,7 @@ def _manual_debt(owner: Membership, centro: Branch, today: date):
         owner, {"full_name": "Cliente de ejemplo"}, data_consent_at=timezone.now(), data_policy_version="demo"
     )
     return receivables.create_manual(
-        owner, client.public_id, total=DEBT_TOTAL, branch=centro.public_id, due_date=today - timedelta(days=7)
+        owner, client.public_id, scope=_scope(owner, centro), total=DEBT_TOTAL, due_date=today - timedelta(days=7)
     )
 
 
@@ -173,7 +179,7 @@ def _sell(world: SimpleNamespace, branch: str, rng: random.Random) -> None:
     item = {"product": rng.choice(world.catalog.products).public_id} if rng.random() < 0.25 else {}
     sales.quick_register(
         world.owner,
-        world.branches[branch].public_id,
+        _scope(world.owner, world.branches[branch]),
         barber=rng.choice(world.barbers[branch]).public_id,
         method=rng.choice(METHODS),
         service=None if item else rng.choice(world.catalog.services).public_id,
@@ -183,7 +189,8 @@ def _sell(world: SimpleNamespace, branch: str, rng: random.Random) -> None:
 
 def _open_day(world: SimpleNamespace, branch: str, day: date) -> CashSession:
     with at(_moment(day, OPENING_HOUR)):
-        session = cash.open_session(world.owner, world.branches[branch].public_id, opening_amount=D("200000"))
+        scope = _scope(world.owner, world.branches[branch])
+        session = cash.open_session(world.owner, scope, opening_amount=D("200000"))
     # La base se registra con la hora real de la apertura simulada.
     CashSession.objects.filter(pk=session.pk).update(opened_at=_moment(day, OPENING_HOUR))
     return session
@@ -228,7 +235,7 @@ def _pay_debt(world: SimpleNamespace, day: date) -> None:
             world.debt.public_id,
             amount=DEBT_PAYMENT,
             method="efectivo",
-            branch=world.debt.origin_branch.public_id,
+            scope=_scope(world.owner, world.debt.origin_branch),
         )
 
 

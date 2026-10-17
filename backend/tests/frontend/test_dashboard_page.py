@@ -18,6 +18,7 @@ from apps.sales import services as sales
 from apps.sales.selectors import local_today
 from apps.tenancy.models import Branch
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 from tests.frontend.conftest import logged_in_with_mfa
 from tests.reports.helpers import sell
 
@@ -82,22 +83,28 @@ def test_exportar_exige_el_permiso_y_responde_un_xlsx(world, owner_client):
 
 
 def _sales_in_export(client, branch) -> list:
-    response = client.get(reverse("reports_export"), {"sede": str(branch.public_id)})
+    """La sede ya no viaja en la URL: se elige con el cambio de sede y el Excel sigue al alcance."""
+    client.post(reverse("switch_branch"), {"sede": str(branch.public_id)})
+    response = client.get(reverse("reports_export"))
     rows = load_workbook(BytesIO(response.content))["Ventas"].iter_rows(min_row=5, values_only=True)
     return sorted(row[3] for row in rows)
 
 
 def test_exportar_una_sede_no_incluye_las_ventas_de_otra(world, owner_client):
     norte = Branch.objects.create(name="Norte")
-    cash.open_session(world.cashier, norte.public_id, opening_amount=Decimal("0"))
+    cash.open_session(world.owner, scope_of(world.owner, norte), opening_amount=Decimal("0"))
     sell(world, world.ana, service=world.corte)  # en Centro
     sales.quick_register(
-        world.cashier, norte.public_id, barber=world.beto.public_id, method="efectivo", product=world.cera.public_id
+        world.owner,
+        scope_of(world.owner, norte),
+        barber=world.beto.public_id,
+        method="efectivo",
+        product=world.cera.public_id,
     )
 
     assert _sales_in_export(owner_client, world.branch) == ["Corte"]
     assert _sales_in_export(owner_client, norte) == ["Cera"]
-    response = owner_client.get(reverse("reports_export"), {"sede": str(norte.public_id)})
+    response = owner_client.get(reverse("reports_export"))  # sigue en Norte, la última sede elegida
     assert "-norte-" in response["Content-Disposition"]
 
 

@@ -14,6 +14,7 @@ from apps.staff.models import BarberBranch
 from apps.tenancy import services
 from apps.tenancy.models import MAIN_BRANCH_NAME, Barbershop, Branch, MembershipBranch
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -80,7 +81,7 @@ def test_no_se_desactiva_una_sede_con_la_caja_abierta(owner, in_shop):
     _plan(in_shop, 2)
     services.create_branch(owner, {"name": "Norte"})
     main = _main()
-    cash.open_session(owner, main.public_id, opening_amount=Decimal("0"))
+    cash.open_session(owner, scope_of(owner, main), opening_amount=Decimal("0"))
 
     with pytest.raises(ValidationError) as error:
         services.deactivate_branch(owner, main.public_id)
@@ -183,6 +184,6 @@ def test_un_barbero_sin_sedes_no_se_puede_elegir_en_comandas(owner, in_shop):
     services.set_barber_branches(owner, barber.public_id, branches=[])
 
     with pytest.raises(ValidationError) as error:
-        sales.create_order(owner, _main().public_id, barber=barber.public_id)
+        sales.create_order(owner, scope_of(owner, _main()), barber=barber.public_id)
     assert "barber" in error.value.message_dict
     assert AuditLog.objects.filter(action="sede.barbero", entity_id=str(barber.public_id)).exists()

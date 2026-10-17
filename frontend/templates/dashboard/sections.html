@@ -12,15 +12,6 @@
 
 {% partialdef filters %}
 <form class="filters" method="get" x-data="periodFilter" data-custom="{% if form.periodo.value == 'rango' %}true{% else %}false{% endif %}">
-  {% if form.branches|length > 1 %}
-  <label class="filters__field">Sede
-    <select name="sede" x-on:change="apply">
-      {% for value, label in form.fields.sede.choices %}
-      <option value="{{ value }}"{% if value == form.sede.value %} selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
-  </label>
-  {% endif %}
   <label class="filters__field">Período
     <select name="periodo" x-on:change="periodChanged">
       {% for value, label in form.fields.periodo.choices %}

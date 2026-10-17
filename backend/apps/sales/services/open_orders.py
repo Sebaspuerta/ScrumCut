@@ -24,7 +24,8 @@ from apps.sales.services._shared import (
     _require_editable,
 )
 from apps.staff.models import Barber
-from apps.tenancy.models import BarbershopSettings, Branch, Membership
+from apps.tenancy.branch_scope import BranchScope
+from apps.tenancy.models import BarbershopSettings, Membership
 from apps.tenancy.permissions import ensure_permission
 from apps.tenancy.roles import Role
 
@@ -51,34 +52,38 @@ def _active_barber(public_id: UUID | str) -> Barber:
     return barber
 
 
+def _order_client(public_id: UUID | str | None) -> Client | None:
+    if public_id is None:
+        return None
+    return _get_or_invalid(
+        Client.objects,
+        "client",
+        message="El cliente no existe.",
+        public_id=public_id,
+        deleted_at__isnull=True,
+        anonymized_at__isnull=True,
+    )
+
+
+def _order_barber(membership: Membership, public_id: UUID | str | None) -> Barber | None:
+    """El barbero elegido; si no se eligió y quien crea es Barbero, él mismo."""
+    if public_id is not None:
+        return _active_barber(public_id)
+    return own_barber(membership) if membership.role == Role.BARBER else None
+
+
 def create_order(
     membership: Membership,
-    branch: UUID | str,
+    scope: BranchScope,
     *,
     client: UUID | str | None = None,
     barber: UUID | str | None = None,
 ) -> Order:
-    """El número sale del consecutivo de la barbería, bloqueado para que no se repita."""
+    """En la sede del alcance. El número sale del consecutivo de la barbería, bloqueado para que no se repita."""
     ensure_permission(membership, "comandas.crear")
-    target_branch = _get_or_invalid(
-        Branch.objects, "branch", message="La sede no existe.", public_id=branch, is_active=True
-    )
-    target_client = None
-    if client is not None:
-        target_client = _get_or_invalid(
-            Client.objects,
-            "client",
-            message="El cliente no existe.",
-            public_id=client,
-            deleted_at__isnull=True,
-            anonymized_at__isnull=True,
-        )
-    if barber is not None:
-        target_barber = _active_barber(barber)
-    elif membership.role == Role.BARBER:
-        target_barber = own_barber(membership)
-    else:
-        target_barber = None
+    target_branch = scope.branch_for_write(membership)
+    target_client = _order_client(client)
+    target_barber = _order_barber(membership, barber)
     with transaction.atomic():
         settings = BarbershopSettings.objects.select_for_update().get()
         number = settings.next_order_number

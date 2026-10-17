@@ -16,6 +16,7 @@ from apps.receivables import selectors, services
 from apps.receivables.models import Receivable, ReceivablePayment, ReceivableStatus
 from apps.tenancy.models import BarbershopSettings
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -23,11 +24,15 @@ D = Decimal
 
 
 def _debt(w, total="30000", **kwargs):
-    return services.create_manual(w.cashier, w.laura.public_id, total=D(total), branch=w.branch.public_id, **kwargs)
+    return services.create_manual(
+        w.cashier, w.laura.public_id, total=D(total), scope=scope_of(w.cashier, w.branch), **kwargs
+    )
 
 
 def _pay(w, debt, amount, method="efectivo"):
-    return services.add_payment(w.cashier, debt.public_id, amount=D(amount), method=method, branch=w.branch.public_id)
+    return services.add_payment(
+        w.cashier, debt.public_id, amount=D(amount), method=method, scope=scope_of(w.cashier, w.branch)
+    )
 
 
 def _code(excinfo) -> str:
@@ -68,7 +73,7 @@ def test_abono_parcial_y_abono_que_salda(world):
     _pay(world, debt, "20000")
     debt.refresh_from_db()
     assert (debt.balance, debt.status) == (D("0"), ReceivableStatus.PAID)
-    assert selectors.client_balance(world.laura) == D("0")
+    assert selectors.client_balance(world.laura, branch=world.branch) == D("0")
 
 
 @pytest.mark.parametrize("case", ["mayor_al_saldo", "pagado", "anulado", "sin_caja", "metodo_apagado", "cero"])
@@ -131,7 +136,7 @@ def test_vencidos_por_fecha_sin_escrituras_en_la_lectura(world):
     _debt(world, total="5000")
 
     with CaptureQueriesContext(connection) as queries:
-        summary = selectors.receivables_summary(world.cashier)
+        summary = selectors.receivables_summary(world.cashier, scope=scope_of(world.cashier))
     assert not [q for q in queries.captured_queries if q["sql"].lstrip().upper().startswith(("UPDATE", "INSERT"))]
     assert summary == {
         "pending_count": 3,
@@ -152,21 +157,26 @@ def test_vencidos_por_fecha_sin_escrituras_en_la_lectura(world):
 
 def test_lista_y_permisos_de_lectura(world, member):
     debt = _debt(world)
-    assert list(selectors.list_receivables(world.cashier, client=world.laura.public_id)) == [debt]
-    assert list(selectors.list_receivables(world.cashier, status=ReceivableStatus.PAID)) == []
+    assert list(
+        selectors.list_receivables(world.cashier, client=world.laura.public_id, scope=scope_of(world.cashier))
+    ) == [debt]
+    assert (
+        list(selectors.list_receivables(world.cashier, status=ReceivableStatus.PAID, scope=scope_of(world.cashier)))
+        == []
+    )
     with pytest.raises(PermissionDenied):
-        selectors.list_receivables(world.ana_login)
+        selectors.list_receivables(world.ana_login, scope=scope_of(world.ana_login))
     viewer = member(Role.VIEWER, world.shop)
-    assert selectors.get_receivable(viewer, debt.public_id) == debt
+    assert selectors.get_receivable(viewer, debt.public_id, scope=scope_of(viewer)) == debt
     with pytest.raises(PermissionDenied):
-        services.create_manual(viewer, world.laura.public_id, total=D("1000"), branch=world.branch.public_id)
+        services.create_manual(viewer, world.laura.public_id, total=D("1000"), scope=scope_of(viewer, world.branch))
 
 
 def test_otra_barberia_no_ve_ni_abona_fiados_ajenos(world, member, other_shop):
     debt = _debt(world)
     with tenant_context(other_shop.pk):
         outsider = member(Role.OWNER, other_shop)
-        assert list(selectors.list_receivables(outsider)) == []
+        assert list(selectors.list_receivables(outsider, scope=scope_of(outsider))) == []
         with pytest.raises(Receivable.DoesNotExist):
-            selectors.get_receivable(outsider, debt.public_id)
+            selectors.get_receivable(outsider, debt.public_id, scope=scope_of(outsider))
     assert not CashMovement.objects.filter(kind=MovementKind.RECEIVABLE_PAYMENT).exists()

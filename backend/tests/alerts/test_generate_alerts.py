@@ -14,14 +14,17 @@ from apps.inventory import services as inventory
 from apps.receivables import services as receivables
 from apps.receivables.models import ReceivableStatus
 from tests.alerts.helpers import TODAY, alert_for, make_overdue_debt, make_product, open_types
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
 
 def pay_debt(owner, debt):
     branch = debt.origin_branch  # un fiado se abona solo en su sede de origen
-    cash.open_session(owner, branch.public_id, opening_amount=Decimal("0"))
-    receivables.add_payment(owner, debt.public_id, amount=debt.balance, method="efectivo", branch=branch.public_id)
+    cash.open_session(owner, scope_of(owner, branch), opening_amount=Decimal("0"))
+    receivables.add_payment(
+        owner, debt.public_id, amount=debt.balance, method="efectivo", scope=scope_of(owner, branch)
+    )
 
 
 # ── Creación por tipo ────────────────────────────────────────────────────────
@@ -60,7 +63,7 @@ def test_fiado_vencido_se_marca_y_genera_alerta(owner):
         owner,
         late.client.public_id,
         total=Decimal("1000"),
-        branch=late.origin_branch.public_id,
+        scope=scope_of(owner, late.origin_branch),
         due_date=TODAY + timedelta(5),
     )
 

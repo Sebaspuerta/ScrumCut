@@ -18,6 +18,7 @@ from django.utils import timezone
 
 from apps.sales.models import ItemType, Order, OrderItem, OrderStatus
 from apps.staff.models import Barber
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_member, ensure_permission
 from apps.tenancy.roles import Role, role_has_permission
@@ -74,6 +75,7 @@ def period_dates(
 def list_orders(
     membership: Membership,
     *,
+    scope: BranchScope,
     status: str | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
@@ -81,9 +83,10 @@ def list_orders(
     page: int = 1,
     page_size: int = 50,
 ) -> Page:
-    """Fechas de creación en la zona de la barbería, ambos extremos incluidos."""
+    """Las comandas de la sede del alcance. Fechas de creación en la zona de la barbería, ambos extremos incluidos."""
     ensure_permission(membership, "comandas.ver")
-    orders = scoped_orders(membership).select_related("client", "barber", "branch")
+    scope.check(membership)
+    orders = scope.apply(scoped_orders(membership)).select_related("client", "barber", "branch")
     if status:
         orders = orders.filter(status=status)
     if barber is not None:
@@ -96,12 +99,13 @@ def list_orders(
     return Paginator(orders.order_by("-number"), page_size).get_page(page)
 
 
-def get_order(membership: Membership, public_id: UUID | str) -> Order:
-    """Lanza `Order.DoesNotExist` si no existe o está fuera del alcance del rol."""
+def get_order(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> Order:
+    """Lanza `Order.DoesNotExist` si no existe o está fuera del alcance del rol o de la sede."""
     ensure_permission(membership, "comandas.ver")
+    scope.check(membership)
     items = OrderItem.objects.select_related("service", "product", "barber").order_by("pk")
     return (
-        scoped_orders(membership)
+        scope.apply(scoped_orders(membership))
         .select_related("client", "barber", "branch")
         .prefetch_related(Prefetch("items", queryset=items), "payments")
         .get(public_id=public_id)

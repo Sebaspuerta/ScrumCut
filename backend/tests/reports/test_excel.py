@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 
 from apps.cash import services as cash
 from apps.reports.excel.builder import build_business_report
+from tests.conftest import scope_of
 from tests.reports.helpers import close_at, sell
 
 pytestmark = pytest.mark.django_db
@@ -37,7 +38,7 @@ def _workbook(world, *dates):
             payment_method="efectivo",
             description=text,
         )
-    return load_workbook(BytesIO(build_business_report(world.owner, *dates)))
+    return load_workbook(BytesIO(build_business_report(world.owner, *dates, scope=scope_of(world.owner))))
 
 
 def test_el_excel_tiene_las_hojas_y_el_nombre_de_la_barberia(world):
@@ -61,9 +62,9 @@ def test_el_panorama_muestra_los_dias_sin_ventas_en_cero(world):
     close_at(first, datetime(2026, 10, 5, 12, 0))
     close_at(second, datetime(2026, 10, 7, 12, 0))
 
-    overview = load_workbook(BytesIO(build_business_report(world.owner, date(2026, 10, 5), date(2026, 10, 7))))[
-        "Panorama"
-    ]
+    overview = load_workbook(
+        BytesIO(build_business_report(world.owner, date(2026, 10, 5), date(2026, 10, 7), scope=scope_of(world.owner)))
+    )["Panorama"]
 
     days = [row[:3] for row in overview.iter_rows(values_only=True) if isinstance(row[0], datetime)]
     assert days == [(datetime(2026, 10, 5), 1, 25000), (datetime(2026, 10, 6), 0, 0), (datetime(2026, 10, 7), 1, 15000)]

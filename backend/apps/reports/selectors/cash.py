@@ -11,7 +11,8 @@ from apps.cash.models import CashMovement, CashSession, Direction, MovementKind
 from apps.cash.selectors import expected_cash
 from apps.reports.scope import money_sum, resolve_period
 from apps.sales.selectors import day_bounds, local_today
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.branch_scope import BranchScope
+from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 # Cascada del cuadre (docs/diseno.md): lo que suma y lo que resta al efectivo, en el orden de la maqueta.
@@ -27,19 +28,15 @@ _CASCADE = (
 _OPTIONAL_STEPS = {"other_in", "other_out"}
 
 
-def _in_branch(queryset: QuerySet, lookup: str, branch: Branch | None) -> QuerySet:
-    return queryset.filter(**{lookup: branch}) if branch else queryset
-
-
 def cash_closings(
-    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, *, scope: BranchScope
 ) -> QuerySet:
     """Cajas cerradas en el período con el esperado, el contado y la diferencia que se guardaron al cerrar."""
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, scope=scope)
     sessions = CashSession.objects.filter(closed_at__gte=period.start, closed_at__lt=period.end)
     return (
-        _in_branch(sessions, "branch", branch)
+        period.scope.apply(sessions)
         .values(
             "branch__name",
             "opened_at",
@@ -55,13 +52,13 @@ def cash_closings(
 
 
 def cash_movements(
-    membership: Membership, date_from: date | None = None, date_to: date | None = None, branch: Branch | None = None
+    membership: Membership, date_from: date | None = None, date_to: date | None = None, *, scope: BranchScope
 ) -> QuerySet:
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to)
+    period = resolve_period(membership, date_from, date_to, scope=scope)
     movements = CashMovement.objects.filter(created_at__gte=period.start, created_at__lt=period.end)
     return (
-        _in_branch(movements, "session__branch", branch)
+        period.scope.apply(movements, "session__branch")
         .values(
             "created_at",
             "session__branch__name",
@@ -76,18 +73,25 @@ def cash_movements(
     )
 
 
-def _todays_session(branch: Branch, start: datetime, end: datetime) -> CashSession | None:
-    """La caja abierta de la sede (aunque se abriera ayer) o, si no, la que se cerró hoy."""
-    sessions = CashSession.objects.filter(branch=branch)
-    return (
-        sessions.filter(closed_at__isnull=True).first()
-        or sessions.filter(closed_at__gte=start, closed_at__lt=end).order_by("-closed_at").first()
+def _todays_sessions(scope: BranchScope, start: datetime, end: datetime) -> list[CashSession]:
+    """Por sede del alcance: la caja abierta (aunque se abriera ayer) o, si no, la última que se cerró hoy."""
+    sessions = scope.apply(CashSession.objects.all())
+    open_sessions = list(sessions.filter(closed_at__isnull=True))
+    open_branches = {session.branch_id for session in open_sessions}
+    closed_today = (
+        sessions.filter(closed_at__gte=start, closed_at__lt=end)
+        .exclude(branch_id__in=open_branches)
+        .order_by("branch_id", "-closed_at")
     )
+    latest_closed = {}
+    for session in closed_today:
+        latest_closed.setdefault(session.branch_id, session)
+    return open_sessions + list(latest_closed.values())
 
 
-def _cash_totals(session: CashSession) -> dict:
+def _cash_totals(sessions: list[CashSession]) -> dict:
     kinds = MovementKind
-    return CashMovement.objects.filter(session=session, payment_method=PaymentMethod.CASH).aggregate(
+    return CashMovement.objects.filter(session__in=sessions, payment_method=PaymentMethod.CASH).aggregate(
         sales=money_sum("amount", Q(kind=kinds.SALE)),
         receivable_payments=money_sum("amount", Q(kind=kinds.RECEIVABLE_PAYMENT)),
         other_in=money_sum("amount", Q(direction=Direction.IN, kind__in=(kinds.MANUAL_INCOME, kinds.ADJUSTMENT))),
@@ -101,9 +105,9 @@ def _step(label: str, kind: str, low: Decimal, high: Decimal) -> dict:
     return {"label": label, "kind": kind, "amount": high - low, "low": low, "high": high}
 
 
-def _cascade(session: CashSession, totals: dict, expected: Decimal) -> list[dict]:
-    steps = [_step("Apertura", "total", Decimal("0"), session.opening_amount)]
-    running = session.opening_amount
+def _cascade(opening: Decimal, totals: dict, expected: Decimal, counted: Decimal | None) -> list[dict]:
+    steps = [_step("Apertura", "total", Decimal("0"), opening)]
+    running = opening
     for label, key, sign in _CASCADE:
         amount = totals[key]
         if key in _OPTIONAL_STEPS and not amount:
@@ -112,8 +116,8 @@ def _cascade(session: CashSession, totals: dict, expected: Decimal) -> list[dict
         steps.append(_step(label, "up" if sign > 0 else "down", min(running, after), max(running, after)))
         running = after
     steps.append(_step("Esperado", "total", Decimal("0"), expected))
-    if session.counted_amount is not None:
-        steps.append(_step("Contado", "counted", Decimal("0"), session.counted_amount))
+    if counted is not None:
+        steps.append(_step("Contado", "counted", Decimal("0"), counted))
     return steps
 
 
@@ -125,27 +129,41 @@ def _with_bars(steps: list[dict]) -> list[dict]:
     return steps
 
 
-def cash_flow_today(membership: Membership, branch: Branch) -> dict | None:
-    """Cuadre de la caja de hoy: de la base al esperado (el mismo cálculo del arqueo) y, si ya cerró, el contado."""
+def _total(values) -> Decimal:
+    return sum(values, Decimal("0"))
+
+
+def cash_flow_today(membership: Membership, *, scope: BranchScope) -> dict | None:
+    """Cuadre de hoy: de la base al esperado (el mismo cálculo del arqueo) y, si ya cerró, el contado.
+
+    En "todas", la suma de las cajas de hoy de cada sede; el contado y la diferencia solo cuando
+    todas cerraron. El cuadre separado por sede llega con el comparativo (fase S5).
+    """
     ensure_permission(membership, "reportes.ver")
+    scope.check(membership)
     today = local_today(membership)
-    session = _todays_session(branch, *day_bounds(membership.barbershop.timezone, today, today))
-    if session is None:
+    sessions = _todays_sessions(scope, *day_bounds(membership.barbershop.timezone, today, today))
+    if not sessions:
         return None
-    expected = expected_cash(session)
+    expected = _total(expected_cash(session) for session in sessions)
+    all_closed = all(not session.is_open for session in sessions)
+    counted = _total(session.counted_amount for session in sessions) if all_closed else None
+    opening = _total(session.opening_amount for session in sessions)
     return {
-        "is_open": session.is_open,
-        "opened_at": session.opened_at,
+        "is_open": not all_closed,
+        "opened_at": min(session.opened_at for session in sessions),
         "expected": expected,
-        "difference": session.difference,
-        "steps": _with_bars(_cascade(session, _cash_totals(session), expected)),
+        "difference": _total(session.difference for session in sessions) if all_closed else None,
+        "steps": _with_bars(_cascade(opening, _cash_totals(sessions), expected, counted)),
     }
 
 
-def latest_closings(membership: Membership, branch: Branch, limit: int = 5) -> list[dict]:
-    """Los últimos cierres de la sede con lo guardado al cerrar, por día local."""
+def latest_closings(membership: Membership, *, scope: BranchScope, limit: int = 5) -> list[dict]:
+    """Los últimos cierres de las sedes del alcance con lo guardado al cerrar, por día local."""
     ensure_permission(membership, "reportes.ver")
-    sessions = CashSession.objects.filter(branch=branch, closed_at__isnull=False).order_by("-closed_at")[:limit]
+    scope.check(membership)
+    closed = scope.apply(CashSession.objects.filter(closed_at__isnull=False))
+    sessions = closed.order_by("-closed_at")[:limit]
     tz = ZoneInfo(membership.barbershop.timezone)
     return [
         {

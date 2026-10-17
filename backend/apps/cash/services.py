@@ -17,6 +17,7 @@ from django.utils import timezone
 from apps.audit.models import record
 from apps.cash.models import INCOME_KINDS, OUTFLOW_KINDS, CashMovement, CashSession, Direction, MovementKind
 from apps.cash.selectors import expected_cash
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -111,14 +112,12 @@ def record_money(
 
 
 def open_session(
-    membership: Membership, branch: UUID | str, *, opening_amount: Decimal, notes: str = ""
+    membership: Membership, scope: BranchScope, *, opening_amount: Decimal, notes: str = ""
 ) -> CashSession:
-    """Regla 21 por sede (decisión 2). La base garantiza la unicidad aun con solicitudes simultáneas."""
+    """Regla 21 por sede (decisión 2), en la sede del alcance. La base garantiza la unicidad aun con
+    solicitudes simultáneas."""
     ensure_permission(membership, "caja.abrir")
-    try:
-        target = Branch.objects.get(public_id=branch, is_active=True)
-    except Branch.DoesNotExist as exc:
-        raise ValidationError({"branch": "La sede no existe."}) from exc
+    target = scope.branch_for_write(membership)
     with transaction.atomic():
         if _open_session_in(target) is not None:
             raise ValidationError(ALREADY_OPEN, code="already_open")

@@ -57,6 +57,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "apps.tenancy.middleware.ActiveBarbershopMiddleware",
+    "apps.tenancy.middleware.BranchScopeMiddleware",
     "apps.accounts.middleware.RequireMFAForPrivilegedRolesMiddleware",
     # axes debe ir al final.
     "axes.middleware.AxesMiddleware",

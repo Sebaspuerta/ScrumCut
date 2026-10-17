@@ -8,6 +8,7 @@ import pytest
 from apps.receivables import services as receivables
 from apps.reports.selectors.receivables import receivables_report
 from apps.sales.selectors import local_today
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -18,15 +19,25 @@ def test_deuda_por_cliente_con_lo_vencido(world):
     w = world
     today = local_today(w.owner)
     receivables.create_manual(
-        w.cashier, w.laura.public_id, total=D("30000"), branch=w.branch.public_id, due_date=today - timedelta(days=1)
+        w.cashier,
+        w.laura.public_id,
+        total=D("30000"),
+        scope=scope_of(w.cashier, w.branch),
+        due_date=today - timedelta(days=1),
     )
     receivables.create_manual(
-        w.cashier, w.laura.public_id, total=D("10000"), branch=w.branch.public_id, due_date=today + timedelta(days=5)
+        w.cashier,
+        w.laura.public_id,
+        total=D("10000"),
+        scope=scope_of(w.cashier, w.branch),
+        due_date=today + timedelta(days=5),
     )
-    paid = receivables.create_manual(w.cashier, w.laura.public_id, total=D("5000"), branch=w.branch.public_id)
-    receivables.add_payment(w.cashier, paid.public_id, amount=D("5000"), method="efectivo", branch=w.branch.public_id)
+    paid = receivables.create_manual(w.cashier, w.laura.public_id, total=D("5000"), scope=scope_of(w.cashier, w.branch))
+    receivables.add_payment(
+        w.cashier, paid.public_id, amount=D("5000"), method="efectivo", scope=scope_of(w.cashier, w.branch)
+    )
 
-    report = receivables_report(w.owner)
+    report = receivables_report(w.owner, scope=scope_of(w.owner))
 
     [laura] = report["by_client"]
     assert (laura["client__full_name"], laura["receivables"]) == ("Laura Gómez", 2)

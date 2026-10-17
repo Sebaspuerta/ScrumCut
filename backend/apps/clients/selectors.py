@@ -1,7 +1,10 @@
 """Lecturas de clientes. Los managers ya filtran por la barbería activa.
 
-El perfil de la regla 47 (`client_profile`) lee comandas cerradas y fiados;
-`client_status` es la regla pura que lo clasifica con los umbrales de la barbería.
+Los datos de la persona son de la barbería: cualquier sede la busca y la encuentra por
+documento (decisión 15 de docs/sedes.md). El perfil de la regla 47 (`client_profile`) lee
+comandas cerradas y fiados solo de la sede del alcance, así que el nivel del cliente es por
+sede (decisión 16); `client_status` es la regla pura que lo clasifica con los umbrales de la
+barbería.
 """
 
 import re
@@ -17,8 +20,9 @@ from django.utils import timezone
 from apps.clients.models import Client
 from apps.clients.normalization import normalize_document, normalize_phone
 from apps.core import crypto
-from apps.receivables.selectors import client_balance
+from apps.receivables.selectors import client_balance_in_scope
 from apps.sales.models import Order, OrderStatus
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import BarbershopSettings, Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -71,18 +75,23 @@ def find_duplicate(phone: str | None, document: str | None, *, exclude: Client |
     return candidates.order_by("pk").first()
 
 
-def client_profile(membership: Membership, public_id: UUID | str) -> dict:
-    """Regla 47: visitas, gasto, última visita y saldo, leídos de comandas cerradas y fiados."""
+def client_profile(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> dict:
+    """Regla 47: visitas, gasto, última visita, saldo y nivel en las sedes del alcance.
+
+    Una sede nunca ve el historial ni los fiados del cliente en otra (decisión 15).
+    """
     ensure_permission(membership, "clientes.ver")
+    scope.check(membership)
     client = Client.objects.get(public_id=public_id, deleted_at__isnull=True)
-    history = Order.objects.filter(client=client, status=OrderStatus.CLOSED).aggregate(
+    orders = scope.apply(Order.objects.filter(client=client, status=OrderStatus.CLOSED))
+    history = orders.aggregate(
         visits=Count("pk"),
         spent=Coalesce(
             Sum("total"), Value(Decimal("0.00")), output_field=DecimalField(max_digits=14, decimal_places=2)
         ),
         last_visit=Max("closed_at"),
     )
-    balance = client_balance(client)
+    balance = client_balance_in_scope(client, scope=scope)
     settings = BarbershopSettings.objects.get()
     return {
         "client": client,

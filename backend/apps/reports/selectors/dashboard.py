@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.alerts.conditions import LOW_STOCK, OUT_OF_STOCK, alertable_products
 from apps.alerts.selectors import list_alerts, unread_count
 from apps.cash.models import CashMovement, CashSession, MovementKind
-from apps.cash.selectors import expected_cash, open_session_for
+from apps.cash.selectors import expected_cash
 from apps.core.formatting import weekday_name
 from apps.receivables.models import OPEN_STATUSES, Receivable
 from apps.receivables.selectors import receivables_summary
@@ -19,15 +19,14 @@ from apps.reports.selectors.sales import income_mix, sales_by_barber, sales_by_p
 from apps.reports.selectors.towers import build_towers
 from apps.sales.models import EDITABLE_STATUSES, OrderStatus
 from apps.sales.selectors import day_bounds, local_today, period_dates, scoped_orders
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.branch_scope import BranchScope
+from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 
-def _income(start, end, branch: Branch | None = None) -> dict:
+def _income(start, end, scope: BranchScope) -> dict:
     """Cobros y abonos en todos los métodos, menos las devoluciones de comandas anuladas en esas fechas."""
-    movements = CashMovement.objects.filter(created_at__gte=start, created_at__lt=end)
-    if branch is not None:
-        movements = movements.filter(session__branch=branch)
+    movements = scope.apply(CashMovement.objects.filter(created_at__gte=start, created_at__lt=end), "session__branch")
     income = movements.aggregate(
         sales=money_sum("amount", Q(kind=MovementKind.SALE)),
         receivable_payments=money_sum("amount", Q(kind=MovementKind.RECEIVABLE_PAYMENT)),
@@ -36,32 +35,37 @@ def _income(start, end, branch: Branch | None = None) -> dict:
     return {**income, "total": income["sales"] + income["receivable_payments"] - income["refunds"]}
 
 
-def _open_cash_sessions() -> list[dict]:
+def _open_sessions(scope: BranchScope):
+    return scope.apply(CashSession.objects.filter(closed_at__isnull=True)).select_related("branch")
+
+
+def _open_cash_sessions(scope: BranchScope) -> list[dict]:
     """El esperado sale de `expected_cash`, el mismo cálculo del arqueo, aunque la caja se abriera ayer (defecto 23)."""
-    sessions = CashSession.objects.filter(closed_at__isnull=True).select_related("branch").order_by("branch__name")
+    sessions = _open_sessions(scope).order_by("branch__name")
     return [
         {"branch": session.branch.name, "opened_at": session.opened_at, "expected_cash": expected_cash(session)}
         for session in sessions
     ]
 
 
-def dashboard_summary(membership: Membership) -> dict:
+def dashboard_summary(membership: Membership, *, scope: BranchScope) -> dict:
     ensure_permission(membership, "reportes.ver")
+    scope.check(membership)
     today = local_today(membership)
     start, end = day_bounds(membership.barbershop.timezone, today, today)
-    orders = scoped_orders(membership).aggregate(
+    orders = scope.apply(scoped_orders(membership)).aggregate(
         closed_today=Count("pk", filter=Q(status=OrderStatus.CLOSED, closed_at__gte=start, closed_at__lt=end)),
         open=Count("pk", filter=Q(status__in=EDITABLE_STATUSES)),
     )
     return {
         "date": today,
-        "income": _income(start, end),
+        "income": _income(start, end, scope),
         "orders_closed_today": orders["closed_today"],
         "orders_open": orders["open"],
-        "open_cash_sessions": _open_cash_sessions(),
+        "open_cash_sessions": _open_cash_sessions(scope),
         # Mismo criterio de las alertas "agotado" y "stock bajo".
         "critical_stock": alertable_products().filter(OUT_OF_STOCK | LOW_STOCK).count(),
-        "receivables": receivables_summary(membership),
+        "receivables": receivables_summary(membership, scope=scope),
         "unread_alerts": unread_count(membership),
     }
 
@@ -102,16 +106,12 @@ def _closed_in(window: Window) -> Q:
     return Q(status=OrderStatus.CLOSED, closed_at__gte=window[0], closed_at__lt=window[1])
 
 
-def _orders_kpi(membership: Membership, branch: Branch, today_so_far: Window, reference: Window) -> dict:
+def _orders_kpi(membership: Membership, scope: BranchScope, today_so_far: Window, reference: Window) -> dict:
     """Comandas cerradas hoy frente al mismo corte de la semana anterior, y las que siguen abiertas."""
-    counts = (
-        scoped_orders(membership)
-        .filter(branch=branch)
-        .aggregate(
-            today=Count("pk", filter=_closed_in(today_so_far)),
-            reference=Count("pk", filter=_closed_in(reference)),
-            open=Count("pk", filter=Q(status__in=EDITABLE_STATUSES)),
-        )
+    counts = scope.apply(scoped_orders(membership)).aggregate(
+        today=Count("pk", filter=_closed_in(today_so_far)),
+        reference=Count("pk", filter=_closed_in(reference)),
+        open=Count("pk", filter=Q(status__in=EDITABLE_STATUSES)),
     )
     return {
         "value": counts["today"],
@@ -120,20 +120,24 @@ def _orders_kpi(membership: Membership, branch: Branch, today_so_far: Window, re
     }
 
 
-def _income_kpi(branch: Branch, today_so_far: Window, reference: Window) -> dict:
-    income = _income(*today_so_far, branch)["total"]
-    return {"value": income, "variation": variation(income, _income(*reference, branch)["total"])}
+def _income_kpi(scope: BranchScope, today_so_far: Window, reference: Window) -> dict:
+    income = _income(*today_so_far, scope)["total"]
+    return {"value": income, "variation": variation(income, _income(*reference, scope)["total"])}
 
 
-def _cash_kpi(branch: Branch) -> dict | None:
-    session = open_session_for(branch)
-    return session and {"expected": expected_cash(session), "opened_at": session.opened_at}
+def _cash_kpi(scope: BranchScope) -> dict | None:
+    """Efectivo esperado en las cajas abiertas del alcance; en "todas", la suma de las sedes."""
+    sessions = list(_open_sessions(scope))
+    if not sessions:
+        return None
+    expected = sum((expected_cash(session) for session in sessions), Decimal("0"))
+    return {"expected": expected, "opened_at": min(session.opened_at for session in sessions)}
 
 
-def _receivables_kpi(membership: Membership) -> dict:
-    summary = receivables_summary(membership)
-    clients = Receivable.objects.filter(status__in=OPEN_STATUSES, balance__gt=0).values("client").distinct().count()
-    return {**summary, "clients": clients}
+def _receivables_kpi(membership: Membership, scope: BranchScope) -> dict:
+    summary = receivables_summary(membership, scope=scope)
+    debts = scope.apply(Receivable.objects.filter(status__in=OPEN_STATUSES, balance__gt=0), "origin_branch")
+    return {**summary, "clients": debts.values("client").distinct().count()}
 
 
 def _previous_range(date_from: date, date_to: date) -> tuple[date, date]:
@@ -156,31 +160,41 @@ def _with_margins(products: list[dict]) -> list[dict]:
     return products
 
 
-def executive_dashboard(membership: Membership, date_from: date | None, date_to: date | None, branch: Branch) -> dict:
+def _kpis(
+    membership: Membership, scope: BranchScope, today: date, *, days: list[dict], previous_days: list[dict]
+) -> dict:
+    today_so_far, reference = _so_far(membership.barbershop.timezone, today)
+    ticket = _ticket(days)
+    return {
+        "comparison": f"vs. {weekday_name(today)} anterior a esta hora",
+        "income": _income_kpi(scope, today_so_far, reference),
+        "orders": _orders_kpi(membership, scope, today_so_far, reference),
+        "ticket": {"value": ticket, "variation": variation(ticket, _ticket(previous_days))},
+        "cash": _cash_kpi(scope),
+        "receivables": _receivables_kpi(membership, scope),
+    }
+
+
+def executive_dashboard(
+    membership: Membership, date_from: date | None, date_to: date | None, *, scope: BranchScope
+) -> dict:
+    """El tablero de la sede del alcance; en "todas", los indicadores suman las sedes (docs/sedes.md)."""
     ensure_permission(membership, "reportes.ver")
+    scope.check(membership)
     date_from, date_to = period_dates(membership, date_from, date_to)
     today = local_today(membership)
-    today_so_far, reference = _so_far(membership.barbershop.timezone, today)
-    days = sales_by_period(membership, date_from, date_to, branch)
-    previous_days = sales_by_period(membership, *_previous_range(date_from, date_to), branch)
-    ticket = _ticket(days)
+    days = sales_by_period(membership, date_from, date_to, scope=scope)
+    previous_days = sales_by_period(membership, *_previous_range(date_from, date_to), scope=scope)
     return {
         "date_from": date_from,
         "date_to": date_to,
         "has_sales": any(day["orders"] for day in days),
-        "kpis": {
-            "comparison": f"vs. {weekday_name(today)} anterior a esta hora",
-            "income": _income_kpi(branch, today_so_far, reference),
-            "orders": _orders_kpi(membership, branch, today_so_far, reference),
-            "ticket": {"value": ticket, "variation": variation(ticket, _ticket(previous_days))},
-            "cash": _cash_kpi(branch),
-            "receivables": _receivables_kpi(membership),
-        },
+        "kpis": _kpis(membership, scope, today, days=days, previous_days=previous_days),
         "towers": build_towers(days, today),
-        "cash_flow": cash_flow_today(membership, branch),
-        "barbers": _with_bar_widths(sales_by_barber(membership, date_from, date_to, branch)),
-        "mix": income_mix(membership, date_from, date_to, branch),
-        "products": _with_margins(top_products(membership, date_from, date_to, limit=5, branch=branch)),
-        "closings": latest_closings(membership, branch),
+        "cash_flow": cash_flow_today(membership, scope=scope),
+        "barbers": _with_bar_widths(sales_by_barber(membership, date_from, date_to, scope=scope)),
+        "mix": income_mix(membership, date_from, date_to, scope=scope),
+        "products": _with_margins(top_products(membership, date_from, date_to, limit=5, scope=scope)),
+        "closings": latest_closings(membership, scope=scope),
         "alerts": list(list_alerts(membership, unread_only=True, page_size=4)),
     }

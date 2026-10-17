@@ -16,6 +16,7 @@ from apps.inventory import services as inventory
 from apps.reports.selectors.dashboard import dashboard_summary
 from apps.sales import selectors as sales_selectors
 from apps.sales import services as sales
+from tests.conftest import scope_of
 from tests.reports.helpers import sell
 
 pytestmark = pytest.mark.django_db
@@ -30,9 +31,9 @@ def test_el_esperado_del_tablero_coincide_con_el_arqueo_de_una_caja_abierta_ayer
         sell(w, w.ana, service=w.corte)  # 25 000 en efectivo, ayer
     CashSession.objects.filter(pk=w.session.pk).update(opened_at=yesterday - timedelta(hours=2))
     sell(w, w.beto, product=w.cera)  # 20 000 en efectivo, hoy
-    sales.create_order(w.cashier, w.branch.public_id)  # una comanda abierta
+    sales.create_order(w.cashier, scope_of(w.cashier, w.branch))  # una comanda abierta
 
-    summary = dashboard_summary(w.owner)
+    summary = dashboard_summary(w.owner, scope=scope_of(w.owner))
     closed = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("95000"))
 
     assert [session["expected_cash"] for session in summary["open_cash_sessions"]] == [D("95000")]
@@ -47,7 +48,7 @@ def test_el_tablero_resta_las_devoluciones_y_suma_los_abonos(world):
     sales.cancel_order(w.owner, returned.public_id, reason="Cobro duplicado")
     sell(w, w.beto, service=w.barba)
 
-    income = dashboard_summary(w.owner)["income"]
+    income = dashboard_summary(w.owner, scope=scope_of(w.owner))["income"]
 
     assert (income["sales"], income["refunds"], income["receivable_payments"], income["total"]) == (
         D("40000"),
@@ -60,7 +61,7 @@ def test_el_tablero_resta_las_devoluciones_y_suma_los_abonos(world):
 def test_el_tablero_no_escribe_nada(world):
     sell(world, world.ana, service=world.corte)
     with CaptureQueriesContext(connection) as queries:
-        summary = dashboard_summary(world.owner)
+        summary = dashboard_summary(world.owner, scope=scope_of(world.owner))
     writes = [q["sql"] for q in queries.captured_queries if q["sql"].lstrip().upper().startswith(("INSERT", "UPDATE"))]
     assert writes == []
     assert (summary["critical_stock"], summary["unread_alerts"]) == (0, 0)
@@ -79,7 +80,7 @@ def test_inventario_critico_usa_el_criterio_de_las_alertas(world):
     product("Loción", 4, minimum_stock=3)
     inventory.deactivate_product(w.owner, product("Pausado", 0).public_id)
 
-    assert dashboard_summary(w.owner)["critical_stock"] == 3
+    assert dashboard_summary(w.owner, scope=scope_of(w.owner))["critical_stock"] == 3
 
 
 def test_mis_cortes_de_hoy_solo_cuenta_lo_del_barbero_y_sin_dinero(world):
@@ -91,4 +92,4 @@ def test_mis_cortes_de_hoy_solo_cuenta_lo_del_barbero_y_sin_dinero(world):
     assert sales_selectors.my_cuts_today(w.ana_login) == {"cuts_today": 3}
     assert sales_selectors.my_cuts_today(w.beto_login) == {"cuts_today": 1}
     with pytest.raises(PermissionDenied):
-        dashboard_summary(w.ana_login)
+        dashboard_summary(w.ana_login, scope=scope_of(w.ana_login))

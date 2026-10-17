@@ -6,6 +6,7 @@ import pytest
 
 from apps.cash import services as cash
 from apps.reports.selectors.cash import cash_closings, cash_movements
+from tests.conftest import scope_of
 from tests.reports.helpers import sell
 
 pytestmark = pytest.mark.django_db
@@ -22,7 +23,7 @@ def test_cierres_con_esperado_contado_y_diferencia_guardados(world):
     )
     cash.close_session(w.cashier, w.session.public_id, counted_amount=D("69000"))
 
-    [closing] = cash_closings(w.owner)
+    [closing] = cash_closings(w.owner, scope=scope_of(w.owner))
 
     assert (closing["branch__name"], closing["opening_amount"]) == ("Centro", D("50000"))
     assert (closing["expected_amount"], closing["counted_amount"], closing["difference"]) == (
@@ -39,6 +40,6 @@ def test_movimientos_de_caja_del_periodo(world):
         w.cashier, w.session.public_id, kind="gasto", amount=D("5000"), payment_method="efectivo", description="Aseo"
     )
 
-    rows = [(row["kind"], row["direction"], row["amount"]) for row in cash_movements(w.owner)]
+    rows = [(row["kind"], row["direction"], row["amount"]) for row in cash_movements(w.owner, scope=scope_of(w.owner))]
 
     assert rows == [("venta", "in", D("25000")), ("gasto", "out", D("5000"))]

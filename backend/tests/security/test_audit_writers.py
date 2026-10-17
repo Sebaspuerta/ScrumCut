@@ -22,6 +22,7 @@ from apps.receivables import services as receivables
 from apps.sales import services as sales
 from apps.sales.selectors import local_today
 from apps.staff import services as staff
+from tests.conftest import scope_of
 from tests.rls_support import back_to_test_role, become_production_role, postgres_only
 
 pytestmark = [pytest.mark.django_db, postgres_only]
@@ -62,9 +63,9 @@ CASES = {
     ),
     "producto.crear": lambda w: partial(inventory.create_product, w.owner, {"name": "Gel", "product_type": "venta"}),
     "caja.cerrar": lambda w: partial(cash.close_session, w.cashier, w.session.public_id, counted_amount=D("50000")),
-    "comanda.crear": lambda w: partial(sales.create_order, w.cashier, w.branch.public_id),
+    "comanda.crear": lambda w: partial(sales.create_order, w.cashier, scope_of(w.cashier, w.branch)),
     "fiado.crear": lambda w: partial(
-        receivables.create_manual, w.cashier, w.laura.public_id, total=D("1000"), branch=w.branch.public_id
+        receivables.create_manual, w.cashier, w.laura.public_id, total=D("1000"), scope=scope_of(w.cashier, w.branch)
     ),
     "alertas.generar": _alerts_to_generate,
     "alerta.marcar_leida": _alert_to_read,

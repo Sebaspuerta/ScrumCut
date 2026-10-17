@@ -11,6 +11,7 @@ from apps.inventory import services as inventory
 from apps.reports.selectors import income, sales
 from apps.sales.selectors import local_today
 from apps.staff import services as staff
+from tests.conftest import scope_of
 from tests.reports.helpers import close_at, sell
 
 pytestmark = pytest.mark.django_db
@@ -25,13 +26,15 @@ def test_las_ventas_se_agrupan_por_dia_local_de_bogota(world):
     close_at(late, datetime(2026, 10, 5, 23, 0))  # en UTC ya es el 6 de octubre
     close_at(morning, datetime(2026, 10, 6, 10, 0))
 
-    rows = sales.sales_by_period(w.owner, date(2026, 10, 5), date(2026, 10, 6))
+    rows = sales.sales_by_period(w.owner, date(2026, 10, 5), date(2026, 10, 6), scope=scope_of(w.owner))
 
     assert [(row["day"], row["orders"], row["total"]) for row in rows] == [
         (date(2026, 10, 5), 1, D("25000")),
         (date(2026, 10, 6), 1, D("15000")),
     ]
-    assert sales.sales_by_period(w.owner, date(2026, 10, 6), date(2026, 10, 6))[0]["total"] == D("15000")
+    assert sales.sales_by_period(w.owner, date(2026, 10, 6), date(2026, 10, 6), scope=scope_of(w.owner))[0][
+        "total"
+    ] == D("15000")
 
 
 def test_los_dias_sin_ventas_aparecen_en_cero(world):
@@ -39,26 +42,34 @@ def test_los_dias_sin_ventas_aparecen_en_cero(world):
     close_at(sell(w, w.ana, service=w.corte), datetime(2026, 10, 5, 12, 0))
     close_at(sell(w, w.beto, service=w.barba), datetime(2026, 10, 7, 12, 0))
 
-    rows = sales.sales_by_period(w.owner, date(2026, 10, 5), date(2026, 10, 7))
+    rows = sales.sales_by_period(w.owner, date(2026, 10, 5), date(2026, 10, 7), scope=scope_of(w.owner))
 
     assert [(row["day"], row["orders"], row["total"]) for row in rows] == [
         (date(2026, 10, 5), 1, D("25000")),
         (date(2026, 10, 6), 0, D("0")),
         (date(2026, 10, 7), 1, D("15000")),
     ]
-    assert len(sales.sales_by_period(w.owner)) == 30
+    assert len(sales.sales_by_period(w.owner, scope=scope_of(w.owner))) == 30
 
 
 def test_cambiar_comision_y_costo_despues_de_cerrar_no_cambia_los_reportes(world):
     w = world
     sell(w, w.ana, service=w.corte)
     sell(w, w.ana, product=w.cera)
-    before = (sales.sales_by_barber(w.owner), sales.top_products(w.owner), income.income_statement(w.owner))
+    before = (
+        sales.sales_by_barber(w.owner, scope=scope_of(w.owner)),
+        sales.top_products(w.owner, scope=scope_of(w.owner)),
+        income.income_statement(w.owner, scope=scope_of(w.owner)),
+    )
 
     staff.set_commission(w.owner, w.ana.public_id, commission_type="percentage", value=10)
     inventory.update_product(w.owner, w.cera.public_id, data={"purchase_cost": D("1")})
 
-    after = (sales.sales_by_barber(w.owner), sales.top_products(w.owner), income.income_statement(w.owner))
+    after = (
+        sales.sales_by_barber(w.owner, scope=scope_of(w.owner)),
+        sales.top_products(w.owner, scope=scope_of(w.owner)),
+        income.income_statement(w.owner, scope=scope_of(w.owner)),
+    )
     assert after == before
     ana, cera, statement = after[0][0], after[1][0], after[2]
     assert (ana["services"], ana["sales"], ana["commission"]) == (1, D("25000"), D("10000"))  # la Cera no es de Ana
@@ -81,7 +92,7 @@ def test_estado_de_resultados_con_descuento_y_gastos(world):
         w.cashier, w.session.public_id, kind="retiro", amount=D("9000"), payment_method="efectivo", description="Dueño"
     )
 
-    statement = income.income_statement(w.owner)
+    statement = income.income_statement(w.owner, scope=scope_of(w.owner))
 
     assert statement == {
         "gross_sales": D("45000"),
@@ -103,12 +114,13 @@ def test_por_barbero_y_por_producto_sin_n_mas_1(world, django_assert_max_num_que
         sell(w, w.beto, service=w.barba)
         sell(w, w.beto, product=w.cera)
         sell(w, w.ana, product=w.cuchilla)
+    scope = scope_of(w.owner)  # el middleware lo arma antes, una vez por petición
     w.owner.refresh_from_db()  # sin la barbería en caché: la consulta de la zona horaria cuenta
 
     with django_assert_max_num_queries(2):
-        by_barber = sales.sales_by_barber(w.owner)
+        by_barber = sales.sales_by_barber(w.owner, scope=scope)
     with django_assert_max_num_queries(2):
-        products = sales.top_products(w.owner)
+        products = sales.top_products(w.owner, scope=scope)
 
     assert [(row["name"], row["services"]) for row in by_barber] == [("Ana", 3), ("Beto", 3)]
     assert [(row["name"], row["quantity"]) for row in products] == [("Cera", 3), ("Cuchilla", 3)]
@@ -121,6 +133,6 @@ def test_el_rango_por_defecto_son_los_ultimos_30_dias(world):
     today = local_today(w.owner)
     close_at(old, datetime.combine(today - timedelta(days=30), time(12)))
 
-    assert sum(row["orders"] for row in sales.sales_by_period(w.owner)) == 1
+    assert sum(row["orders"] for row in sales.sales_by_period(w.owner, scope=scope_of(w.owner))) == 1
     with pytest.raises(ValidationError):
-        sales.sales_by_period(w.owner, today, today - timedelta(days=1))
+        sales.sales_by_period(w.owner, today, today - timedelta(days=1), scope=scope_of(w.owner))

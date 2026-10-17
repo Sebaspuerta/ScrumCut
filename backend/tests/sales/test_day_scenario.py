@@ -22,6 +22,7 @@ from apps.inventory.models import MovementType, StockMovement
 from apps.sales import selectors, services
 from apps.sales.models import ItemType, OrderStatus, PaymentStatus
 from apps.staff import services as staff
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -30,7 +31,9 @@ D = Decimal
 
 def test_un_dia_de_barberia(world):
     w = world
-    order = services.create_order(w.cashier, w.branch.public_id, client=w.laura.public_id, barber=w.ana.public_id)
+    order = services.create_order(
+        w.cashier, scope_of(w.cashier, w.branch), client=w.laura.public_id, barber=w.ana.public_id
+    )
     services.add_item(w.cashier, order.public_id, service=w.corte.public_id)
     services.add_item(w.cashier, order.public_id, service=w.barba.public_id, barber=w.beto.public_id)
     services.add_item(w.cashier, order.public_id, product=w.cera.public_id)
