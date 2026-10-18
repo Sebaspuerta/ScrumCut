@@ -89,7 +89,7 @@ def _sales_in_export(client, branch) -> list:
     client.post(reverse("switch_branch"), {"sede": str(branch.public_id)})
     response = client.get(reverse("reports_export"))
     rows = load_workbook(BytesIO(response.content))["Ventas"].iter_rows(min_row=5, values_only=True)
-    return sorted(row[3] for row in rows)
+    return sorted(row[4] for row in rows)  # la columna "Ítem", después de "Sede"
 
 
 def test_exportar_una_sede_no_incluye_las_ventas_de_otra(world, owner_client):

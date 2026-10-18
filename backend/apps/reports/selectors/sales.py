@@ -16,7 +16,7 @@ from apps.tenancy.permissions import ensure_permission
 _EMPTY_DAY = {"orders": 0, "subtotal": Decimal("0.00"), "discount": Decimal("0.00"), "total": Decimal("0.00")}
 
 
-def _name(name: str | None, deleted_at) -> str | None:
+def display_name(name: str | None, deleted_at) -> str | None:
     return name + DELETED_SUFFIX if name and deleted_at else name
 
 
@@ -64,7 +64,7 @@ def sales_by_barber(
     return [
         {
             "barber": row["barber__public_id"],
-            "name": _name(row["barber__display_name"], row["barber__deleted_at"]),
+            "name": display_name(row["barber__display_name"], row["barber__deleted_at"]),
             "orders": row["orders"],
             "services": row["services"],
             "sales": row["sales"],
@@ -96,7 +96,7 @@ def top_products(
     return [
         {
             "product": row["product__public_id"],
-            "name": _name(row["product__name"], row["product__deleted_at"]),
+            "name": display_name(row["product__name"], row["product__deleted_at"]),
             "quantity": row["units"],
             "sales": row["sales"],
             "cost": row["cost"],
@@ -139,6 +139,7 @@ def sale_lines(
     """Regla 55: cada línea vendida con su costo (producto o insumos) y su comisión."""
     return _lines(membership, date_from, date_to, scope).values(
         "order__closed_at",
+        "order__branch__name",
         "order__number",
         "item_type",
         "name",
@@ -162,6 +163,7 @@ def commission_lines(
         .filter(item_type=ItemType.SERVICE)
         .values(
             "order__closed_at",
+            "order__branch__name",
             "order__number",
             "barber__display_name",
             "name",

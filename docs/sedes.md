@@ -222,7 +222,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 | S3 | Ajustes → Sedes, selector de sede en la barra superior y modo "todas" en el encabezado (requiere maqueta aprobada). Va inmediatamente después de S2. | Nada | Grande |
 | S4a | Caja, comandas, gastos y precios por sede de servicios y productos (`ServiceBranchPrice` y `ProductBranchPrice`; decisión 17). Escritura solo en modo "una" y rechazo por pestañas cruzadas. | Backend hecho (ver el detalle debajo de esta tabla). Lo que necesita pantallas pasa a S3. | Mediana |
 | S4b | Inventario por sede (decisión 6): `StockLevel`, `StockMovement.branch`, consumo por `order.branch`, alertas con `Alert.branch`, sin `Product.current_stock`, y traslados. | Backend hecho (ver el detalle debajo de esta tabla). Las pantallas de existencias por sede y de traslados pasan a S3. | Grande |
-| S5 | Comparativo por sede y cuadre de caja por sede en el tablero (requiere maqueta aprobada). | Los indicadores del modo "todas" llegan en S2. | Mediana |
+| S5 | Comparativo por sede y cuadre de caja por sede en el tablero (requiere maqueta aprobada). | Backend del comparativo y del Excel por sede hecho (ver el detalle debajo de esta tabla). La pantalla espera su maqueta. | Mediana |
 
 **Detalle de S1**
 - `Branch.city` y el único `(barbershop_id, id)`; `BranchHours`.
@@ -254,6 +254,15 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - Alertas por (tipo, producto, sede). El mínimo es del producto y se compara con cada sede. Agotado y stock bajo solo se evalúan donde hay una fila de existencia: crear un producto deja la suya en 0 en la sede del alcance; una sede que nunca tuvo el producto no recibe alertas de él. Por vencer, solo donde hay unidades. Las alertas se leen y se marcan por el alcance.
 - Las lecturas de inventario van por el alcance: `stock` de la sede o, en "todas", la suma; `stock_levels`, `low_stock` y `expiring` devuelven existencias por sede con `product_total`. El indicador de stock crítico del tablero cuenta existencias del alcance, no productos: en "todas", un producto agotado o bajo en dos sedes cuenta 2 (una por producto × sede).
 - `cargar_demo`: stock distinto en Centro y Norte, un traslado de Cera mate y stock bajo de un producto solo en Norte.
+
+**Estado de S5 (backend del comparativo hecho)**
+- `apps.reports.selectors.branches.branch_comparison`: por cada sede del alcance, en el período (zona de la barbería, decisión 7), comandas cerradas, ventas netas, ticket promedio, servicios y productos; gastos (decisión 5); resultado operativo (ventas − gastos, no contable); fiados pendientes de hoy por sede de origen y abonos cobrados en el período (decisión 3); cierres de caja y suma de sus diferencias; valor del stock de hoy (cantidad × costo de compra) y unidades y traslados que entran y salen, por `transfer_id`. Más la producción por barbero y sede.
+- Cada grupo de métricas es una consulta agregada por sede: 9 consultas con 1 sede o con 3.
+- La fila Total es exactamente la suma de las sedes; el ticket del Total sale de sus ventas y comandas. En "todas" coincide con los reportes sin sede.
+- Acceso: `reportes.ver`, y además `sedes.ver` en "todas". En modo "una", solo esa sede. Las sedes salen por `BranchScope.branches()`.
+- Una sede inactiva sale marcada como inactiva si tuvo movimiento en el período o si conserva un saldo vivo (fiado pendiente o stock).
+- El inventario se calcula con cantidades, nunca con el antes y el después de los movimientos, que antes de S4b eran de toda la barbería.
+- Excel: hoja "Resumen por sede" (después de "Panorama") con el comparativo, el Total y la producción; columna "Sede" en Ventas, Comisiones y Fiados (Movimientos y Cierres ya la tenían). El dinero va como número con formato `#,##0`, sin decimales.
 
 **Pasa a la fase de pantallas (S3)**
 - Las pantallas de existencias por sede y de traslado.

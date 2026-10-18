@@ -16,6 +16,7 @@ pytestmark = pytest.mark.django_db
 
 SHEETS = [
     "Panorama",
+    "Resumen por sede",
     "Ventas",
     "Comisiones",
     "Fiados",
@@ -47,8 +48,9 @@ def test_el_excel_tiene_las_hojas_y_el_nombre_de_la_barberia(world):
     assert book.sheetnames == SHEETS
     assert {book[name]["A1"].value for name in SHEETS} == {"Barbería a"}
     sales = list(book["Ventas"].iter_rows(min_row=5, values_only=True))
-    cera = next(row for row in sales if row[3] == "Cera")
-    assert (cera[9], cera[10], cera[12]) == (20000, 8000, 12000)  # venta neta, costo y margen
+    cera = next(row for row in sales if row[4] == "Cera")
+    assert cera[1] == "Centro"
+    assert (cera[10], cera[11], cera[13]) == (20000, 8000, 12000)  # venta neta, costo y margen
 
 
 def test_el_texto_que_parece_formula_se_guarda_como_texto(world):

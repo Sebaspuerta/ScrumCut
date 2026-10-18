@@ -50,6 +50,14 @@ class BranchScope:
             return queryset.none()
         return queryset.filter(**{lookup: self.branch})
 
+    def branches(self) -> QuerySet[Branch]:
+        """Las sedes del alcance. En "todas", también las inactivas, como `apply` con su historial."""
+        if self.is_all:
+            return Branch.objects.all()
+        if self.branch is None:
+            return Branch.objects.none()
+        return Branch.objects.filter(pk=self.branch.pk)
+
     def branch_for_write(self, membership: Membership) -> Branch:
         """Escribir exige una sede, y activa (decisión 14): en "todas" o sin sede, ValidationError.
 

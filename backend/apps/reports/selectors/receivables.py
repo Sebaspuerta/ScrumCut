@@ -12,19 +12,22 @@ from apps.tenancy.permissions import ensure_permission
 
 
 def receivables_report(membership: Membership, *, scope: BranchScope) -> dict:
-    """Vencido por fecha de vencimiento, no por el estado guardado (regla 29). Por la sede de origen."""
+    """Vencido por fecha de vencimiento, no por el estado guardado (regla 29).
+
+    Una fila por cliente y sede de origen: en "todas", la deuda de un cliente en dos sedes son dos filas.
+    """
     ensure_permission(membership, "reportes.ver")
     scope.check(membership)
     overdue = Q(due_date__lt=local_today(membership))
     by_client = (
         scope.apply(Receivable.objects.filter(status__in=OPEN_STATUSES, balance__gt=0), "origin_branch")
-        .values("client__public_id", "client__full_name")
+        .values("client__public_id", "client__full_name", "origin_branch__name")
         .annotate(
             receivables=Count("pk"),
             pending_balance=money_sum("balance"),
             overdue_balance=money_sum("balance", overdue),
             oldest_due=Min("due_date"),
         )
-        .order_by("-pending_balance", "client__full_name")
+        .order_by("-pending_balance", "client__full_name", "origin_branch__name")
     )
     return {"summary": receivables_summary(membership, scope=scope), "by_client": list(by_client)}

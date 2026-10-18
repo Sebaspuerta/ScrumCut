@@ -5,6 +5,7 @@ Todo texto se guarda como celda de texto: un nombre de cliente o una descripció
 como "=HYPERLINK(...)" se ve tal cual y nunca se evalúa como fórmula.
 """
 
+from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
 from io import BytesIO
@@ -13,14 +14,28 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.worksheet.worksheet import Worksheet
 
-from apps.reports.excel.sheets import SHEETS, Sheet
+from apps.reports.excel import sheets
+from apps.reports.excel.branch_sheet import branch_summary_sheet
+from apps.reports.excel.sheets import Sheet
 from apps.reports.scope import Period, resolve_period
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
-MONEY_FORMAT = "#,##0.00"
+# Pesos colombianos sin decimales; la celda sigue siendo número, no texto.
+MONEY_FORMAT = "#,##0"
 DATETIME_FORMAT = "yyyy-mm-dd hh:mm"
+
+SHEETS: list[Callable[[Membership, Period], Sheet]] = [
+    sheets.overview_sheet,
+    branch_summary_sheet,
+    sheets.sales_sheet,
+    sheets.commissions_sheet,
+    sheets.receivables_sheet,
+    sheets.movements_sheet,
+    sheets.closings_sheet,
+    sheets.statement_sheet,
+]
 
 
 def _cell_value(value, period: Period):

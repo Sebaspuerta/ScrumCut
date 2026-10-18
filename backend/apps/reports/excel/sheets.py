@@ -1,6 +1,5 @@
 """Contenido de cada hoja del reporte de negocio (regla 55). Solo arma filas con los selectores de reportes."""
 
-from collections.abc import Callable
 from decimal import Decimal
 from typing import NamedTuple
 
@@ -25,11 +24,12 @@ def _label(choices, value: str) -> str:
 
 
 def sales_sheet(membership: Membership, period: Period) -> Sheet:
-    header = ["Fecha", "Comanda", "Tipo", "Ítem", "Barbero", "Cantidad", "Precio unitario", "Total línea"]
+    header = ["Fecha", "Sede", "Comanda", "Tipo", "Ítem", "Barbero", "Cantidad", "Precio unitario", "Total línea"]
     header += ["Descuento", "Venta neta", "Costo", "Comisión", "Margen"]
     rows = [
         [
             line["order__closed_at"],
+            line["order__branch__name"],
             line["order__number"],
             _label(ItemType, line["item_type"]),
             line["name"],
@@ -49,10 +49,11 @@ def sales_sheet(membership: Membership, period: Period) -> Sheet:
 
 
 def commissions_sheet(membership: Membership, period: Period) -> Sheet:
-    header = ["Fecha", "Comanda", "Barbero", "Servicio", "Cantidad", "Base", "Tipo", "Valor", "Comisión"]
+    header = ["Fecha", "Sede", "Comanda", "Barbero", "Servicio", "Cantidad", "Base", "Tipo", "Valor", "Comisión"]
     rows = [
         [
             line["order__closed_at"],
+            line["order__branch__name"],
             line["order__number"],
             line["barber__display_name"],
             line["name"],
@@ -68,10 +69,11 @@ def commissions_sheet(membership: Membership, period: Period) -> Sheet:
 
 
 def receivables_sheet(membership: Membership, period: Period) -> Sheet:
-    header = ["Cliente", "Fiados", "Saldo", "Vencido", "Vencimiento más antiguo"]
+    header = ["Cliente", "Sede", "Fiados", "Saldo", "Vencido", "Vencimiento más antiguo"]
     rows = [
         [
             row["client__full_name"],
+            row["origin_branch__name"],
             row["receivables"],
             row["pending_balance"],
             row["overdue_balance"],
@@ -167,14 +169,3 @@ def overview_sheet(membership: Membership, period: Period) -> Sheet:
         for row in sales.top_products(membership, period.date_from, period.date_to, scope=period.scope)
     ]
     return Sheet("Panorama", ["Indicador", "Valor"], rows)
-
-
-SHEETS: list[Callable[[Membership, Period], Sheet]] = [
-    overview_sheet,
-    sales_sheet,
-    commissions_sheet,
-    receivables_sheet,
-    movements_sheet,
-    closings_sheet,
-    statement_sheet,
-]
