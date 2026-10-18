@@ -53,7 +53,32 @@ class Service(TenantScopedModel, SoftDeleteModel):
             ),
             models.CheckConstraint(condition=models.Q(price__gte=0), name="ck_service_price_not_negative"),
             models.CheckConstraint(condition=models.Q(duration_minutes__gt=0), name="ck_service_duration_positive"),
+            # Destino de la llave compuesta de ServiceBranchPrice (apps/core/tenant_keys.py).
+            models.UniqueConstraint(fields=["barbershop", "id"], name="uq_service_barbershop_id"),
         ]
 
     def __str__(self) -> str:
         return self.name
+
+
+class ServiceBranchPrice(TenantScopedModel):
+    """Precio de un servicio en una sede (decisión 17 de docs/sedes.md).
+
+    Sin fila, rige `Service.price`. Lo resuelve `apps.catalog.branch_prices.current_price`.
+    """
+
+    service = models.ForeignKey(Service, on_delete=models.PROTECT, related_name="branch_prices")
+    branch = models.ForeignKey("tenancy.Branch", on_delete=models.PROTECT, related_name="service_prices")
+    price = models.DecimalField(
+        "precio en la sede", max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0"))]
+    )
+
+    class Meta:
+        verbose_name = "precio de servicio en la sede"
+        constraints = [
+            models.UniqueConstraint(fields=["service", "branch"], name="uq_servicebranchprice_service_branch"),
+            models.CheckConstraint(condition=models.Q(price__gte=0), name="ck_servicebranchprice_not_negative"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.service} · {self.branch} · {self.price}"

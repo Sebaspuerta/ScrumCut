@@ -11,7 +11,8 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from PIL import Image, UnidentifiedImageError
 
-from apps.inventory.models import MovementType, Product, ProductCategory
+from apps.catalog import branch_prices
+from apps.inventory.models import MovementType, Product, ProductBranchPrice, ProductCategory
 from apps.inventory.services._shared import (
     _audit,
     _product_snapshot,
@@ -19,6 +20,7 @@ from apps.inventory.services._shared import (
     _soft_delete_locked_product,
 )
 from apps.inventory.services.movements import apply_stock_movement
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -177,3 +179,20 @@ def upload_product_photo(membership: Membership, public_id: UUID | str, *, uploa
         product.save(update_fields=["photo", "updated_at"])
         _audit(membership, "producto.foto", obj=product, before=before, after=_product_snapshot(product))
     return product
+
+
+# ── Precio por sede (decisión 17 de docs/sedes.md) ───────────────────────────
+
+
+def set_product_branch_price(
+    membership: Membership, product: UUID | str, *, scope: BranchScope, price: Decimal
+) -> ProductBranchPrice:
+    """Precio de venta propio del producto en la sede del alcance; solo Dueño y Administrador."""
+    target = Product.objects.get(public_id=product, deleted_at__isnull=True)
+    return branch_prices.set_branch_price(membership, target, scope=scope, price=price)
+
+
+def remove_product_branch_price(membership: Membership, product: UUID | str, *, scope: BranchScope) -> None:
+    """La sede vuelve al precio de venta del catálogo."""
+    target = Product.objects.get(public_id=product, deleted_at__isnull=True)
+    branch_prices.remove_branch_price(membership, target, scope=scope)

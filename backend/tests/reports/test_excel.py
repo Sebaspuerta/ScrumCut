@@ -37,6 +37,7 @@ def _workbook(world, *dates):
             amount=Decimal("1000"),
             payment_method="efectivo",
             description=text,
+            scope=scope_of(world.cashier),
         )
     return load_workbook(BytesIO(build_business_report(world.owner, *dates, scope=scope_of(world.owner))))
 

@@ -85,9 +85,13 @@ def test_abonos_rechazados(world, case):
     elif case == "pagado":
         _pay(world, debt, "30000")
     elif case == "anulado":
-        services.cancel_receivable(world.owner, debt.public_id, reason="Error de digitación")
+        services.cancel_receivable(
+            world.owner, debt.public_id, reason="Error de digitación", scope=scope_of(world.owner)
+        )
     elif case == "sin_caja":
-        cash.close_session(world.cashier, world.session.public_id, counted_amount=D("50000"))
+        cash.close_session(
+            world.cashier, world.session.public_id, counted_amount=D("50000"), scope=scope_of(world.cashier)
+        )
     elif case == "metodo_apagado":
         settings = BarbershopSettings.objects.get()
         settings.enabled_payment_methods = ["nequi"]
@@ -104,17 +108,19 @@ def test_abonos_rechazados(world, case):
 def test_anular_un_fiado_exige_permiso_y_que_no_tenga_abonos(world):
     debt = _debt(world)
     with pytest.raises(PermissionDenied):
-        services.cancel_receivable(world.cashier, debt.public_id, reason="Error")
+        services.cancel_receivable(world.cashier, debt.public_id, reason="Error", scope=scope_of(world.cashier))
     with pytest.raises(ValidationError):
-        services.cancel_receivable(world.owner, debt.public_id, reason="  ")
+        services.cancel_receivable(world.owner, debt.public_id, reason="  ", scope=scope_of(world.owner))
 
     paid = _debt(world, total="5000")
     _pay(world, paid, "1000")
     with pytest.raises(ValidationError) as excinfo:
-        services.cancel_receivable(world.owner, paid.public_id, reason="Error")
+        services.cancel_receivable(world.owner, paid.public_id, reason="Error", scope=scope_of(world.owner))
     assert _code(excinfo) == "has_payments"
 
-    cancelled = services.cancel_receivable(world.owner, debt.public_id, reason="Error de digitación")
+    cancelled = services.cancel_receivable(
+        world.owner, debt.public_id, reason="Error de digitación", scope=scope_of(world.owner)
+    )
     assert (cancelled.status, cancelled.balance) == (ReceivableStatus.CANCELLED, D("0"))
 
 

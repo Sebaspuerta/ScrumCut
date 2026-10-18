@@ -65,7 +65,7 @@ def test_abrir_caja_y_auditarla(cashier, branch):
         "Turno mañana",
     )
     assert AuditLog.objects.get(action="caja.abrir").after["opening_amount"] == "50000.00"
-    assert selectors.current_session(cashier, branch.public_id) == session
+    assert selectors.current_session(cashier, scope=scope_of(cashier, branch)) == session
 
 
 def test_una_sola_caja_abierta_por_sede(cashier, branch, session):
@@ -121,7 +121,7 @@ EXPECTED_CASH = Decimal("106000.00")
 def test_el_resumen_y_el_cierre_calculan_el_mismo_efectivo(cashier, session):
     _full_day(session, cashier)
 
-    summary = selectors.session_summary(cashier, session.public_id)
+    summary = selectors.session_summary(cashier, session.public_id, scope=scope_of(cashier))
     assert summary["expected_cash"] == EXPECTED_CASH
     assert summary["by_method"][NEQUI] == {"in": Decimal("30000"), "out": Decimal("5000"), "net": Decimal("25000")}
     assert summary["by_method"][CARD]["net"] == Decimal("20000")
@@ -129,7 +129,7 @@ def test_el_resumen_y_el_cierre_calculan_el_mismo_efectivo(cashier, session):
     assert summary["by_kind"][MovementKind.EXPENSE] == Decimal("20000")
 
     closed = services.close_session(
-        cashier, session.public_id, counted_amount=Decimal("105000"), notes="Faltó un billete"
+        cashier, session.public_id, counted_amount=Decimal("105000"), notes="Faltó un billete", scope=scope_of(cashier)
     )
     assert (closed.expected_amount, closed.counted_amount, closed.difference) == (
         EXPECTED_CASH,
@@ -139,22 +139,24 @@ def test_el_resumen_y_el_cierre_calculan_el_mismo_efectivo(cashier, session):
     assert closed.closed_by == cashier.user and not closed.is_open
     log = AuditLog.objects.get(action="caja.cerrar")
     assert (log.after["expected_amount"], log.after["difference"]) == ("106000.00", "-1000.00")
-    assert selectors.session_summary(cashier, session.public_id)["difference"] == Decimal("-1000.00")
+    assert selectors.session_summary(cashier, session.public_id, scope=scope_of(cashier))["difference"] == Decimal(
+        "-1000.00"
+    )
 
 
 def test_una_caja_cerrada_no_recibe_movimientos_ni_se_cierra_dos_veces(cashier, branch, session):
-    services.close_session(cashier, session.public_id, counted_amount=Decimal("100000"))
+    services.close_session(cashier, session.public_id, counted_amount=Decimal("100000"), scope=scope_of(cashier))
     with pytest.raises(ValidationError):
-        services.close_session(cashier, session.public_id, counted_amount=Decimal("100000"))
+        services.close_session(cashier, session.public_id, counted_amount=Decimal("100000"), scope=scope_of(cashier))
     with pytest.raises(ValidationError):
         _money(session, MovementKind.SALE, Direction.IN, CASH, "1000", cashier)
-    assert selectors.current_session(cashier, branch.public_id) is None
+    assert selectors.current_session(cashier, scope=scope_of(cashier, branch)) is None
     assert services.open_session(cashier, scope_of(cashier, branch), opening_amount=Decimal("0")).is_open
 
 
 def test_el_contado_no_puede_ser_negativo(cashier, session):
     with pytest.raises(ValidationError):
-        services.close_session(cashier, session.public_id, counted_amount=Decimal("-1"))
+        services.close_session(cashier, session.public_id, counted_amount=Decimal("-1"), scope=scope_of(cashier))
     session.refresh_from_db()
     assert session.is_open
 
@@ -170,6 +172,7 @@ def test_movimientos_manuales_toman_el_sentido_del_tipo(cashier, session):
         amount=Decimal("8000"),
         payment_method=CASH,
         description="Café",
+        scope=scope_of(cashier),
     )
     assert expense.direction == Direction.OUT
     adjustment = services.register_manual_movement(
@@ -180,6 +183,7 @@ def test_movimientos_manuales_toman_el_sentido_del_tipo(cashier, session):
         payment_method=CASH,
         description="Sobrante",
         direction=Direction.IN,
+        scope=scope_of(cashier),
     )
     assert adjustment.direction == Direction.IN
 
@@ -204,6 +208,7 @@ def test_movimientos_manuales_invalidos(cashier, session, kind, amount, descript
             payment_method=CASH,
             description=description,
             direction=direction,
+            scope=scope_of(cashier),
         )
     assert not CashMovement.objects.exists()
 
@@ -227,6 +232,7 @@ def test_un_metodo_no_habilitado_se_rechaza(cashier, session):
             amount=Decimal("1"),
             payment_method=NEQUI,
             description="x",
+            scope=scope_of(cashier),
         )
     assert _money(session, MovementKind.SALE, Direction.IN, CARD, "1000", cashier).pk
 
@@ -267,19 +273,22 @@ def test_el_barbero_no_maneja_caja(member, in_shop, branch, session):
             amount=Decimal("1"),
             payment_method=CASH,
             description="x",
+            scope=scope_of(barber),
         )
     with pytest.raises(PermissionDenied):
-        services.close_session(barber, session.public_id, counted_amount=Decimal("0"))
+        services.close_session(barber, session.public_id, counted_amount=Decimal("0"), scope=scope_of(barber))
     with pytest.raises(PermissionDenied):
-        selectors.current_session(barber, branch.public_id)
+        selectors.current_session(barber, scope=resolve_scope(barber))  # el permiso falla antes
 
 
 def test_el_consultor_ve_pero_no_opera(member, in_shop, branch, session):
     viewer = member(Role.VIEWER, in_shop)
-    assert selectors.current_session(viewer, branch.public_id) == session
-    assert selectors.session_summary(viewer, session.public_id)["expected_cash"] == Decimal("100000")
+    assert selectors.current_session(viewer, scope=scope_of(viewer, branch)) == session
+    assert selectors.session_summary(viewer, session.public_id, scope=scope_of(viewer))["expected_cash"] == Decimal(
+        "100000"
+    )
     with pytest.raises(PermissionDenied):
-        services.close_session(viewer, session.public_id, counted_amount=Decimal("0"))
+        services.close_session(viewer, session.public_id, counted_amount=Decimal("0"), scope=scope_of(viewer))
 
 
 def test_el_administrador_opera_la_caja(member, in_shop, branch):
@@ -292,8 +301,11 @@ def test_el_administrador_opera_la_caja(member, in_shop, branch):
         amount=Decimal("1"),
         payment_method=CASH,
         description="x",
+        scope=scope_of(admin, branch),
     )
-    assert services.close_session(admin, session.public_id, counted_amount=Decimal("1")).difference == Decimal("0")
+    assert services.close_session(
+        admin, session.public_id, counted_amount=Decimal("1"), scope=scope_of(admin, branch)
+    ).difference == Decimal("0")
 
 
 # ── Aislamiento ──────────────────────────────────────────────────────────────
@@ -307,7 +319,7 @@ def test_otra_barberia_no_ve_ni_cierra_una_caja_ajena(member, shop, other_shop):
     with tenant_context(other_shop.pk):
         theirs = member(Role.OWNER, other_shop)
         with pytest.raises(CashSession.DoesNotExist):
-            selectors.session_summary(theirs, mine.public_id)
+            selectors.session_summary(theirs, mine.public_id, scope=scope_of(theirs))
         with pytest.raises(CashSession.DoesNotExist):
-            services.close_session(theirs, mine.public_id, counted_amount=Decimal("0"))
-        assert selectors.current_session(theirs, branch.public_id) is None
+            services.close_session(theirs, mine.public_id, counted_amount=Decimal("0"), scope=scope_of(theirs))
+        assert selectors.current_session(theirs, scope=scope_of(theirs)) is None  # su sede no tiene caja

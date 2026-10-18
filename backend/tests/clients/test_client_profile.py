@@ -22,8 +22,10 @@ def _visit(w, client, service, amount):
     order = sales.create_order(
         w.cashier, scope_of(w.cashier, w.branch), client=client.public_id, barber=w.ana.public_id
     )
-    sales.add_item(w.cashier, order.public_id, service=service.public_id)
-    return sales.close_order(w.cashier, order.public_id, payments=[{"method": "efectivo", "amount": amount}])
+    sales.add_item(w.cashier, order.public_id, service=service.public_id, scope=scope_of(w.cashier))
+    return sales.close_order(
+        w.cashier, order.public_id, payments=[{"method": "efectivo", "amount": amount}], scope=scope_of(w.cashier)
+    )
 
 
 def _client(w, name):
@@ -74,5 +76,5 @@ def test_deudor_manda_sobre_lo_demas(world):
 
 def test_las_comandas_anuladas_no_cuentan(world):
     order = _visit(world, world.laura, world.barba, "15000")
-    sales.cancel_order(world.owner, order.public_id, reason="Error")
+    sales.cancel_order(world.owner, order.public_id, reason="Error", scope=scope_of(world.owner))
     assert client_profile(world.cashier, world.laura.public_id, scope=scope_of(world.cashier))["visits"] == 0

@@ -12,6 +12,7 @@ from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from apps.audit.models import record
@@ -59,8 +60,8 @@ def _open_session_in(branch: Branch) -> CashSession | None:
     return CashSession.objects.filter(branch=branch, closed_at__isnull=True).first()
 
 
-def _locked_open_session(public_id: UUID | str) -> CashSession:
-    session = CashSession.objects.select_for_update().get(public_id=public_id)
+def _locked_open_session(sessions: QuerySet[CashSession], public_id: UUID | str) -> CashSession:
+    session = sessions.select_for_update().get(public_id=public_id)
     if not session.is_open:
         raise ValidationError("La caja está cerrada.")
     return session
@@ -87,25 +88,31 @@ def record_money(
 ) -> CashMovement:
     """Todo dinero, de cualquier método, entra aquí (defecto 21). La usan sales y receivables.
 
-    Bloquea la sesión para que un cierre simultáneo no deje fuera este movimiento.
-    No valida permisos: lo hace la operación que la llama.
+    Bloquea la sesión para que un cierre simultáneo no deje fuera este movimiento. No valida
+    permisos ni sede: lo hace la operación que la llama, que ya resolvió la sesión por su alcance.
     """
     with transaction.atomic():
-        locked = _locked_open_session(session.public_id)
+        locked = _locked_open_session(CashSession.objects, session.public_id)
         _check_method_enabled(method)
-        movement = CashMovement(
-            barbershop_id=locked.barbershop_id,
-            session=locked,
-            kind=kind,
-            direction=direction,
-            payment_method=method,
-            amount=amount,
-            description=(description or "").strip(),
-            created_by=actor.user,
-        )
+        movement = _movement(locked, kind, direction=direction, method=method, amount=amount, actor=actor)
+        movement.description = (description or "").strip()
         movement.full_clean()
         movement.save()
     return movement
+
+
+def _movement(
+    session: CashSession, kind: str, *, direction: str, method: str, amount: Decimal, actor: Membership
+) -> CashMovement:
+    return CashMovement(
+        barbershop_id=session.barbershop_id,
+        session=session,
+        kind=kind,
+        direction=direction,
+        payment_method=method,
+        amount=amount,
+        created_by=actor.user,
+    )
 
 
 # ── Sesiones ─────────────────────────────────────────────────────────────────
@@ -139,15 +146,21 @@ def open_session(
 
 
 def close_session(
-    membership: Membership, session: UUID | str, *, counted_amount: Decimal, notes: str | None = None
+    membership: Membership,
+    session: UUID | str,
+    *,
+    scope: BranchScope,
+    counted_amount: Decimal,
+    notes: str | None = None,
 ) -> CashSession:
     """Arqueo (regla 24): esperado = base + entradas en efectivo − salidas en efectivo.
 
-    Sale solo del libro de movimientos y se guarda con el contado y la diferencia.
+    Sale solo del libro de movimientos y se guarda con el contado y la diferencia. Solo una caja
+    de la sede del alcance; la de otra sede no se encuentra.
     """
     ensure_permission(membership, "caja.cerrar")
     with transaction.atomic():
-        target = _locked_open_session(session)
+        target = _locked_open_session(scope.writable(membership, CashSession.objects), session)
         before = _session_snapshot(target)
         # El campo convierte y valida (≥ 0) antes de calcular la diferencia.
         target.counted_amount = CashSession._meta.get_field("counted_amount").clean(counted_amount, target)
@@ -163,34 +176,38 @@ def close_session(
     return target
 
 
+def _manual_direction(kind: str, direction: str | None) -> str:
+    """El sentido sale del tipo; solo un ajuste exige indicarlo."""
+    if kind not in MANUAL_KINDS:
+        raise ValidationError({"kind": "Tipo de movimiento manual no válido."})
+    if kind in INCOME_KINDS:
+        return Direction.IN
+    if kind in OUTFLOW_KINDS:
+        return Direction.OUT
+    if direction not in Direction.values:
+        raise ValidationError({"direction": "Indica si el ajuste entra o sale."})
+    return direction
+
+
 def register_manual_movement(
     membership: Membership,
     session: UUID | str,
     *,
+    scope: BranchScope,
     kind: str,
     amount: Decimal,
     payment_method: str,
     description: str,
     direction: str | None = None,
 ) -> CashMovement:
-    """Regla 25: ingreso, gasto, retiro o ajuste en una caja abierta.
-
-    El sentido sale del tipo; solo un ajuste exige indicarlo.
-    """
+    """Regla 25: ingreso, gasto, retiro o ajuste en una caja abierta de la sede del alcance."""
     ensure_permission(membership, "caja.movimiento")
-    if kind not in MANUAL_KINDS:
-        raise ValidationError({"kind": "Tipo de movimiento manual no válido."})
-    if kind in INCOME_KINDS:
-        direction = Direction.IN
-    elif kind in OUTFLOW_KINDS:
-        direction = Direction.OUT
-    elif direction not in Direction.values:
-        raise ValidationError({"direction": "Indica si el ajuste entra o sale."})
-    target = CashSession.objects.get(public_id=session)
+    resolved = _manual_direction(kind, direction)
+    target = scope.writable(membership, CashSession.objects).get(public_id=session)
     return record_money(
         target,
         kind,
-        direction=direction,
+        direction=resolved,
         method=payment_method,
         amount=amount,
         description=description,

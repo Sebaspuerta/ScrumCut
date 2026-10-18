@@ -14,11 +14,12 @@ from apps.inventory.services import apply_stock_movement
 from apps.receivables import services as receivables
 from apps.sales.models import EDITABLE_STATUSES, Order, OrderStatus
 from apps.sales.services._shared import _audit, _locked_order, _order_snapshot, _stock_reference
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_member, ensure_permission
 
 
-def cancel_order(membership: Membership, order: UUID | str, *, reason: str) -> Order:
+def cancel_order(membership: Membership, order: UUID | str, *, scope: BranchScope, reason: str) -> Order:
     """Abierta o en espera: se anula sin efectos (`comandas.editar`).
 
     Cerrada (`comandas.anular`, defecto 12): se anula su fiado si no tiene abonos,
@@ -30,29 +31,33 @@ def cancel_order(membership: Membership, order: UUID | str, *, reason: str) -> O
     if not reason:
         raise ValidationError({"reason": "El motivo de anulación es obligatorio."})
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         before = _order_snapshot(locked)
-        if locked.status in EDITABLE_STATUSES:
-            ensure_permission(membership, "comandas.editar")
-        elif locked.status == OrderStatus.CLOSED:
-            ensure_permission(membership, "comandas.anular")
-            _reverse_closed(membership, locked, reason=reason)
-        else:
-            raise ValidationError("La comanda ya está anulada.", code="already_cancelled")
-        locked.status = OrderStatus.CANCELLED
-        locked.cancelled_at = timezone.now()
-        locked.cancelled_by = membership.user
-        locked.cancel_reason = reason
-        locked.full_clean()
-        locked.save()
-        _audit(
-            membership,
-            "comanda.anular",
-            order=locked,
-            before=before,
-            after={**_order_snapshot(locked), "reason": reason},
-        )
+        _undo_effects(membership, locked, reason=reason)
+        _mark_cancelled(locked, membership, reason=reason)
+        after = {**_order_snapshot(locked), "reason": reason}
+        _audit(membership, "comanda.anular", order=locked, before=before, after=after)
     return locked
+
+
+def _undo_effects(membership: Membership, order: Order, *, reason: str) -> None:
+    """Abierta o en espera no deja efectos; cerrada revierte fiado, pagos y stock."""
+    if order.status in EDITABLE_STATUSES:
+        ensure_permission(membership, "comandas.editar")
+    elif order.status == OrderStatus.CLOSED:
+        ensure_permission(membership, "comandas.anular")
+        _reverse_closed(membership, order, reason=reason)
+    else:
+        raise ValidationError("La comanda ya está anulada.", code="already_cancelled")
+
+
+def _mark_cancelled(order: Order, membership: Membership, *, reason: str) -> None:
+    order.status = OrderStatus.CANCELLED
+    order.cancelled_at = timezone.now()
+    order.cancelled_by = membership.user
+    order.cancel_reason = reason
+    order.full_clean()
+    order.save()
 
 
 def _reverse_closed(membership: Membership, order: Order, *, reason: str) -> None:

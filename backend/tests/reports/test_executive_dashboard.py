@@ -135,7 +135,13 @@ def test_la_cascada_de_caja_cuadra_con_el_arqueo(world):
     sell(w, w.beto, service=w.barba, method="nequi")  # no entra a la caja
     for kind, amount in (("ingreso_manual", "1000"), ("gasto", "4000"), ("retiro", "9000")):
         cash.register_manual_movement(
-            w.cashier, w.session.public_id, kind=kind, amount=D(amount), payment_method="efectivo", description="Prueba"
+            w.cashier,
+            w.session.public_id,
+            kind=kind,
+            amount=D(amount),
+            payment_method="efectivo",
+            description="Prueba",
+            scope=scope_of(w.cashier),
         )
 
     flow = _dashboard(w)["cash_flow"]
@@ -159,7 +165,7 @@ def test_la_cascada_de_caja_cuadra_con_el_arqueo(world):
 def test_al_cerrar_la_caja_aparece_el_contado_y_la_diferencia(world):
     w = world
     sell(w, w.ana, service=w.corte)
-    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("74000"))
+    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("74000"), scope=scope_of(w.cashier))
 
     flow = _dashboard(w)["cash_flow"]
 
@@ -169,6 +175,6 @@ def test_al_cerrar_la_caja_aparece_el_contado_y_la_diferencia(world):
 
 def test_sin_caja_hoy_no_hay_cuadre(world):
     w = world
-    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("50000"))
+    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("50000"), scope=scope_of(w.cashier))
     with mock.patch("django.utils.timezone.now", return_value=timezone.now() + timedelta(days=1)):
         assert executive_dashboard(w.owner, None, None, scope=scope_of(w.owner, w.branch))["cash_flow"] is None

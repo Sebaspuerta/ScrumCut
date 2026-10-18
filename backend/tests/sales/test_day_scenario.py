@@ -34,10 +34,14 @@ def test_un_dia_de_barberia(world):
     order = services.create_order(
         w.cashier, scope_of(w.cashier, w.branch), client=w.laura.public_id, barber=w.ana.public_id
     )
-    services.add_item(w.cashier, order.public_id, service=w.corte.public_id)
-    services.add_item(w.cashier, order.public_id, service=w.barba.public_id, barber=w.beto.public_id)
-    services.add_item(w.cashier, order.public_id, product=w.cera.public_id)
-    services.set_discount(w.cashier, order.public_id, amount=D("5000"), reason="Cliente frecuente")
+    services.add_item(w.cashier, order.public_id, service=w.corte.public_id, scope=scope_of(w.cashier))
+    services.add_item(
+        w.cashier, order.public_id, service=w.barba.public_id, barber=w.beto.public_id, scope=scope_of(w.cashier)
+    )
+    services.add_item(w.cashier, order.public_id, product=w.cera.public_id, scope=scope_of(w.cashier))
+    services.set_discount(
+        w.cashier, order.public_id, amount=D("5000"), reason="Cliente frecuente", scope=scope_of(w.cashier)
+    )
 
     closed = services.close_order(
         w.cashier,
@@ -46,6 +50,7 @@ def test_un_dia_de_barberia(world):
             {"method": "efectivo", "amount": "30000"},
             {"method": "nequi", "amount": "25000", "reference": "NQ-123"},
         ],
+        scope=scope_of(w.cashier),
     )
 
     # Comanda
@@ -88,18 +93,18 @@ def test_un_dia_de_barberia(world):
     }
 
     # Caja y arqueo: solo el efectivo cuenta
-    summary = cash_selectors.session_summary(w.cashier, w.session.public_id)
+    summary = cash_selectors.session_summary(w.cashier, w.session.public_id, scope=scope_of(w.cashier))
     assert summary["expected_cash"] == D("80000")
     assert summary["by_method"]["nequi"]["in"] == D("25000")
     assert summary["by_kind"]["venta"] == D("55000")
-    session = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("80000"))
+    session = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("80000"), scope=scope_of(w.cashier))
     assert (session.expected_amount, session.difference) == (D("80000"), D("0"))
 
     # Cambiar la comisión de Ana después no reescribe el día (defecto 1)
-    before = selectors.barber_performance(w.owner, w.ana.public_id)
+    before = selectors.barber_performance(w.owner, w.ana.public_id, scope=scope_of(w.owner))
     staff.set_commission(w.owner, w.ana.public_id, commission_type="percentage", value=D("60"))
-    after = selectors.barber_performance(w.owner, w.ana.public_id)
+    after = selectors.barber_performance(w.owner, w.ana.public_id, scope=scope_of(w.owner))
     assert before["commission_total"] == after["commission_total"] == D("9166.66")
     assert after["sales_total"] == D("22916.66")
     assert (after["services_count"], after["orders_count"]) == (1, 1)
-    assert selectors.my_cuts_today(w.ana_login) == {"cuts_today": 1}
+    assert selectors.my_cuts_today(w.ana_login, scope=scope_of(w.ana_login)) == {"cuts_today": 1}

@@ -219,7 +219,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 | S1 | Modelo de datos. Ver el detalle debajo de esta tabla. | `Branch` con nombre único, dirección, teléfono y activa. Sede obligatoria en `Order` y `CashSession`. Una caja abierta por sede. RLS en `tenancy_branch`. Los servicios de caja, comandas, abonos y personal ya reciben una sede. | Grande |
 | S2 | Solo backend: `request.branch_scope`, middleware, cambio de sede por POST y selectores con alcance. Tablero y Excel con el alcance, sin `?sede=`, con el ayudante único de filtro y los indicadores sumados en modo "todas" (decisión 10). Nivel del cliente por sede (decisión 16) y filtro por sede del historial y los fiados del cliente (decisión 15). | El tablero y el Excel ya filtran por una sede; los selectores de `apps/reports` y el Excel ya aceptan `branch=None` (todas). | Grande |
 | S3 | Ajustes → Sedes, selector de sede en la barra superior y modo "todas" en el encabezado (requiere maqueta aprobada). Va inmediatamente después de S2. | Nada | Grande |
-| S4a | Caja, comandas, gastos y precios por sede de servicios y productos (`ServiceBranchPrice` y `ProductBranchPrice`; decisión 17). Escritura solo en modo "una" y rechazo por pestañas cruzadas. | Caja y comandas ya operan por sede. Los gastos ya van por `CashMovement` dentro de la sesión de la sede. | Mediana |
+| S4a | Caja, comandas, gastos y precios por sede de servicios y productos (`ServiceBranchPrice` y `ProductBranchPrice`; decisión 17). Escritura solo en modo "una" y rechazo por pestañas cruzadas. | Backend hecho (ver el detalle debajo de esta tabla). Lo que necesita pantallas pasa a S3. | Mediana |
 | S4b | Inventario por sede (decisión 6): `StockLevel`, `StockMovement.branch`, consumo por `order.branch`, alertas con `Alert.branch`, sin `Product.current_stock`, y traslados. | Nada: stock, movimientos y alertas son por barbería. | Grande |
 | S5 | Comparativo por sede y cuadre de caja por sede en el tablero (requiere maqueta aprobada). | Los indicadores del modo "todas" llegan en S2. | Mediana |
 
@@ -235,6 +235,19 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - `Membership.last_branch` y `AuditLog.branch`.
 - Servicio de crear, editar, desactivar y reactivar sedes.
 - `cargar_demo` con 2 sedes (Centro y Norte) y `max_branches = 3`.
+
+**Estado de S4a (backend hecho)**
+- Toda escritura sobre un objeto que ya existe usa `BranchScope.writable`, el único filtro para escribir: cerrar caja, movimientos manuales y gastos, agregar, editar y quitar ítems, descuento, espera y reanudar, cerrar y anular comanda, abonar y anular fiado. Un objeto de otra sede responde `DoesNotExist`, igual que uno de otra barbería, para no revelar que existe. En modo "todas" se rechaza con `ValidationError`.
+- `cash.selectors.current_session` va por el alcance; en "todas" no hay una caja vigente única.
+- En una comanda solo se elige un barbero activo que trabaje en la sede (`BarberBranch`). Al cerrar no se vuelve a revisar su sede: el servicio ya se prestó en esa sede, y bloquear el cierre dejaría una comanda sin cobrar.
+- Toda lectura de un objeto por su `public_id` también va por el alcance (`BranchScope.readable`): resumen de caja, comanda, fiado y barbero (por sus sedes en `BarberBranch`). Un objeto de otra sede responde `DoesNotExist`. Cliente, servicio y producto no se filtran por sede porque son de la barbería (decisiones 15 y 17).
+- `ServiceBranchPrice` y `ProductBranchPrice` con RLS con FORCE y llaves compuestas hacia la sede y hacia el servicio o producto. Los fijan y quitan Dueño y Administrador (`servicios.editar`, `inventario.editar`), con auditoría. `apps.catalog.branch_prices.current_price` es el único que resuelve el precio vigente; la comanda y el cobro rápido lo guardan en el ítem.
+- "Mis cortes de hoy" y `barber_performance` van por el alcance.
+
+**Pasa a la fase de pantallas (S3)**
+- Usar `BranchBoundForm` (pestañas cruzadas) en cada formulario que escribe.
+- El selector de sede en la barra superior.
+- La pantalla que pide elegir una sede cuando Caja, Comandas o Agenda se abren en modo "todas".
 
 ## Decisiones tomadas
 

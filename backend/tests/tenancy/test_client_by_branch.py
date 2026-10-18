@@ -22,8 +22,13 @@ D = Decimal
 def _visit(world, scope) -> None:
     """Una comanda cerrada de Laura en la sede del alcance."""
     order = sales.create_order(world.owner, scope, client=world.laura.public_id, barber=world.ana.public_id)
-    sales.add_item(world.owner, order.public_id, service=world.corte.public_id)
-    sales.close_order(world.owner, order.public_id, payments=[{"method": "efectivo", "amount": D("25000")}])
+    sales.add_item(world.owner, order.public_id, service=world.corte.public_id, scope=scope)
+    sales.close_order(
+        world.owner,
+        order.public_id,
+        payments=[{"method": "efectivo", "amount": D("25000")}],
+        scope=scope,
+    )
 
 
 @pytest.fixture

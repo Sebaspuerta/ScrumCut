@@ -62,7 +62,9 @@ CASES = {
         data_policy_version="2026-10",
     ),
     "producto.crear": lambda w: partial(inventory.create_product, w.owner, {"name": "Gel", "product_type": "venta"}),
-    "caja.cerrar": lambda w: partial(cash.close_session, w.cashier, w.session.public_id, counted_amount=D("50000")),
+    "caja.cerrar": lambda w: partial(
+        cash.close_session, w.cashier, w.session.public_id, counted_amount=D("50000"), scope=scope_of(w.cashier)
+    ),
     "comanda.crear": lambda w: partial(sales.create_order, w.cashier, scope_of(w.cashier, w.branch)),
     "fiado.crear": lambda w: partial(
         receivables.create_manual, w.cashier, w.laura.public_id, total=D("1000"), scope=scope_of(w.cashier, w.branch)

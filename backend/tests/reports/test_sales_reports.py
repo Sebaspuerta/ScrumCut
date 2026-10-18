@@ -86,10 +86,22 @@ def test_estado_de_resultados_con_descuento_y_gastos(world):
     sell(w, w.ana, service=w.corte)
     sell(w, w.beto, product=w.cera)
     cash.register_manual_movement(
-        w.cashier, w.session.public_id, kind="gasto", amount=D("4000"), payment_method="efectivo", description="Aseo"
+        w.cashier,
+        w.session.public_id,
+        kind="gasto",
+        amount=D("4000"),
+        payment_method="efectivo",
+        description="Aseo",
+        scope=scope_of(w.cashier),
     )
     cash.register_manual_movement(
-        w.cashier, w.session.public_id, kind="retiro", amount=D("9000"), payment_method="efectivo", description="Dueño"
+        w.cashier,
+        w.session.public_id,
+        kind="retiro",
+        amount=D("9000"),
+        payment_method="efectivo",
+        description="Dueño",
+        scope=scope_of(w.cashier),
     )
 
     statement = income.income_statement(w.owner, scope=scope_of(w.owner))

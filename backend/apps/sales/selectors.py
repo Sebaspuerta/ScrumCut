@@ -18,6 +18,7 @@ from django.utils import timezone
 
 from apps.sales.models import ItemType, Order, OrderItem, OrderStatus
 from apps.staff.models import Barber
+from apps.staff.selectors import barbers_in_scope
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_member, ensure_permission
@@ -136,22 +137,27 @@ def _closed_lines(barber: Barber, start: datetime, end: datetime) -> QuerySet[Or
 
 
 def barber_performance(
-    membership: Membership, barber: UUID | str, date_from: date | None = None, date_to: date | None = None
+    membership: Membership,
+    barber: UUID | str,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    *,
+    scope: BranchScope,
 ) -> dict:
     """Regla 44 con el defecto 1 corregido: suma solo lo copiado en las líneas al cerrar.
 
     Rango por defecto: el de `period_dates`, en la zona de la barbería. Lo ve quien
-    tiene `barberos.ver`, y cada barbero el suyo.
+    tiene `barberos.ver`, y cada barbero el suyo. Solo las comandas de la sede del alcance.
     """
     ensure_member(membership)
-    target = Barber.objects.get(public_id=barber)
+    target = barbers_in_scope(membership, scope).get(public_id=barber)
     if not role_has_permission(membership.role, "barberos.ver"):
         mine = own_barber(membership)
         if mine is None or mine.pk != target.pk:
             raise PermissionDenied
     date_from, date_to = period_dates(membership, date_from, date_to)
     start, end = day_bounds(membership.barbershop.timezone, date_from, date_to)
-    totals = _closed_lines(target, start, end).aggregate(
+    totals = scope.apply(_closed_lines(target, start, end), "order__branch").aggregate(
         orders_count=Count("order", distinct=True),
         services_count=Coalesce(Sum("quantity", filter=Q(item_type=ItemType.SERVICE)), 0),
         sales_total=_money_sum(F("line_total") - F("line_discount")),
@@ -160,16 +166,17 @@ def barber_performance(
     return {"barber": target, "date_from": date_from, "date_to": date_to, **totals}
 
 
-def my_cuts_today(membership: Membership) -> dict:
-    """Regla 54: el barbero ve cuántos servicios hizo hoy, sin cifras de dinero."""
+def my_cuts_today(membership: Membership, *, scope: BranchScope) -> dict:
+    """Regla 54: el barbero ve cuántos servicios hizo hoy en la sede del alcance, sin cifras de dinero."""
     ensure_member(membership)
+    scope.check(membership)
     barber = own_barber(membership)
     if barber is None:
         return {"cuts_today": 0}
     today = local_today(membership)
     start, end = day_bounds(membership.barbershop.timezone, today, today)
     cuts = (
-        _closed_lines(barber, start, end)
+        scope.apply(_closed_lines(barber, start, end), "order__branch")
         .filter(item_type=ItemType.SERVICE)
         .aggregate(total=Coalesce(Sum("quantity"), 0))["total"]
     )

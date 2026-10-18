@@ -16,6 +16,7 @@ from apps.cash import services as cash
 from apps.core.tenant_context import tenant_context
 from apps.sales import services as sales
 from apps.sales.selectors import local_today
+from apps.staff.models import BarberBranch
 from apps.tenancy.models import Branch
 from apps.tenancy.roles import Role
 from tests.conftest import scope_of
@@ -92,6 +93,7 @@ def _sales_in_export(client, branch) -> list:
 
 def test_exportar_una_sede_no_incluye_las_ventas_de_otra(world, owner_client):
     norte = Branch.objects.create(name="Norte")
+    BarberBranch.objects.create(barber=world.beto, branch=norte)  # Beto también trabaja en Norte
     cash.open_session(world.owner, scope_of(world.owner, norte), opening_amount=Decimal("0"))
     sell(world, world.ana, service=world.corte)  # en Centro
     sales.quick_register(

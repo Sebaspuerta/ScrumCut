@@ -12,6 +12,7 @@ from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import QuerySet
 
 from apps.audit.models import record
 from apps.cash.models import Direction, MovementKind
@@ -25,7 +26,6 @@ from apps.tenancy.models import BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
 _CENTS = Decimal("0.01")
-OTHER_BRANCH_PAYMENT = "Este fiado se abona en su sede de origen."
 
 
 def _audit(actor: Membership, action: str, *, receivable: Receivable, before: dict | None, after: dict) -> None:
@@ -129,8 +129,13 @@ def create_manual(
         return _create(target, total, actor=membership, origin_branch=origin, due_date=due_date, notes=notes)
 
 
-def _locked_open_receivable(public_id: UUID | str, amount: Decimal) -> Receivable:
-    locked = Receivable.objects.select_for_update().get(public_id=public_id)
+def _writable(membership: Membership, scope: BranchScope) -> QuerySet[Receivable]:
+    """Los fiados de la sede del alcance, por su sede de origen: el de otra sede no se encuentra (S4a)."""
+    return scope.writable(membership, Receivable.objects, "origin_branch")
+
+
+def _locked_open_receivable(receivables: QuerySet[Receivable], public_id: UUID | str, *, amount: Decimal) -> Receivable:
+    locked = receivables.select_for_update().get(public_id=public_id)
     if locked.status not in OPEN_STATUSES:
         raise ValidationError("Este fiado ya está pagado o anulado.")
     if amount > locked.balance:
@@ -177,19 +182,17 @@ def add_payment(
     """Regla 27 con el defecto 24 corregido: monto ≤ saldo, solo a fiados vivos, con caja abierta.
 
     Decisión 3 de docs/sedes.md: el abono entra solo a la caja de la sede de origen del fiado, que
-    debe ser la del alcance y estar activa; ninguna operación de dinero cruza sedes. Cualquier método,
-    un solo libro.
+    debe ser la del alcance y estar activa; ninguna operación de dinero cruza sedes. Un fiado de otra
+    sede no se encuentra (`DoesNotExist`). Cualquier método, un solo libro.
     """
     ensure_permission(membership, "fiados.abonar")
     amount = Decimal(amount)
     if amount <= 0:
         raise ValidationError({"amount": "El abono debe ser mayor que cero."})
-    target_branch = scope.branch_for_write(membership)
+    receivables = _writable(membership, scope)
     with transaction.atomic():
-        locked = _locked_open_receivable(receivable, amount)
-        if locked.origin_branch_id != target_branch.pk:
-            raise ValidationError({"branch": OTHER_BRANCH_PAYMENT})
-        session = open_session_for(target_branch)
+        locked = _locked_open_receivable(receivables, receivable, amount=amount)
+        session = open_session_for(locked.origin_branch)
         if session is None:
             raise ValidationError("No hay una caja abierta en esta sede para recibir el abono.", code="no_open_session")
         before = _snapshot(locked)
@@ -214,14 +217,15 @@ def _cancel(locked: Receivable, actor: Membership, *, reason: str) -> Receivable
     return locked
 
 
-def cancel_receivable(membership: Membership, receivable: UUID | str, *, reason: str) -> Receivable:
-    """Solo sin abonos. Exige motivo."""
+def cancel_receivable(membership: Membership, receivable: UUID | str, *, scope: BranchScope, reason: str) -> Receivable:
+    """Solo sin abonos y en la sede de origen del fiado. Exige motivo."""
     ensure_permission(membership, "fiados.anular")
     reason = (reason or "").strip()
     if not reason:
         raise ValidationError({"reason": "El motivo es obligatorio."})
     with transaction.atomic():
-        return _cancel(Receivable.objects.select_for_update().get(public_id=receivable), membership, reason=reason)
+        locked = _writable(membership, scope).select_for_update().get(public_id=receivable)
+        return _cancel(locked, membership, reason=reason)
 
 
 def cancel_for_order(order, actor: Membership, *, reason: str) -> Receivable | None:

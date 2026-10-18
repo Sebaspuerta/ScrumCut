@@ -13,6 +13,7 @@ from apps.staff.models import Barber, CommissionRule, CommissionType
 from apps.tenancy import services as tenancy
 from apps.tenancy.models import Branch
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -144,7 +145,7 @@ def test_el_dueno_borra_un_barbero_y_desaparece(owner):
     assert list(selectors.list_barbers(owner, active_only=False)) == []
     assert selectors.list_active_barbers_basic(owner) == []
     with pytest.raises(Barber.DoesNotExist):
-        selectors.get_barber(owner, barber.public_id)
+        selectors.get_barber(owner, barber.public_id, scope=scope_of(owner))
     with pytest.raises(Barber.DoesNotExist):
         services.update_barber(owner, barber.public_id, data={"phone": "1"})
     assert AuditLog.objects.get(action="barbero.eliminar").after["deleted_at"] is not None
@@ -275,12 +276,12 @@ def test_la_lista_completa_exige_barberos_ver(member, in_shop, owner, role, can_
     reader = member(role, in_shop)
     if can_list:
         assert list(selectors.list_barbers(reader)) == [barber]
-        assert selectors.get_barber(reader, barber.public_id) == barber
+        assert selectors.get_barber(reader, barber.public_id, scope=scope_of(reader)) == barber
     else:
         with pytest.raises(PermissionDenied):
             selectors.list_barbers(reader)
         with pytest.raises(PermissionDenied):
-            selectors.get_barber(reader, barber.public_id)
+            selectors.get_barber(reader, barber.public_id, scope=scope_of(reader))
 
 
 # ── Regla 45: lista básica ───────────────────────────────────────────────────
@@ -328,7 +329,7 @@ def test_cada_barberia_ve_solo_su_personal(member, shop, other_shop):
         assert [b.display_name for b in selectors.list_barbers(theirs)] == ["Beto"]
         assert [r["display_name"] for r in selectors.list_active_barbers_basic(theirs)] == ["Beto"]
         with pytest.raises(Barber.DoesNotExist):
-            selectors.get_barber(theirs, mine.public_id)
+            selectors.get_barber(theirs, mine.public_id, scope=scope_of(theirs))
         with pytest.raises(Barber.DoesNotExist):
             services.set_commission(theirs, mine.public_id, commission_type=PCT, value=Decimal("99"))
         # Fuera de su barbería, las reglas de Ana no son visibles: falla cerrado.

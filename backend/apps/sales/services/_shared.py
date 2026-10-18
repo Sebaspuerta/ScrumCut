@@ -10,6 +10,7 @@ from django.db.models.functions import Coalesce
 from apps.audit.models import record
 from apps.sales.models import EDITABLE_STATUSES, Order
 from apps.sales.selectors import scoped_orders
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 
 _CENTS = Decimal("0.01")
@@ -55,8 +56,9 @@ def _stock_reference(order: Order) -> str:
     return f"order:{order.public_id}"
 
 
-def _locked_order(membership: Membership, public_id: UUID | str) -> Order:
-    return scoped_orders(membership).select_for_update().get(public_id=public_id)
+def _locked_order(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> Order:
+    """La comanda del rol y de la sede del alcance, bloqueada; la de otra sede no se encuentra."""
+    return scope.writable(membership, scoped_orders(membership)).select_for_update().get(public_id=public_id)
 
 
 def _require_editable(order: Order) -> None:

@@ -2,6 +2,8 @@
 
 Reglas 1–10. Defectos corregidos: 5 (descuento con límites y motivo), 6 (alcance
 del Barbero), 7 y 8 (precio y tipo siempre del catálogo) y 9 (estados). Decisión 4.
+Fase S4a de docs/sedes.md: toda escritura es sobre una comanda de la sede del alcance,
+el barbero trabaja en esa sede y el precio es el vigente en ella.
 """
 
 from decimal import Decimal
@@ -10,6 +12,7 @@ from uuid import UUID
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from apps.catalog.branch_prices import current_price
 from apps.catalog.models import Service
 from apps.clients.models import Client
 from apps.inventory.models import Product
@@ -25,9 +28,11 @@ from apps.sales.services._shared import (
 )
 from apps.staff.models import Barber
 from apps.tenancy.branch_scope import BranchScope
-from apps.tenancy.models import BarbershopSettings, Membership
+from apps.tenancy.models import BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 from apps.tenancy.roles import Role
+
+BARBER_OTHER_BRANCH = "El barbero no trabaja en esta sede."
 
 
 def _get_or_invalid(queryset, field: str, *, message: str, **lookup):
@@ -37,8 +42,8 @@ def _get_or_invalid(queryset, field: str, *, message: str, **lookup):
         raise ValidationError({field: message}) from exc
 
 
-def _active_barber(public_id: UUID | str) -> Barber:
-    """Activo, vivo y con al menos una sede (decisión 2 de docs/sedes.md)."""
+def _active_barber(public_id: UUID | str, *, branch: Branch) -> Barber:
+    """Activo, vivo y que trabaje en la sede de la comanda (BarberBranch, decisión 18)."""
     barber = _get_or_invalid(
         Barber.objects,
         "barber",
@@ -47,8 +52,8 @@ def _active_barber(public_id: UUID | str) -> Barber:
         deleted_at__isnull=True,
         is_active=True,
     )
-    if not barber.branch_links.exists():
-        raise ValidationError({"barber": "El barbero no tiene sedes asignadas."})
+    if not barber.branch_links.filter(branch=branch).exists():
+        raise ValidationError({"barber": BARBER_OTHER_BRANCH})
     return barber
 
 
@@ -65,10 +70,10 @@ def _order_client(public_id: UUID | str | None) -> Client | None:
     )
 
 
-def _order_barber(membership: Membership, public_id: UUID | str | None) -> Barber | None:
+def _order_barber(membership: Membership, public_id: UUID | str | None, *, branch: Branch) -> Barber | None:
     """El barbero elegido; si no se eligió y quien crea es Barbero, él mismo."""
     if public_id is not None:
-        return _active_barber(public_id)
+        return _active_barber(public_id, branch=branch)
     return own_barber(membership) if membership.role == Role.BARBER else None
 
 
@@ -83,7 +88,7 @@ def create_order(
     ensure_permission(membership, "comandas.crear")
     target_branch = scope.branch_for_write(membership)
     target_client = _order_client(client)
-    target_barber = _order_barber(membership, barber)
+    target_barber = _order_barber(membership, barber, branch=target_branch)
     with transaction.atomic():
         settings = BarbershopSettings.objects.select_for_update().get()
         number = settings.next_order_number
@@ -103,75 +108,91 @@ def create_order(
     return order
 
 
+def _check_new_item(service: UUID | str | None, product: UUID | str | None, *, quantity: int) -> None:
+    if (service is None) == (product is None):
+        raise ValidationError("Indica un servicio o un producto.")
+    if not isinstance(quantity, int) or quantity <= 0:
+        raise ValidationError({"quantity": "La cantidad debe ser un entero mayor que cero."})
+
+
+def _fill_service(item: OrderItem, public_id: UUID | str, *, barber: UUID | str | None) -> None:
+    order = item.order
+    catalog_service = _get_or_invalid(
+        Service.objects,
+        "service",
+        message="El servicio no existe o está inactivo.",
+        public_id=public_id,
+        deleted_at__isnull=True,
+        is_active=True,
+    )
+    item.item_type = ItemType.SERVICE
+    item.service = catalog_service
+    item.name = catalog_service.name
+    item.unit_price = current_price(catalog_service, order.branch)
+    item.barber = _active_barber(barber, branch=order.branch) if barber is not None else order.barber
+
+
+def _fill_product(item: OrderItem, public_id: UUID | str) -> None:
+    catalog_product = _get_or_invalid(
+        Product.objects,
+        "product",
+        message="El producto no existe o está inactivo.",
+        public_id=public_id,
+        deleted_at__isnull=True,
+        is_active=True,
+    )
+    item.item_type = ItemType.PRODUCT
+    item.product = catalog_product
+    item.name = catalog_product.name
+    item.unit_price = current_price(catalog_product, item.order.branch)
+
+
+def _save_line(item: OrderItem) -> None:
+    item.line_total = item.unit_price * item.quantity
+    item.full_clean()
+    item.save()
+
+
 def add_item(
     membership: Membership,
     order: UUID | str,
     *,
+    scope: BranchScope,
     service: UUID | str | None = None,
     product: UUID | str | None = None,
     quantity: int = 1,
     barber: UUID | str | None = None,
 ) -> OrderItem:
     """Reglas 4–6 con los defectos 7 y 8 corregidos: el precio y el tipo salen siempre del
-    catálogo. No hay parámetro de precio: un precio enviado por el cliente no tiene por dónde entrar.
+    catálogo, con el precio vigente en la sede de la comanda (decisión 17). No hay parámetro
+    de precio: un precio enviado por el cliente no tiene por dónde entrar.
     """
     ensure_permission(membership, "comandas.editar")
-    if (service is None) == (product is None):
-        raise ValidationError("Indica un servicio o un producto.")
-    if not isinstance(quantity, int) or quantity <= 0:
-        raise ValidationError({"quantity": "La cantidad debe ser un entero mayor que cero."})
+    _check_new_item(service, product, quantity=quantity)
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         _require_editable(locked)
         item = OrderItem(barbershop_id=locked.barbershop_id, order=locked, quantity=quantity)
         if service is not None:
-            catalog_service = _get_or_invalid(
-                Service.objects,
-                "service",
-                message="El servicio no existe o está inactivo.",
-                public_id=service,
-                deleted_at__isnull=True,
-                is_active=True,
-            )
-            item.item_type = ItemType.SERVICE
-            item.service = catalog_service
-            item.name = catalog_service.name
-            item.unit_price = catalog_service.price
-            item.barber = _active_barber(barber) if barber is not None else locked.barber
+            _fill_service(item, service, barber=barber)
         else:
-            catalog_product = _get_or_invalid(
-                Product.objects,
-                "product",
-                message="El producto no existe o está inactivo.",
-                public_id=product,
-                deleted_at__isnull=True,
-                is_active=True,
-            )
-            item.item_type = ItemType.PRODUCT
-            item.product = catalog_product
-            item.name = catalog_product.name
-            item.unit_price = catalog_product.sale_price
-        item.line_total = item.unit_price * quantity
-        item.full_clean()
-        item.save()
+            _fill_product(item, product)
+        _save_line(item)
         before = _order_snapshot(locked)
         _recalculate(locked)
-        _audit(
-            membership,
-            "comanda.agregar_item",
-            order=locked,
-            before=before,
-            after={**_order_snapshot(locked), "item": item.name},
-        )
+        after = {**_order_snapshot(locked), "item": item.name}
+        _audit(membership, "comanda.agregar_item", order=locked, before=before, after=after)
     return item
 
 
-def update_item_quantity(membership: Membership, order: UUID | str, *, item: UUID | str, quantity: int) -> OrderItem:
+def update_item_quantity(
+    membership: Membership, order: UUID | str, *, scope: BranchScope, item: UUID | str, quantity: int
+) -> OrderItem:
     ensure_permission(membership, "comandas.editar")
     if not isinstance(quantity, int) or quantity <= 0:
         raise ValidationError({"quantity": "La cantidad debe ser un entero mayor que cero."})
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         _require_editable(locked)
         line = locked.items.get(public_id=item)
         before = _order_snapshot(locked)
@@ -190,11 +211,11 @@ def update_item_quantity(membership: Membership, order: UUID | str, *, item: UUI
     return line
 
 
-def remove_item(membership: Membership, order: UUID | str, *, item: UUID | str) -> None:
+def remove_item(membership: Membership, order: UUID | str, *, scope: BranchScope, item: UUID | str) -> None:
     """Una línea de una comanda abierta es borrador: se borra físicamente y queda en la auditoría."""
     ensure_permission(membership, "comandas.editar")
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         _require_editable(locked)
         line = locked.items.get(public_id=item)
         before = _order_snapshot(locked)
@@ -210,14 +231,16 @@ def remove_item(membership: Membership, order: UUID | str, *, item: UUID | str) 
         )
 
 
-def set_discount(membership: Membership, order: UUID | str, *, amount: Decimal, reason: str = "") -> Order:
+def set_discount(
+    membership: Membership, order: UUID | str, *, scope: BranchScope, amount: Decimal, reason: str = ""
+) -> Order:
     """Descuento entre 0 y el subtotal, con motivo si es mayor que cero (defecto 5).
 
     Una cortesía es un descuento igual al subtotal con su motivo (decisión 4).
     """
     ensure_permission(membership, "comandas.descontar")
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         _require_editable(locked)
         before = _order_snapshot(locked)
         locked.discount = Decimal(amount)
@@ -229,10 +252,12 @@ def set_discount(membership: Membership, order: UUID | str, *, amount: Decimal, 
     return locked
 
 
-def _move(membership: Membership, order: UUID | str, *, source: str, target: str, action: str) -> Order:
+def _move(
+    membership: Membership, order: UUID | str, *, scope: BranchScope, source: str, target: str, action: str
+) -> Order:
     ensure_permission(membership, "comandas.editar")
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         if locked.status != source:
             raise ValidationError(NOT_EDITABLE, code="not_editable")
         before = _order_snapshot(locked)
@@ -242,10 +267,14 @@ def _move(membership: Membership, order: UUID | str, *, source: str, target: str
     return locked
 
 
-def hold_order(membership: Membership, order: UUID | str) -> Order:
+def hold_order(membership: Membership, order: UUID | str, *, scope: BranchScope) -> Order:
     """Regla 10 con el defecto 9 corregido: solo una comanda abierta pasa a espera."""
-    return _move(membership, order, source=OrderStatus.OPEN, target=OrderStatus.ON_HOLD, action="comanda.en_espera")
+    return _move(
+        membership, order, scope=scope, source=OrderStatus.OPEN, target=OrderStatus.ON_HOLD, action="comanda.en_espera"
+    )
 
 
-def resume_order(membership: Membership, order: UUID | str) -> Order:
-    return _move(membership, order, source=OrderStatus.ON_HOLD, target=OrderStatus.OPEN, action="comanda.reanudar")
+def resume_order(membership: Membership, order: UUID | str, *, scope: BranchScope) -> Order:
+    return _move(
+        membership, order, scope=scope, source=OrderStatus.ON_HOLD, target=OrderStatus.OPEN, action="comanda.reanudar"
+    )

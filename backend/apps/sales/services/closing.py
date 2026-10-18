@@ -34,6 +34,7 @@ from apps.sales.services._shared import (
 )
 from apps.staff.models import CommissionType
 from apps.staff.selectors import resolve_commission
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -229,6 +230,7 @@ def close_order(
     membership: Membership,
     order: UUID | str,
     *,
+    scope: BranchScope,
     payments: Iterable[dict] = (),
     as_credit: bool = False,
     due_date: date | None = None,
@@ -241,7 +243,7 @@ def close_order(
     ensure_permission(membership, "comandas.cerrar")
     cleaned = _clean_payments(payments)
     with transaction.atomic():
-        locked = _locked_order(membership, order)
+        locked = _locked_order(membership, order, scope=scope)
         before = _order_snapshot(locked)
         _close_locked(membership, locked, payments=cleaned, as_credit=as_credit, due_date=due_date)
         _audit(membership, "comanda.cerrar", order=locked, before=before, after=_order_snapshot(locked))

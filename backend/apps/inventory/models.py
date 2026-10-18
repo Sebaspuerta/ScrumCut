@@ -78,6 +78,8 @@ class Product(TenantScopedModel, SoftDeleteModel):
             models.CheckConstraint(
                 condition=models.Q(product_type__in=ProductType.values), name="ck_product_type_valid"
             ),
+            # Destino de la llave compuesta de ProductBranchPrice (apps/core/tenant_keys.py).
+            models.UniqueConstraint(fields=["barbershop", "id"], name="uq_product_barbershop_id"),
         ]
 
     def __str__(self) -> str:
@@ -142,3 +144,24 @@ class ServiceConsumable(TenantScopedModel):
 
     def __str__(self) -> str:
         return f"{self.service} · {self.product} × {self.quantity}"
+
+
+class ProductBranchPrice(TenantScopedModel):
+    """Precio de venta de un producto en una sede (decisión 17 de docs/sedes.md).
+
+    Sin fila, rige `Product.sale_price`. Lo resuelve `apps.catalog.branch_prices.current_price`.
+    """
+
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="branch_prices")
+    branch = models.ForeignKey("tenancy.Branch", on_delete=models.PROTECT, related_name="product_prices")
+    price = models.DecimalField("precio en la sede", **_MONEY)
+
+    class Meta:
+        verbose_name = "precio de producto en la sede"
+        constraints = [
+            models.UniqueConstraint(fields=["product", "branch"], name="uq_productbranchprice_product_branch"),
+            models.CheckConstraint(condition=models.Q(price__gte=0), name="ck_productbranchprice_not_negative"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.product} · {self.branch} · {self.price}"

@@ -1,6 +1,7 @@
 """cargar_demo: solo en desarrollo, y deja un tablero con datos."""
 
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from io import StringIO
 from unittest import mock
 from zoneinfo import ZoneInfo
@@ -13,10 +14,12 @@ from django.utils import timezone
 from apps.alerts.models import Alert
 from apps.cash.models import CashSession
 from apps.core.tenant_context import tenant_context
-from apps.sales.models import Order, OrderStatus
+from apps.sales.models import Order, OrderItem, OrderStatus
 from apps.tenancy.models import Barbershop
 
 pytestmark = pytest.mark.django_db
+
+D = Decimal
 
 
 def test_se_niega_a_correr_fuera_de_desarrollo():
@@ -46,6 +49,9 @@ def test_carga_ventas_cajas_y_alertas_y_no_se_repite():
         assert closed_days == {date(2026, 10, 12), date(2026, 10, 13), date(2026, 10, 14)}
         assert CashSession.objects.filter(closed_at__isnull=False).count() == 4  # lunes y martes, en las 2 sedes
         assert Alert.objects.exists()
+        cuts = OrderItem.objects.filter(service__name="Corte")
+        assert set(cuts.filter(order__branch__name="Norte").values_list("unit_price", flat=True)) == {D("28000")}
+        assert set(cuts.filter(order__branch__name="Centro").values_list("unit_price", flat=True)) == {D("25000")}
     assert "demo-dueno@scrumcut.test" in out.getvalue()
 
     with override_settings(DEBUG=True), pytest.raises(CommandError):

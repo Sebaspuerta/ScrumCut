@@ -9,6 +9,7 @@ from django.db.models.functions import Lower
 
 from apps.catalog.models import Service
 from apps.staff.models import Barber, CommissionRule, CommissionType
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_member, ensure_permission
 
@@ -42,11 +43,12 @@ def list_barbers(membership: Membership, *, active_only: bool = True) -> QuerySe
     return barbers.order_by(Lower("display_name"))
 
 
-def get_barber(membership: Membership, public_id: UUID | str) -> Barber:
-    """Incluye desactivados; nunca borrados. Lanza `Barber.DoesNotExist`."""
+def get_barber(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> Barber:
+    """Incluye desactivados; nunca borrados. Lanza `Barber.DoesNotExist`, también si no trabaja en la sede."""
     ensure_permission(membership, "barberos.ver")
     return (
-        Barber.objects.select_related("membership__user")
+        barbers_in_scope(membership, scope)
+        .select_related("membership__user")
         .prefetch_related("branch_links__branch")
         .get(public_id=public_id, deleted_at__isnull=True)
     )
@@ -60,3 +62,8 @@ def list_active_barbers_basic(membership: Membership) -> list[dict]:
     ensure_member(membership)
     barbers = Barber.objects.filter(deleted_at__isnull=True, is_active=True).order_by(Lower("display_name"))
     return list(barbers.values("public_id", "display_name"))
+
+
+def barbers_in_scope(membership: Membership, scope: BranchScope) -> QuerySet[Barber]:
+    """Los barberos que trabajan en la sede del alcance (BarberBranch); en "todas", todos."""
+    return scope.readable(membership, Barber.objects.all(), "branch_links__branch")

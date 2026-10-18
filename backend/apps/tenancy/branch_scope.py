@@ -63,6 +63,22 @@ class BranchScope:
         except Branch.DoesNotExist as exc:
             raise ValidationError({"branch": INACTIVE_BRANCH}) from exc
 
+    def readable(self, membership: Membership, queryset: QuerySet, lookup: str = "branch") -> QuerySet:
+        """Para leer un objeto por su código: el alcance de esta membresía y el filtro de `apply`.
+
+        Un objeto de otra sede no se encuentra (`DoesNotExist`); en "todas", toda la barbería.
+        """
+        self.check(membership)
+        return self.apply(queryset, lookup)
+
+    def writable(self, membership: Membership, queryset: QuerySet, lookup: str = "branch") -> QuerySet:
+        """El único filtro para escribir sobre un objeto que ya existe (fase S4a): solo los de la sede.
+
+        Va antes del `select_for_update`. Un objeto de otra sede no se encuentra, igual que uno de
+        otra barbería (`DoesNotExist`), para no revelar que existe. Exige una sede activa.
+        """
+        return queryset.filter(**{lookup: self.branch_for_write(membership)})
+
 
 def allowed_branches(membership: Membership) -> QuerySet[Branch]:
     """Sedes activas por rol (decisión 1): con `sedes.ver`, todas; Cajero, las suyas; Barbero, las de su Barber."""

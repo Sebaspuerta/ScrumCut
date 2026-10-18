@@ -34,7 +34,7 @@ def test_el_esperado_del_tablero_coincide_con_el_arqueo_de_una_caja_abierta_ayer
     sales.create_order(w.cashier, scope_of(w.cashier, w.branch))  # una comanda abierta
 
     summary = dashboard_summary(w.owner, scope=scope_of(w.owner))
-    closed = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("95000"))
+    closed = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("95000"), scope=scope_of(w.cashier))
 
     assert [session["expected_cash"] for session in summary["open_cash_sessions"]] == [D("95000")]
     assert closed.expected_amount == D("95000")
@@ -45,7 +45,7 @@ def test_el_esperado_del_tablero_coincide_con_el_arqueo_de_una_caja_abierta_ayer
 def test_el_tablero_resta_las_devoluciones_y_suma_los_abonos(world):
     w = world
     returned = sell(w, w.ana, service=w.corte, method="nequi")
-    sales.cancel_order(w.owner, returned.public_id, reason="Cobro duplicado")
+    sales.cancel_order(w.owner, returned.public_id, reason="Cobro duplicado", scope=scope_of(w.owner))
     sell(w, w.beto, service=w.barba)
 
     income = dashboard_summary(w.owner, scope=scope_of(w.owner))["income"]
@@ -89,7 +89,7 @@ def test_mis_cortes_de_hoy_solo_cuenta_lo_del_barbero_y_sin_dinero(world):
     sell(w, w.ana, service=w.corte, quantity=2)
     sell(w, w.beto, service=w.barba)
 
-    assert sales_selectors.my_cuts_today(w.ana_login) == {"cuts_today": 3}
-    assert sales_selectors.my_cuts_today(w.beto_login) == {"cuts_today": 1}
+    assert sales_selectors.my_cuts_today(w.ana_login, scope=scope_of(w.ana_login)) == {"cuts_today": 3}
+    assert sales_selectors.my_cuts_today(w.beto_login, scope=scope_of(w.beto_login)) == {"cuts_today": 1}
     with pytest.raises(PermissionDenied):
         dashboard_summary(w.ana_login, scope=scope_of(w.ana_login))

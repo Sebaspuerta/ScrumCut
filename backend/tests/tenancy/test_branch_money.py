@@ -36,8 +36,14 @@ def test_el_fiado_manual_guarda_la_sede_activa_al_crearlo(world):
 
 def test_el_fiado_de_una_comanda_guarda_la_sede_de_la_comanda(world, norte):
     order = sales.create_order(world.owner, scope_of(world.owner, norte), client=world.laura.public_id)
-    sales.add_item(world.owner, order.public_id, service=world.corte.public_id, barber=world.ana.public_id)
-    sales.close_order(world.owner, order.public_id, as_credit=True)
+    sales.add_item(
+        world.owner,
+        order.public_id,
+        service=world.corte.public_id,
+        barber=world.ana.public_id,
+        scope=scope_of(world.owner, norte),
+    )
+    sales.close_order(world.owner, order.public_id, as_credit=True, scope=scope_of(world.owner, norte))
 
     assert Receivable.objects.get(order=order).origin_branch == norte
 
@@ -53,12 +59,12 @@ def _paid_in(world, branch: Branch) -> list[Decimal]:
 def test_un_fiado_de_centro_no_se_abona_en_la_caja_de_norte(world, norte):
     debt = _manual_debt(world, world.branch)
 
-    with pytest.raises(ValidationError) as error:
+    # Desde Norte el fiado de Centro no se encuentra, igual que uno de otra barbería (fase S4a).
+    with pytest.raises(Receivable.DoesNotExist):
         receivables.add_payment(
             world.owner, debt.public_id, amount=D("10000"), method="efectivo", scope=scope_of(world.owner, norte)
         )
 
-    assert error.value.message_dict["branch"] == [receivables.OTHER_BRANCH_PAYMENT]
     debt.refresh_from_db()
     assert debt.balance == D("30000") and not debt.payments.exists()
     assert _paid_in(world, norte) == []
@@ -79,7 +85,12 @@ def test_un_fiado_se_abona_en_su_sede_y_el_dinero_queda_en_su_caja(world, norte)
 def test_un_abono_no_entra_a_una_sede_desactivada(world, norte):
     debt = _manual_debt(world, norte)
     opened_in_norte = scope_of(world.owner, norte)  # la petición empezó con Norte activa
-    cash.close_session(world.owner, cash_selectors.open_session_for(norte).public_id, counted_amount=D("0"))
+    cash.close_session(
+        world.owner,
+        cash_selectors.open_session_for(norte).public_id,
+        counted_amount=D("0"),
+        scope=opened_in_norte,
+    )
     tenancy.deactivate_branch(world.owner, norte.public_id)
 
     with pytest.raises(ValidationError) as error:
@@ -89,7 +100,12 @@ def test_un_abono_no_entra_a_una_sede_desactivada(world, norte):
 
 def test_un_fiado_manual_no_nace_en_una_sede_desactivada(world, norte):
     opened_in_norte = scope_of(world.owner, norte)
-    cash.close_session(world.owner, cash_selectors.open_session_for(norte).public_id, counted_amount=D("0"))
+    cash.close_session(
+        world.owner,
+        cash_selectors.open_session_for(norte).public_id,
+        counted_amount=D("0"),
+        scope=opened_in_norte,
+    )
     tenancy.deactivate_branch(world.owner, norte.public_id)
 
     with pytest.raises(ValidationError):
@@ -98,8 +114,9 @@ def test_un_fiado_manual_no_nace_en_una_sede_desactivada(world, norte):
 
 def test_una_sede_desactivada_no_tiene_caja_vigente(world, norte):
     session = cash_selectors.open_session_for(norte)
+    opened_in_norte = scope_of(world.owner, norte)  # la petición empezó con Norte activa
     Branch.objects.filter(pk=norte.pk).update(is_active=False)  # sin el servicio, que exige cerrar antes
 
-    assert cash_selectors.current_session(world.owner, norte.public_id) is None
-    assert cash_selectors.current_session(world.owner, world.branch.public_id) == world.session
+    assert cash_selectors.current_session(world.owner, scope=opened_in_norte) is None
+    assert cash_selectors.current_session(world.owner, scope=scope_of(world.owner, world.branch)) == world.session
     assert session is not None

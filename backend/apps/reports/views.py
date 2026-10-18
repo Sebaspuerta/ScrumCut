@@ -32,7 +32,8 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     if membership is None:
         return render(request, TEMPLATE, {"state": "empty"})
     if not role_has_permission(membership.role, "reportes.ver"):
-        return render(request, TEMPLATE, {"state": "cuts", "cuts": my_cuts_today(membership)})
+        cuts = my_cuts_today(membership, scope=request.branch_scope)
+        return render(request, TEMPLATE, {"state": "cuts", "cuts": cuts})
     form = _filters(request, membership)
     try:
         data = executive_dashboard(membership, *form.dates(), scope=request.branch_scope)

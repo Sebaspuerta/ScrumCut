@@ -13,8 +13,10 @@ from django.db import connection
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.catalog.models import Service
 from apps.clients.models import Client
 from apps.core.tenant_context import tenant_context
+from apps.inventory.models import Product
 from apps.staff.models import Barber
 from apps.tenancy.models import Branch, Membership
 from apps.tenancy.roles import Role
@@ -53,6 +55,14 @@ BRANCH_HOURS = (
     "'09:00', '18:00', false)"
 )
 LAST_BRANCH = "UPDATE tenancy_membership SET last_branch_id = %(branch)s WHERE id = %(cashier)s"
+SERVICE_PRICE = (
+    "INSERT INTO catalog_servicebranchprice (public_id, created_at, updated_at, barbershop_id, service_id, "
+    "branch_id, price) VALUES (gen_random_uuid(), now(), now(), %(shop)s, %(service)s, %(branch)s, 1000)"
+)
+PRODUCT_PRICE = (
+    "INSERT INTO inventory_productbranchprice (public_id, created_at, updated_at, barbershop_id, product_id, "
+    "branch_id, price) VALUES (gen_random_uuid(), now(), now(), %(shop)s, %(product)s, %(branch)s, 1000)"
+)
 AUDIT_EVENT = (
     "INSERT INTO audit_auditlog (barbershop_id, branch_id, action, entity, entity_id, user_agent, created_at) "
     "VALUES (%(shop)s, %(branch)s, 'prueba', 'tenancy.Branch', '', '', now())"
@@ -70,6 +80,10 @@ CASES = {
     "tenancy_branchhours.branch": (BRANCH_HOURS, "branch"),
     "tenancy_membership.last_branch": (LAST_BRANCH, "branch"),
     "audit_auditlog.branch": (AUDIT_EVENT, "branch"),
+    "catalog_servicebranchprice.branch": (SERVICE_PRICE, "branch"),
+    "catalog_servicebranchprice.service": (SERVICE_PRICE, "service"),
+    "inventory_productbranchprice.branch": (PRODUCT_PRICE, "branch"),
+    "inventory_productbranchprice.product": (PRODUCT_PRICE, "product"),
 }
 
 
@@ -89,6 +103,8 @@ def _rows_of(shop) -> dict:
             "cashier": cashier.pk,
             "client": client.pk,
             "barber": Barber.objects.create(display_name="Ana").pk,
+            "service": Service.objects.create(name="Corte", price=1000, duration_minutes=30).pk,
+            "product": Product.objects.create(name="Cera", product_type="venta").pk,
             "branch": Branch.objects.create(name="Libre").pk,
             "number": 900,
         }

@@ -17,7 +17,9 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.audit.models import record
-from apps.catalog.models import Service, ServiceCategory
+from apps.catalog import branch_prices
+from apps.catalog.models import Service, ServiceBranchPrice, ServiceCategory
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -219,3 +221,20 @@ def soft_delete_category(membership: Membership, public_id: UUID | str) -> Servi
         after = {**_category_snapshot(category), "detached_services": detached}
         _audit(membership, "categoria_servicio.eliminar", obj=category, before=before, after=after)
     return category
+
+
+# ── Precio por sede (decisión 17 de docs/sedes.md) ───────────────────────────
+
+
+def set_service_branch_price(
+    membership: Membership, service: UUID | str, *, scope: BranchScope, price: Decimal
+) -> ServiceBranchPrice:
+    """Precio propio del servicio en la sede del alcance; solo Dueño y Administrador."""
+    target = Service.objects.get(public_id=service, deleted_at__isnull=True)
+    return branch_prices.set_branch_price(membership, target, scope=scope, price=price)
+
+
+def remove_service_branch_price(membership: Membership, service: UUID | str, *, scope: BranchScope) -> None:
+    """La sede vuelve al precio del catálogo."""
+    target = Service.objects.get(public_id=service, deleted_at__isnull=True)
+    branch_prices.remove_branch_price(membership, target, scope=scope)

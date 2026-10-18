@@ -12,6 +12,7 @@ from django.db.models.functions import Coalesce
 
 from apps.cash.choices import PaymentMethod
 from apps.cash.models import CashMovement, CashSession, Direction
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -37,17 +38,26 @@ def open_session_for(branch: Branch) -> CashSession | None:
     return CashSession.objects.filter(branch=branch, closed_at__isnull=True).first()
 
 
-def current_session(membership: Membership, branch: UUID | str) -> CashSession | None:
-    """Decisión 14 de docs/sedes.md: una sede desactivada no tiene caja vigente."""
+def current_session(membership: Membership, *, scope: BranchScope) -> CashSession | None:
+    """La caja abierta de la sede del alcance. En "todas" no hay una sola: None.
+
+    Decisión 14 de docs/sedes.md: una sede desactivada no tiene caja vigente.
+    """
     ensure_permission(membership, "caja.ver")
-    sessions = CashSession.objects.filter(branch__public_id=branch, branch__is_active=True, closed_at__isnull=True)
-    return sessions.select_related("branch").first()
+    scope.check(membership)
+    if scope.is_all:
+        return None
+    sessions = CashSession.objects.filter(branch__is_active=True, closed_at__isnull=True)
+    return scope.apply(sessions).select_related("branch").first()
 
 
-def session_summary(membership: Membership, session: UUID | str) -> dict:
-    """Totales por método y por tipo, y el efectivo esperado calculado igual que al cerrar."""
+def session_summary(membership: Membership, session: UUID | str, *, scope: BranchScope) -> dict:
+    """Totales por método y por tipo, y el efectivo esperado calculado igual que al cerrar.
+
+    Solo una caja de la sede del alcance; la de otra sede no se encuentra.
+    """
     ensure_permission(membership, "caja.ver")
-    target = CashSession.objects.select_related("branch").get(public_id=session)
+    target = scope.readable(membership, CashSession.objects).select_related("branch").get(public_id=session)
     movements = CashMovement.objects.filter(session=target)
 
     by_method: dict[str, dict[str, Decimal]] = {}

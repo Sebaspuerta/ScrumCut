@@ -167,7 +167,7 @@ def test_pagar_el_fiado_resuelve_fiado_vencido(owner):
 def test_anular_el_fiado_resuelve_fiado_vencido(owner):
     debt = make_overdue_debt(owner)
     services.generate_alerts(TODAY)
-    receivables.cancel_receivable(owner, debt.public_id, reason="Error de digitación")
+    receivables.cancel_receivable(owner, debt.public_id, reason="Error de digitación", scope=scope_of(owner))
     assert services.generate_alerts(TODAY)["resolved"] == 1
 
 

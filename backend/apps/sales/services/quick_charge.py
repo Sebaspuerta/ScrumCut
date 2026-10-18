@@ -27,7 +27,7 @@ def quick_register(
     ensure_permission(membership, "comandas.cerrar")
     with transaction.atomic():
         order = create_order(membership, scope, barber=barber)
-        add_item(membership, order.public_id, service=service, product=product, quantity=quantity)
+        add_item(membership, order.public_id, scope=scope, service=service, product=product, quantity=quantity)
         order.refresh_from_db()
         payments = [{"method": method, "amount": order.total, "reference": reference}] if order.total else []
-        return close_order(membership, order.public_id, payments=payments)
+        return close_order(membership, order.public_id, scope=scope, payments=payments)

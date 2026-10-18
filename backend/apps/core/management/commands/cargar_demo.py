@@ -43,6 +43,7 @@ FIRST_SALE_HOUR = 9
 LAST_SALE_HOUR = 19
 CLOSING_HOUR = 20
 METHODS = ("efectivo", "efectivo", "nequi", "tarjeta")
+NORTE_CUT_PRICE = Decimal("28000")
 DEBT_TOTAL = Decimal("180000")
 DEBT_PAYMENT = Decimal("60000")
 D = Decimal
@@ -159,13 +160,21 @@ def _build_world(shop: Barbershop, password: str, today: date) -> SimpleNamespac
     branches = _branches(owner)
     cashier = _person(shop, CASHIER_EMAIL, "Cajero Demo", password, Role.CASHIER)
     tenancy.set_cashier_branches(owner, cashier.public_id, branches=[branches["Centro"].public_id])
+    world_catalog = _catalog(owner, today)
+    _norte_prices(owner, branches["Norte"], world_catalog)
     return SimpleNamespace(
         owner=owner,
         branches=branches,
         barbers=_barbers(owner, branches),
-        catalog=_catalog(owner, today),
+        catalog=world_catalog,
         debt=_manual_debt(owner, branches["Centro"], today),
     )
+
+
+def _norte_prices(owner: Membership, norte: Branch, world_catalog: SimpleNamespace) -> None:
+    """El Corte vale $28.000 en Norte; en Centro rige el del catálogo, $25.000 (decisión 17)."""
+    cut = world_catalog.services[0]
+    catalog.set_service_branch_price(owner, cut.public_id, scope=_scope(owner, norte), price=NORTE_CUT_PRICE)
 
 
 # ── Días de venta ────────────────────────────────────────────────────────────
@@ -214,17 +223,19 @@ def _sell_day(world: SimpleNamespace, branch: str, day: date, until: datetime, r
 
 
 def _close_day(world: SimpleNamespace, session: CashSession, day: date, rng: random.Random) -> None:
+    scope = _scope(world.owner, session.branch)
     with at(_moment(day, CLOSING_HOUR)):
         cash.register_manual_movement(
             world.owner,
             session.public_id,
+            scope=scope,
             kind="gasto",
             amount=D("15000"),
             payment_method="efectivo",
             description="Aseo",
         )
         counted = expected_cash(session) + D(rng.choice((0, 0, 0, -2000, 5000)))
-        cash.close_session(world.owner, session.public_id, counted_amount=counted)
+        cash.close_session(world.owner, session.public_id, scope=scope, counted_amount=counted)
 
 
 def _pay_debt(world: SimpleNamespace, day: date) -> None:
