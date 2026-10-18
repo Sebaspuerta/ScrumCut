@@ -12,7 +12,7 @@ from django.db import transaction
 from PIL import Image, UnidentifiedImageError
 
 from apps.catalog import branch_prices
-from apps.inventory.models import MovementType, Product, ProductBranchPrice, ProductCategory
+from apps.inventory.models import MovementType, Product, ProductBranchPrice, ProductCategory, StockLevel
 from apps.inventory.services._shared import (
     _audit,
     _product_snapshot,
@@ -31,7 +31,7 @@ PHOTO_SIZE = 200
 
 
 class ProductData(TypedDict, total=False):
-    """Campos editables de un producto. `current_stock` no está: solo lo cambia un movimiento."""
+    """Campos editables de un producto. Las existencias no están: las cambian solo los movimientos."""
 
     name: str
     category: UUID | str | None
@@ -71,8 +71,32 @@ def _apply(product: Product, data: ProductData) -> None:
         product.category = _resolve_category(data["category"])
 
 
-def create_product(membership: Membership, data: ProductData, *, initial_stock: int = 0) -> Product:
-    """El stock inicial, si lo hay, entra como un movimiento "Inventario inicial"."""
+def _initial_stock(membership: Membership, product: Product, *, scope: BranchScope, quantity: int) -> None:
+    """El producto es del catálogo común; su stock inicial entra en la sede del alcance.
+
+    Aun sin unidades, la sede queda con su existencia en 0, para que la alerta de agotado la vea.
+    En "todas", sin stock inicial no se crea ninguna existencia; con stock, se rechaza.
+    """
+    if scope.is_all and not quantity:
+        return
+    branch = scope.branch_for_write(membership)
+    if not quantity:
+        StockLevel.objects.get_or_create(
+            product=product, branch=branch, defaults={"barbershop_id": product.barbershop_id}
+        )
+        return
+    apply_stock_movement(
+        product,
+        quantity,
+        branch=branch,
+        movement_type=MovementType.ENTRY,
+        reason="Inventario inicial",
+        actor=membership,
+    )
+
+
+def create_product(membership: Membership, data: ProductData, *, scope: BranchScope, initial_stock: int = 0) -> Product:
+    """El stock inicial, si lo hay, entra como un movimiento "Inventario inicial" en la sede del alcance."""
     ensure_permission(membership, "inventario.crear")
     if initial_stock < 0:
         raise ValidationError({"initial_stock": "El stock inicial no puede ser negativo."})
@@ -81,19 +105,12 @@ def create_product(membership: Membership, data: ProductData, *, initial_stock: 
         _apply(product, data)
         _save_validated(product, "Ya existe un producto con ese nombre.")
         _audit(membership, "producto.crear", obj=product, before=None, after=_product_snapshot(product))
-        if initial_stock:
-            apply_stock_movement(
-                product,
-                initial_stock,
-                movement_type=MovementType.ENTRY,
-                reason="Inventario inicial",
-                actor=membership,
-            )
+        _initial_stock(membership, product, scope=scope, quantity=initial_stock)
     return product
 
 
 def update_product(membership: Membership, public_id: UUID | str, *, data: ProductData) -> Product:
-    """Defecto 15: `current_stock` no se acepta aquí (TypeError); usa entradas o ajustes."""
+    """Defecto 15: las existencias no se aceptan aquí (TypeError); usa entradas, ajustes o traslados."""
     ensure_permission(membership, "inventario.editar")
     with transaction.atomic():
         product = _live_product_for_update(public_id)

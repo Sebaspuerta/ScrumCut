@@ -1,4 +1,4 @@
-"""Migraciones de S1 con datos existentes, hacia adelante y en reversa (docs/sedes.md).
+"""Migraciones de S1 y S4b con datos existentes, hacia adelante y en reversa (docs/sedes.md).
 
 Cada prueba lleva la base al estado anterior, crea datos con los modelos históricos,
 migra hacia adelante y revisa, y luego hace la reversa. El fixture vuelve siempre a las
@@ -24,6 +24,10 @@ STAFF_BEFORE = [("staff", "0001_initial")]
 STAFF_AFTER = [("staff", "0004_remove_barber_branch")]
 RECEIVABLES_BEFORE = [("receivables", "0001_initial")]
 RECEIVABLES_AFTER = [("receivables", "0004_origin_branch_required")]
+INVENTORY_BEFORE = [("inventory", "0003_product_branch_prices")]
+INVENTORY_AFTER = [("inventory", "0006_stock_by_branch_required")]
+ALERTS_BEFORE = [("alerts", "0001_initial")]
+ALERTS_AFTER = [("alerts", "0004_alert_branch_required")]
 
 
 def _migrate(targets):
@@ -125,6 +129,63 @@ def test_el_fiado_toma_la_sede_de_su_comanda_o_la_sede_principal(back_to_latest)
 
     _migrate(RECEIVABLES_BEFORE)
     assert "origin_branch_id" not in _columns("receivables_receivable")
+
+
+def _old_product(apps, shop, name: str, stock: int):
+    """Un producto con stock de la barbería y su movimiento de entrada, como antes de S4b."""
+    product = apps.get_model("inventory", "Product").objects.create(
+        barbershop=shop, name=name, product_type="venta", current_stock=stock
+    )
+    user = apps.get_model("accounts", "User").objects.create(email=f"{name}@a.test", password="!")
+    apps.get_model("inventory", "StockMovement").objects.create(
+        barbershop=shop,
+        product=product,
+        movement_type="entrada",
+        quantity=stock,
+        stock_before=0,
+        stock_after=stock,
+        unit_cost=Decimal("0"),
+        reason="Inicial",
+        created_by=user,
+    )
+    return product
+
+
+def test_el_stock_pasa_a_la_sede_principal_y_la_reversa_lo_vuelve_a_sumar(back_to_latest):
+    apps = _migrate(INVENTORY_BEFORE)
+    shop = _shop(apps, "a")
+    main, norte = _branch(apps, shop, "Principal"), _branch(apps, shop, "Norte")
+    cera = _old_product(apps, shop, "cera", 7)
+
+    apps = _migrate(INVENTORY_AFTER)
+    levels = apps.get_model("inventory", "StockLevel").objects
+    movements = apps.get_model("inventory", "StockMovement").objects
+
+    assert list(levels.filter(product_id=cera.pk).values_list("branch_id", "quantity")) == [(main.pk, 7)]
+    assert set(movements.filter(product_id=cera.pk).values_list("branch_id", flat=True)) == {main.pk}
+    levels.create(barbershop_id=shop.pk, product_id=cera.pk, branch_id=norte.pk, quantity=3)
+
+    apps = _migrate(INVENTORY_BEFORE)  # la reversa suma las sedes; se pierde dónde estaba cada unidad
+    assert apps.get_model("inventory", "Product").objects.get(pk=cera.pk).current_stock == 10
+    assert "branch_id" not in _columns("inventory_stockmovement")
+
+
+def test_las_alertas_toman_su_sede_y_la_reversa_deja_una_abierta_por_producto(back_to_latest):
+    apps = _migrate(ALERTS_BEFORE)
+    shop = _shop(apps, "a")
+    main, norte = _branch(apps, shop, "Principal"), _branch(apps, shop, "Norte")
+    product = apps.get_model("inventory", "Product").objects.create(barbershop=shop, name="Cera", product_type="venta")
+    alert = apps.get_model("alerts", "Alert").objects.create(
+        barbershop=shop, alert_type="agotado", product=product, message="Cera agotada."
+    )
+
+    alerts = _migrate(ALERTS_AFTER).get_model("alerts", "Alert").objects
+    assert alerts.get(pk=alert.pk).branch_id == main.pk
+    alerts.create(barbershop_id=shop.pk, alert_type="agotado", product_id=product.pk, branch_id=norte.pk, message="x")
+
+    alerts = _migrate(ALERTS_BEFORE).get_model("alerts", "Alert").objects
+    assert list(alerts.filter(resolved_at__isnull=True).values_list("pk", flat=True)) == [alert.pk]
+    assert "branch_id" not in _columns("alerts_alert")
 
 
 def _columns(table: str) -> set[str]:

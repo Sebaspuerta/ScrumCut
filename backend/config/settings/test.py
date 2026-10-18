@@ -12,6 +12,10 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 AXES_ENABLED = True
 
 # Una espera por bloqueo (por ejemplo, otra corrida de pytest sobre la misma base) falla en 10 s
-# con "canceling statement due to lock timeout", en vez de dejar la suite detenida.
+# con "canceling statement due to lock timeout", en vez de dejar la suite detenida. Cualquier
+# otra sentencia que pase de 30 s también se cancela.
 LOCK_TIMEOUT_MS = 10_000
-DATABASES["default"].setdefault("OPTIONS", {})["options"] = f"-c lock_timeout={LOCK_TIMEOUT_MS}"
+STATEMENT_TIMEOUT_MS = 30_000
+DATABASES["default"].setdefault("OPTIONS", {})["options"] = (
+    f"-c lock_timeout={LOCK_TIMEOUT_MS} -c statement_timeout={STATEMENT_TIMEOUT_MS}"
+)

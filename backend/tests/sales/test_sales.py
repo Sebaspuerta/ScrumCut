@@ -20,7 +20,8 @@ from apps.sales.models import Order, OrderStatus, Payment, PaymentStatus
 from apps.staff import services as staff
 from apps.tenancy.models import BarbershopSettings, Branch
 from apps.tenancy.roles import Role
-from tests.conftest import scope_of
+from tests.concurrency import run_threads
+from tests.conftest import scope_of, stock_of
 
 pytestmark = pytest.mark.django_db
 
@@ -50,9 +51,7 @@ def _error_code(excinfo) -> str:
 
 
 def _stocks(w):
-    w.cera.refresh_from_db()
-    w.cuchilla.refresh_from_db()
-    return w.cera.current_stock, w.cuchilla.current_stock
+    return stock_of(w.cera, w.branch), stock_of(w.cuchilla, w.branch)
 
 
 # ── Comanda abierta ──────────────────────────────────────────────────────────
@@ -324,10 +323,7 @@ def test_dos_cierres_simultaneos_cierran_una_sola_vez(world):
             connection.close()
 
     threads = [threading.Thread(target=close) for _ in range(2)]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join(timeout=30)
+    run_threads(threads)
 
     assert sorted(outcomes) == ["cerrada", "not_editable"]
     with tenant_context(world.shop.pk):

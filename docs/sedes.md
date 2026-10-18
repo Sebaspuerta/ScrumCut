@@ -18,7 +18,7 @@ La sede (`tenancy.Branch`) es una división operativa dentro de la barbería. La
 
 | Decisión | Estado |
 |---|---|
-| Inventario con existencias por sede y traslados entre sedes | NUEVO (S4b). Hoy el stock es por barbería: `inventory.Product.current_stock`. |
+| Inventario con existencias por sede y traslados entre sedes | Hecho en S4b (backend). |
 | Precio por sede de servicios y productos; si la sede no definió precio, rige el del catálogo (`catalog.Service.price`, `inventory.Product.sale_price`). Decisión 17. | NUEVO (S4a) |
 | La comisión es del barbero (`staff.CommissionRule`) y no cambia según la sede | YA EXISTE. `CommissionRule` no tiene sede. |
 | Al iniciar sesión, el usuario entra a la última sede que usó, si sigue siendo válida | NUEVO (S2) |
@@ -60,7 +60,7 @@ Todas heredan de `TenantScopedModel`, terminan con `EnableTenantRLS` y llevan la
 | `ServiceBranchPrice` (precio de servicio por sede) | catalog | servicio, sede, precio (`DecimalField(14, 2)`) | Único `(service, branch)`. CHECK `price >= 0`. | S4a |
 | `ProductBranchPrice` (precio de producto por sede) | inventory | producto, sede, precio (`DecimalField(14, 2)`) | Único `(product, branch)`. CHECK `price >= 0`. | S4a |
 | `StockLevel` (existencias por sede) | inventory | producto, sede, cantidad | Único `(product, branch)`. CHECK `quantity >= 0`. | S4b |
-| `StockTransfer` (traslado) | inventory | producto, sede origen, sede destino, cantidad, motivo, quién | CHECK `quantity > 0` y `origin <> destination`. Solo-agregar (regla 9); sus dos `StockMovement` lo respaldan. | S4b |
+| ~~`StockTransfer` (traslado)~~ | inventory | No se creó: el traslado son dos `StockMovement` (`traslado_salida` y `traslado_entrada`) con el mismo `transfer_id`, más su auditoría. Las reglas (cantidad > 0, origen ≠ destino) las aplica el servicio. | — | S4b |
 
 ### Campos nuevos o que cambian en tablas existentes
 
@@ -71,8 +71,9 @@ Todas heredan de `TenantScopedModel`, terminan con `EnableTenantRLS` y llevan la
 | `staff.Barber.branch` | CAMBIA | Se elimina y pasa a `BarberBranch` (decisión 2). | S1 |
 | `receivables.Receivable.origin_branch` | NUEVO | Obligatoria (decisión 3). | S1 |
 | `inventory.StockMovement.branch` | NUEVO | Obligatoria. `stock_before` y `stock_after` pasan a ser los de la sede. | S4b |
+| `inventory.StockMovement.transfer_id` | NUEVO | UUID nullable con índice. Lo comparten las dos patas de un traslado; CHECK: si no es nulo, el tipo es `traslado_salida` o `traslado_entrada`. Reemplaza al modelo `StockTransfer`. | S4b |
 | `inventory.Product.current_stock` | CAMBIA | Se elimina. El total se calcula sumando `StockLevel`. `minimum_stock` sigue por producto (decisión 6). | S4b |
-| `alerts.Alert.branch` | NUEVO | Opcional (decisión 6). | S4b |
+| `alerts.Alert.branch` | NUEVO | Obligatoria, con llave compuesta. Las de producto llevan la sede de la existencia; las de fiado, la sede de origen del fiado. | S4b |
 | `audit.AuditLog.branch` | NUEVO | Opcional. | S1 |
 
 ### Sede de cada modelo
@@ -220,7 +221,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 | S2 | Solo backend: `request.branch_scope`, middleware, cambio de sede por POST y selectores con alcance. Tablero y Excel con el alcance, sin `?sede=`, con el ayudante único de filtro y los indicadores sumados en modo "todas" (decisión 10). Nivel del cliente por sede (decisión 16) y filtro por sede del historial y los fiados del cliente (decisión 15). | El tablero y el Excel ya filtran por una sede; los selectores de `apps/reports` y el Excel ya aceptan `branch=None` (todas). | Grande |
 | S3 | Ajustes → Sedes, selector de sede en la barra superior y modo "todas" en el encabezado (requiere maqueta aprobada). Va inmediatamente después de S2. | Nada | Grande |
 | S4a | Caja, comandas, gastos y precios por sede de servicios y productos (`ServiceBranchPrice` y `ProductBranchPrice`; decisión 17). Escritura solo en modo "una" y rechazo por pestañas cruzadas. | Backend hecho (ver el detalle debajo de esta tabla). Lo que necesita pantallas pasa a S3. | Mediana |
-| S4b | Inventario por sede (decisión 6): `StockLevel`, `StockMovement.branch`, consumo por `order.branch`, alertas con `Alert.branch`, sin `Product.current_stock`, y traslados. | Nada: stock, movimientos y alertas son por barbería. | Grande |
+| S4b | Inventario por sede (decisión 6): `StockLevel`, `StockMovement.branch`, consumo por `order.branch`, alertas con `Alert.branch`, sin `Product.current_stock`, y traslados. | Backend hecho (ver el detalle debajo de esta tabla). Las pantallas de existencias por sede y de traslados pasan a S3. | Grande |
 | S5 | Comparativo por sede y cuadre de caja por sede en el tablero (requiere maqueta aprobada). | Los indicadores del modo "todas" llegan en S2. | Mediana |
 
 **Detalle de S1**
@@ -244,7 +245,18 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - `ServiceBranchPrice` y `ProductBranchPrice` con RLS con FORCE y llaves compuestas hacia la sede y hacia el servicio o producto. Los fijan y quitan Dueño y Administrador (`servicios.editar`, `inventario.editar`), con auditoría. `apps.catalog.branch_prices.current_price` es el único que resuelve el precio vigente; la comanda y el cobro rápido lo guardan en el ítem.
 - "Mis cortes de hoy" y `barber_performance` van por el alcance.
 
+**Estado de S4b (backend hecho)**
+- `StockLevel` (producto, sede, cantidad >= 0, único por producto y sede) con RLS con FORCE y llaves compuestas hacia la sede y el producto. `StockMovement.branch` obligatoria con su llave compuesta y el índice (barbería, sede, fecha). Ya no existe `Product.current_stock`: el total de la barbería es la suma de las sedes.
+- Migración en tres pasos reversibles (`inventory` 0004–0006, `alerts` 0002–0004): el stock de cada producto pasa a la Sede principal (la más antigua) y los movimientos existentes quedan con ella. La reversa suma las sedes en `current_stock`; se pierde en qué sede estaba cada unidad. La reversa de las alertas deja una sola abierta por (tipo, producto).
+- `apply_stock_movement` recibe la sede. Entradas, ajustes y el stock inicial de un producto nuevo van a la sede del alcance; el consumo y la venta al cerrar una comanda, a `order.branch`; la anulación devuelve a la sede de la que salió. Ninguna existencia queda negativa.
+- `transfer_stock`: el origen es la sede del alcance (en "todas" se rechaza), el destino otra sede activa de la barbería, cantidad entera > 0. Bloquea las dos existencias en orden por id, deja una salida y una entrada con el mismo `StockMovement.transfer_id` (UUID, nulo fuera de los traslados) y audita `inventario.trasladar` con ese valor. Una restricción en la base solo acepta `transfer_id` en movimientos de tipo traslado. Permiso `inventario.ajustar`.
+- Los movimientos anteriores a S4b conservan su `stock_before` y `stock_after`, que eran totales de la barbería.
+- Alertas por (tipo, producto, sede). El mínimo es del producto y se compara con cada sede. Agotado y stock bajo solo se evalúan donde hay una fila de existencia: crear un producto deja la suya en 0 en la sede del alcance; una sede que nunca tuvo el producto no recibe alertas de él. Por vencer, solo donde hay unidades. Las alertas se leen y se marcan por el alcance.
+- Las lecturas de inventario van por el alcance: `stock` de la sede o, en "todas", la suma; `stock_levels`, `low_stock` y `expiring` devuelven existencias por sede con `product_total`. El indicador de stock crítico del tablero cuenta existencias del alcance, no productos: en "todas", un producto agotado o bajo en dos sedes cuenta 2 (una por producto × sede).
+- `cargar_demo`: stock distinto en Centro y Norte, un traslado de Cera mate y stock bajo de un producto solo en Norte.
+
 **Pasa a la fase de pantallas (S3)**
+- Las pantallas de existencias por sede y de traslado.
 - Usar `BranchBoundForm` (pestañas cruzadas) en cada formulario que escribe.
 - El selector de sede en la barra superior.
 - La pantalla que pide elegir una sede cuando Caja, Comandas o Agenda se abren en modo "todas".
@@ -273,7 +285,8 @@ Resuelven los conflictos que dejó el diagnóstico.
 6. **Inventario por sede (S4b).**
    - Existencias: `StockLevel` (producto, sede, cantidad >= 0, único por producto y sede). `StockMovement` lleva sede obligatoria.
    - Consumo: al cerrar una comanda se descuenta del inventario de `order.branch`.
-   - Alertas: únicas por (tipo, producto, sede), con `Alert.branch`. Incluye las de por vencer, que solo se generan en sedes con existencia > 0.
+   - Traslados: sin modelo `StockTransfer`. Son una salida y una entrada con el mismo `StockMovement.transfer_id`; un traslado se lee filtrando por ese valor.
+   - Alertas: únicas por (tipo, producto, sede), con `Alert.branch` obligatoria. Incluye las de por vencer, que solo se generan en sedes con existencia > 0.
    - Totales: se elimina `Product.current_stock` y el total se calcula sumando. El mínimo sigue por producto.
    - Motivo: con stock por sede, un total guardado aparte se desincroniza. Las alertas tienen que decir en qué sede falta el producto.
 7. **Zona horaria por sede: aplazada.**

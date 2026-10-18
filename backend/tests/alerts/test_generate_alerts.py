@@ -109,7 +109,7 @@ def test_correr_dos_veces_no_duplica(owner):
 def test_una_alerta_leida_sigue_abierta_y_no_se_duplica(owner, cashier):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    services.mark_as_read(cashier, alert_for(product=product).public_id)
+    services.mark_as_read(cashier, alert_for(product=product).public_id, scope=scope_of(cashier))
 
     assert sum(services.generate_alerts(TODAY)["created"].values()) == 0
     assert Alert.objects.filter(product=product).count() == 1
@@ -121,7 +121,7 @@ def test_una_alerta_leida_sigue_abierta_y_no_se_duplica(owner, cashier):
 def test_reponer_el_stock_resuelve_agotado(owner):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra")
+    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra", scope=scope_of(owner))
 
     result = services.generate_alerts(TODAY)
 
@@ -133,7 +133,7 @@ def test_reponer_el_stock_resuelve_agotado(owner):
 def test_pasar_de_stock_bajo_a_agotado_cambia_la_alerta(owner):
     product = make_product(owner, "Gel", stock=2, minimum_stock=3)
     services.generate_alerts(TODAY)
-    inventory.register_adjustment(owner, product.public_id, quantity=-2, reason="Conteo")
+    inventory.register_adjustment(owner, product.public_id, quantity=-2, reason="Conteo", scope=scope_of(owner))
 
     services.generate_alerts(TODAY)
 
@@ -174,9 +174,11 @@ def test_anular_el_fiado_resuelve_fiado_vencido(owner):
 def test_si_la_condicion_vuelve_se_crea_una_alerta_nueva(owner):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    inventory.register_entry(owner, product.public_id, quantity=2, reason="Compra")
+    inventory.register_entry(owner, product.public_id, quantity=2, reason="Compra", scope=scope_of(owner))
     services.generate_alerts(TODAY)
-    inventory.register_adjustment(owner, product.public_id, quantity=-2, reason="Venta sin registrar")
+    inventory.register_adjustment(
+        owner, product.public_id, quantity=-2, reason="Venta sin registrar", scope=scope_of(owner)
+    )
 
     result = services.generate_alerts(TODAY)
 
@@ -188,15 +190,15 @@ def test_si_la_condicion_vuelve_se_crea_una_alerta_nueva(owner):
 def test_una_alerta_leida_se_resuelve_y_conserva_quien_la_leyo(owner, cashier):
     product = make_product(owner, "Cera")
     services.generate_alerts(TODAY)
-    read = services.mark_as_read(cashier, alert_for(product=product).public_id)
-    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra")
+    read = services.mark_as_read(cashier, alert_for(product=product).public_id, scope=scope_of(cashier))
+    inventory.register_entry(owner, product.public_id, quantity=10, reason="Compra", scope=scope_of(owner))
 
     assert services.generate_alerts(TODAY)["resolved"] == 1
     resolved = Alert.objects.get(pk=read.pk)
     assert resolved.resolved_at is not None
     assert (resolved.read_at, resolved.read_by) == (read.read_at, cashier)
 
-    inventory.register_adjustment(owner, product.public_id, quantity=-10, reason="Conteo")
+    inventory.register_adjustment(owner, product.public_id, quantity=-10, reason="Conteo", scope=scope_of(owner))
     services.generate_alerts(TODAY)
     new = Alert.objects.get(product=product, resolved_at__isnull=True)
     assert new.pk != read.pk and not new.is_read
@@ -205,7 +207,7 @@ def test_una_alerta_leida_se_resuelve_y_conserva_quien_la_leyo(owner, cashier):
 def test_un_fiado_vencido_leido_se_resuelve_al_pagarlo(owner, cashier):
     debt = make_overdue_debt(owner)
     services.generate_alerts(TODAY)
-    services.mark_as_read(cashier, alert_for(receivable=debt).public_id)
+    services.mark_as_read(cashier, alert_for(receivable=debt).public_id, scope=scope_of(cashier))
     pay_debt(owner, debt)
 
     assert services.generate_alerts(TODAY)["resolved"] == 1

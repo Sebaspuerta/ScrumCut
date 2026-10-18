@@ -35,7 +35,6 @@ def _product_snapshot(product: Product) -> dict:
         "product_type": product.product_type,
         "purchase_cost": _money(product.purchase_cost),
         "sale_price": _money(product.sale_price),
-        "current_stock": product.current_stock,
         "minimum_stock": product.minimum_stock,
         "expiration_date": product.expiration_date.isoformat() if product.expiration_date else None,
         "supplier": product.supplier,

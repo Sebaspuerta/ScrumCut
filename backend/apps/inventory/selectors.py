@@ -1,15 +1,21 @@
-"""Lecturas de inventario. Los managers ya filtran por la barbería activa."""
+"""Lecturas de inventario. Los managers ya filtran por la barbería activa.
+
+Fase S4b de docs/sedes.md: el catálogo de productos es común a la barbería, pero las existencias
+son de cada sede. Las lecturas de stock van por el alcance: la sede activa o, en "todas", cada
+sede con el total de la barbería.
+"""
 
 from datetime import timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from django.db.models import F, Q, QuerySet
-from django.db.models.functions import Lower
+from django.db.models import F, IntegerField, OuterRef, Q, QuerySet, Subquery, Sum, Value
+from django.db.models.functions import Coalesce, Lower
 from django.utils import timezone
 
 from apps.catalog.models import Service
-from apps.inventory.models import Product, ProductCategory, ServiceConsumable, StockMovement
+from apps.inventory.models import Product, ProductCategory, ServiceConsumable, StockLevel, StockMovement
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -18,16 +24,25 @@ def _live_products() -> QuerySet[Product]:
     return Product.objects.filter(deleted_at__isnull=True).select_related("category")
 
 
+def _stock(scope: BranchScope) -> Coalesce:
+    """Existencias del producto en el alcance: la sede activa o, en "todas", la suma de las sedes."""
+    in_scope = None if scope.is_all else Q(stock_levels__branch=scope.branch)
+    return Coalesce(Sum("stock_levels__quantity", filter=in_scope), Value(0), output_field=IntegerField())
+
+
 def list_products(
     membership: Membership,
     *,
+    scope: BranchScope,
     active_only: bool = True,
     category: UUID | str | None = None,
     uncategorized: bool = False,
     product_type: str | None = None,
     search: str | None = None,
 ) -> QuerySet[Product]:
+    """El catálogo común, cada producto con `stock` del alcance."""
     ensure_permission(membership, "inventario.ver")
+    scope.check(membership)
     products = _live_products()
     if active_only:
         products = products.filter(is_active=True)
@@ -40,33 +55,59 @@ def list_products(
     term = (search or "").strip()
     if term:
         products = products.filter(Q(name__icontains=term) | Q(supplier__icontains=term))
-    return products.order_by(Lower("name"))
+    return products.annotate(stock=_stock(scope)).order_by(Lower("name"))
 
 
-def get_product(membership: Membership, public_id: UUID | str) -> Product:
-    """Incluye desactivados; nunca borrados. Lanza `Product.DoesNotExist`."""
+def get_product(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> Product:
+    """Incluye desactivados; nunca borrados. Con `stock` del alcance. Lanza `Product.DoesNotExist`."""
     ensure_permission(membership, "inventario.ver")
-    return _live_products().get(public_id=public_id)
+    scope.check(membership)
+    return _live_products().annotate(stock=_stock(scope)).get(public_id=public_id)
 
 
-def low_stock(membership: Membership) -> QuerySet[Product]:
-    """Productos activos con stock en o por debajo de su mínimo (incluye agotados con mínimo)."""
+def _levels(membership: Membership, scope: BranchScope) -> QuerySet[StockLevel]:
+    """Existencias por producto y sede del alcance, con el total del producto en la barbería."""
+    total = (
+        StockLevel.objects.filter(product=OuterRef("product"))
+        .values("product")
+        .annotate(total=Sum("quantity"))
+        .values("total")
+    )
+    levels = StockLevel.objects.filter(product__deleted_at__isnull=True).select_related("product", "branch")
+    return scope.readable(membership, levels).annotate(product_total=Subquery(total))
+
+
+def stock_levels(membership: Membership, *, scope: BranchScope) -> QuerySet[StockLevel]:
+    """Las existencias de la sede activa; en "todas", cada producto por sede con su total."""
+    ensure_permission(membership, "inventario.ver")
+    return _levels(membership, scope).order_by(Lower("product__name"), "branch__name")
+
+
+def low_stock(membership: Membership, *, scope: BranchScope) -> QuerySet[StockLevel]:
+    """Existencias de productos activos en o por debajo de su mínimo, por sede (incluye agotados con mínimo)."""
     ensure_permission(membership, "inventario.ver")
     return (
-        _live_products()
-        .filter(is_active=True, minimum_stock__isnull=False, current_stock__lte=F("minimum_stock"))
-        .order_by("current_stock", Lower("name"))
+        _levels(membership, scope)
+        .filter(
+            product__is_active=True, product__minimum_stock__isnull=False, quantity__lte=F("product__minimum_stock")
+        )
+        .order_by("quantity", Lower("product__name"))
     )
 
 
-def expiring(membership: Membership, days: int = 30) -> QuerySet[Product]:
-    """Activos que vencen dentro de `days` días (contados en la zona de la barbería), o ya vencidos."""
+def expiring(membership: Membership, *, scope: BranchScope, days: int = 30) -> QuerySet[StockLevel]:
+    """Existencias (> 0) de productos activos que vencen dentro de `days` días o ya vencieron, por sede."""
     ensure_permission(membership, "inventario.ver")
     today = timezone.now().astimezone(ZoneInfo(membership.barbershop.timezone)).date()
     return (
-        _live_products()
-        .filter(is_active=True, expiration_date__isnull=False, expiration_date__lte=today + timedelta(days=days))
-        .order_by("expiration_date", Lower("name"))
+        _levels(membership, scope)
+        .filter(
+            quantity__gt=0,
+            product__is_active=True,
+            product__expiration_date__isnull=False,
+            product__expiration_date__lte=today + timedelta(days=days),
+        )
+        .order_by("product__expiration_date", Lower("product__name"))
     )
 
 
@@ -75,9 +116,11 @@ def list_categories(membership: Membership) -> QuerySet[ProductCategory]:
     return ProductCategory.objects.filter(deleted_at__isnull=True).order_by(Lower("name"))
 
 
-def list_movements(membership: Membership, product: UUID | str) -> QuerySet[StockMovement]:
+def list_movements(membership: Membership, product: UUID | str, *, scope: BranchScope) -> QuerySet[StockMovement]:
+    """Movimientos del producto en las sedes del alcance."""
     ensure_permission(membership, "inventario.ver")
-    return StockMovement.objects.filter(product__public_id=product).order_by("created_at", "pk")
+    movements = StockMovement.objects.filter(product__public_id=product).select_related("branch")
+    return scope.readable(membership, movements).order_by("created_at", "pk")
 
 
 def consumables_for(service: Service) -> QuerySet[ServiceConsumable]:

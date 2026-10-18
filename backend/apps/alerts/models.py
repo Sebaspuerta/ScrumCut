@@ -30,6 +30,8 @@ class Alert(TenantScopedModel):
     receivable = models.ForeignKey(
         "receivables.Receivable", null=True, blank=True, on_delete=models.PROTECT, related_name="alerts"
     )
+    # Sede de la alerta (decisión 6 de docs/sedes.md): la del stock o la de origen del fiado.
+    branch = models.ForeignKey("tenancy.Branch", on_delete=models.PROTECT, related_name="alerts")
     message = models.TextField("mensaje")
     read_at = models.DateTimeField("leída", null=True, blank=True)
     read_by = models.ForeignKey("tenancy.Membership", null=True, blank=True, on_delete=models.PROTECT, related_name="+")
@@ -49,11 +51,11 @@ class Alert(TenantScopedModel):
                 | models.Q(read_at__isnull=False, read_by__isnull=False),
                 name="ck_alert_read_fields_together",
             ),
-            # Regla 48: una sola alerta abierta por tipo y referencia.
+            # Regla 48: una sola alerta abierta por tipo y referencia; las de producto, por sede.
             models.UniqueConstraint(
-                fields=["alert_type", "product"],
+                fields=["alert_type", "product", "branch"],
                 condition=models.Q(resolved_at__isnull=True, product__isnull=False),
-                name="uq_alert_open_per_product",
+                name="uq_alert_open_per_product_branch",
             ),
             models.UniqueConstraint(
                 fields=["alert_type", "receivable"],

@@ -10,6 +10,7 @@ from django.http import HttpRequest
 from django.urls import reverse
 
 from apps.alerts.selectors import unread_count
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.roles import role_has_permission
 
 
@@ -65,7 +66,7 @@ def _account(user, membership) -> dict:
     return {"name": name, "initials": initials(name), "role": membership.get_role_display() if membership else ""}
 
 
-def _membership_shell(membership, current_url_name: str | None) -> dict:
+def _membership_shell(membership, current_url_name: str | None, *, scope: BranchScope) -> dict:
     role = membership.role
     shop = membership.barbershop.trade_name
     return {
@@ -73,7 +74,8 @@ def _membership_shell(membership, current_url_name: str | None) -> dict:
         "admin_links": _links(ADMIN_ITEMS, role, current_url_name),
         "module_links": _links(MODULE_ITEMS, role, current_url_name),
         "can_export": role_has_permission(role, "reportes.exportar"),
-        "unread_alerts": unread_count(membership) if role_has_permission(role, "alertas.ver") else None,
+        # Las de la sede activa, o las de todas en "todas" (fase S4b de docs/sedes.md).
+        "unread_alerts": unread_count(membership, scope=scope) if role_has_permission(role, "alertas.ver") else None,
     }
 
 
@@ -89,5 +91,5 @@ def shell(request: HttpRequest) -> dict:
     data = {"account": _account(user, membership), "shop": None, "admin_links": [], "module_links": []}
     if membership is not None:
         current = request.resolver_match.url_name if request.resolver_match else None
-        data |= _membership_shell(membership, current)
+        data |= _membership_shell(membership, current, scope=request.branch_scope)
     return {"shell": data}

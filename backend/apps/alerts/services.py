@@ -18,6 +18,7 @@ from apps.alerts.models import Alert, AlertType
 from apps.audit.models import record
 from apps.core.tenant_context import get_current_barbershop_id
 from apps.receivables.services import mark_overdue
+from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Barbershop, Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -30,9 +31,11 @@ def _active_barbershop() -> Barbershop:
 
 
 def _open_alerts() -> dict[AlertKey, int]:
-    """Alertas sin resolver, leídas o no, por clave."""
-    rows = Alert.objects.filter(resolved_at__isnull=True).values_list("pk", "alert_type", "product_id", "receivable_id")
-    return {(alert_type, product_id or receivable_id): pk for pk, alert_type, product_id, receivable_id in rows}
+    """Alertas sin resolver, leídas o no, por clave (tipo, referencia, sede)."""
+    rows = Alert.objects.filter(resolved_at__isnull=True).values_list(
+        "pk", "alert_type", "product_id", "receivable_id", "branch_id"
+    )
+    return {(kind, product or receivable, branch): pk for pk, kind, product, receivable, branch in rows}
 
 
 def _resolve_stale(open_alerts: dict[AlertKey, int], conditions: dict[AlertKey, str]) -> int:
@@ -45,12 +48,19 @@ def _create_missing(
     barbershop: Barbershop, open_alerts: dict[AlertKey, int], *, conditions: dict[AlertKey, str]
 ) -> list[Alert]:
     new_alerts = []
-    for (alert_type, reference_id), message in conditions.items():
-        if (alert_type, reference_id) in open_alerts:
+    for key, message in conditions.items():
+        if key in open_alerts:
             continue
+        alert_type, reference_id, branch_id = key
         reference = "receivable_id" if alert_type == AlertType.OVERDUE_RECEIVABLE else "product_id"
         new_alerts.append(
-            Alert(barbershop=barbershop, alert_type=alert_type, message=message, **{reference: reference_id})
+            Alert(
+                barbershop=barbershop,
+                branch_id=branch_id,
+                alert_type=alert_type,
+                message=message,
+                **{reference: reference_id},
+            )
         )
     # Si dos ejecuciones coinciden, la restricción única decide.
     Alert.objects.bulk_create(new_alerts, ignore_conflicts=True)
@@ -92,11 +102,11 @@ def _read_snapshot(alert: Alert) -> dict:
     }
 
 
-def mark_as_read(membership: Membership, alert_public_id: UUID | str) -> Alert:
-    """Si ya estaba leída o resuelta, no cambia nada ni audita."""
+def mark_as_read(membership: Membership, alert_public_id: UUID | str, *, scope: BranchScope) -> Alert:
+    """Solo una alerta de la sede del alcance. Si ya estaba leída o resuelta, no cambia nada ni audita."""
     ensure_permission(membership, "alertas.marcar")
     with transaction.atomic():
-        alert = Alert.objects.select_for_update().get(public_id=alert_public_id)
+        alert = scope.writable(membership, Alert.objects).select_for_update().get(public_id=alert_public_id)
         if alert.is_read or alert.resolved_at:
             return alert
         before = _read_snapshot(alert)
@@ -110,6 +120,7 @@ def mark_as_read(membership: Membership, alert_public_id: UUID | str) -> Alert:
             entity_id=str(alert.public_id),
             actor=membership.user,
             barbershop=membership.barbershop,
+            branch=alert.branch,
             before=before,
             after=_read_snapshot(alert),
         )

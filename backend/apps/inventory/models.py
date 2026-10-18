@@ -55,8 +55,6 @@ class Product(TenantScopedModel, SoftDeleteModel):
     product_type = models.CharField("tipo", max_length=12, choices=ProductType.choices)
     purchase_cost = models.DecimalField("costo de compra", default=Decimal("0"), **_MONEY)
     sale_price = models.DecimalField("precio de venta", default=Decimal("0"), **_MONEY)
-    # Solo lo cambia services.apply_stock_movement.
-    current_stock = models.IntegerField("stock actual", default=0, editable=False)
     minimum_stock = models.PositiveIntegerField("stock mínimo", null=True, blank=True)
     expiration_date = models.DateField("vence", null=True, blank=True)
     supplier = models.CharField("proveedor", max_length=120, blank=True)
@@ -72,7 +70,6 @@ class Product(TenantScopedModel, SoftDeleteModel):
                 name="uq_product_name_per_barbershop",
                 violation_error_message="Ya existe un producto con ese nombre.",
             ),
-            models.CheckConstraint(condition=models.Q(current_stock__gte=0), name="ck_product_stock_not_negative"),
             models.CheckConstraint(condition=models.Q(purchase_cost__gte=0), name="ck_product_cost_not_negative"),
             models.CheckConstraint(condition=models.Q(sale_price__gte=0), name="ck_product_price_not_negative"),
             models.CheckConstraint(
@@ -92,10 +89,14 @@ class MovementType(models.TextChoices):
     SALE = "salida_venta", "Salida por venta"
     SERVICE = "salida_servicio", "Insumo de servicio"
     REVERSAL = "reversion", "Reversión"
+    TRANSFER_OUT = "traslado_salida", "Traslado (salida)"
+    TRANSFER_IN = "traslado_entrada", "Traslado (entrada)"
 
 
 class StockMovement(AppendOnlyModel):
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="movements")
+    # La existencia que se movió es la de esta sede (decisión 6 de docs/sedes.md).
+    branch = models.ForeignKey("tenancy.Branch", on_delete=models.PROTECT, related_name="stock_movements")
     movement_type = models.CharField("tipo", max_length=16, choices=MovementType.choices)
     quantity = models.IntegerField("cantidad")  # con signo: + entra, − sale
     stock_before = models.IntegerField("stock antes")
@@ -104,6 +105,8 @@ class StockMovement(AppendOnlyModel):
     reason = models.TextField("motivo")
     # Origen del movimiento ("order:<public_id>"), para revertirlo exacto sin que inventario dependa de sales.
     reference = models.CharField("referencia", max_length=64, blank=True, db_index=True)
+    # Las dos patas de un traslado entre sedes comparten este valor; nulo en todo lo demás.
+    transfer_id = models.UUIDField("traslado", null=True, blank=True, db_index=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
 
     class Meta:
@@ -118,8 +121,16 @@ class StockMovement(AppendOnlyModel):
             models.CheckConstraint(
                 condition=models.Q(movement_type__in=MovementType.values), name="ck_stockmovement_type_valid"
             ),
+            models.CheckConstraint(
+                condition=models.Q(transfer_id__isnull=True)
+                | models.Q(movement_type__in=[MovementType.TRANSFER_OUT, MovementType.TRANSFER_IN]),
+                name="ck_stockmovement_transfer_id_only_on_transfers",
+            ),
         ]
-        indexes = [models.Index(fields=["product", "created_at"])]
+        indexes = [
+            models.Index(fields=["product", "created_at"]),
+            models.Index(fields=["barbershop", "branch", "created_at"], name="ix_stockmove_branch_created"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.product} · {self.get_movement_type_display()} {self.quantity:+d}"
@@ -165,3 +176,24 @@ class ProductBranchPrice(TenantScopedModel):
 
     def __str__(self) -> str:
         return f"{self.product} · {self.branch} · {self.price}"
+
+
+class StockLevel(TenantScopedModel):
+    """Existencia de un producto en una sede (decisión 6 de docs/sedes.md).
+
+    Solo la cambia `services.apply_stock_movement`. El total de la barbería es la suma por sede.
+    """
+
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="stock_levels")
+    branch = models.ForeignKey("tenancy.Branch", on_delete=models.PROTECT, related_name="stock_levels")
+    quantity = models.IntegerField("existencia", default=0)
+
+    class Meta:
+        verbose_name = "existencia en la sede"
+        constraints = [
+            models.UniqueConstraint(fields=["product", "branch"], name="uq_stocklevel_product_branch"),
+            models.CheckConstraint(condition=models.Q(quantity__gte=0), name="ck_stocklevel_not_negative"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.product} · {self.branch} · {self.quantity}"

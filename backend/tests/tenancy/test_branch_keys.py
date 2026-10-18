@@ -67,6 +67,19 @@ AUDIT_EVENT = (
     "INSERT INTO audit_auditlog (barbershop_id, branch_id, action, entity, entity_id, user_agent, created_at) "
     "VALUES (%(shop)s, %(branch)s, 'prueba', 'tenancy.Branch', '', '', now())"
 )
+STOCK_LEVEL = (
+    "INSERT INTO inventory_stocklevel (public_id, created_at, updated_at, barbershop_id, product_id, branch_id, "
+    "quantity) VALUES (gen_random_uuid(), now(), now(), %(shop)s, %(product)s, %(branch)s, 0)"
+)
+STOCK_MOVEMENT = (
+    "INSERT INTO inventory_stockmovement (public_id, created_at, updated_at, barbershop_id, product_id, branch_id, "
+    "movement_type, quantity, stock_before, stock_after, unit_cost, reason, reference, created_by_id) VALUES "
+    "(gen_random_uuid(), now(), now(), %(shop)s, %(product)s, %(branch)s, 'entrada', 1, 0, 1, 0, 'x', '', %(user)s)"
+)
+ALERT = (
+    "INSERT INTO alerts_alert (public_id, created_at, updated_at, barbershop_id, alert_type, product_id, branch_id, "
+    "message) VALUES (gen_random_uuid(), now(), now(), %(shop)s, 'agotado', %(product)s, %(branch)s, 'x')"
+)
 
 # (sentencia, dato que se toma de la otra barbería): sedes, y también membresías y barberos.
 CASES = {
@@ -84,6 +97,10 @@ CASES = {
     "catalog_servicebranchprice.service": (SERVICE_PRICE, "service"),
     "inventory_productbranchprice.branch": (PRODUCT_PRICE, "branch"),
     "inventory_productbranchprice.product": (PRODUCT_PRICE, "product"),
+    "inventory_stocklevel.branch": (STOCK_LEVEL, "branch"),
+    "inventory_stocklevel.product": (STOCK_LEVEL, "product"),
+    "inventory_stockmovement.branch": (STOCK_MOVEMENT, "branch"),
+    "alerts_alert.branch": (ALERT, "branch"),
 }
 
 

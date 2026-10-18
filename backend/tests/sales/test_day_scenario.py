@@ -22,7 +22,7 @@ from apps.inventory.models import MovementType, StockMovement
 from apps.sales import selectors, services
 from apps.sales.models import ItemType, OrderStatus, PaymentStatus
 from apps.staff import services as staff
-from tests.conftest import scope_of
+from tests.conftest import scope_of, stock_of
 
 pytestmark = pytest.mark.django_db
 
@@ -83,9 +83,7 @@ def test_un_dia_de_barberia(world):
     assert lines["Corte"].consumables_cost == D("1000")
 
     # Inventario: la cera vendida y la cuchilla gastada por el corte
-    w.cera.refresh_from_db()
-    w.cuchilla.refresh_from_db()
-    assert (w.cera.current_stock, w.cuchilla.current_stock) == (4, 9)
+    assert (stock_of(w.cera), stock_of(w.cuchilla)) == (4, 9)
     reference = f"order:{order.public_id}"
     assert set(StockMovement.objects.filter(reference=reference).values_list("movement_type", flat=True)) == {
         MovementType.SALE,

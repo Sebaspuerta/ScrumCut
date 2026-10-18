@@ -72,7 +72,9 @@ def test_inventario_critico_usa_el_criterio_de_las_alertas(world):
     w = world
 
     def product(name, stock, **data):
-        return inventory.create_product(w.owner, {"name": name, "product_type": "venta", **data}, initial_stock=stock)
+        return inventory.create_product(
+            w.owner, {"name": name, "product_type": "venta", **data}, initial_stock=stock, scope=scope_of(w.owner)
+        )
 
     product("Talco", 0)  # agotado sin mínimo: cuenta
     product("Gel", 2, minimum_stock=3)  # bajo su mínimo: cuenta

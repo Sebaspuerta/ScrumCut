@@ -113,6 +113,7 @@ def _settle_product_line(line: OrderItem, membership: Membership, *, reason: str
     movement = apply_stock_movement(
         line.product,
         -line.quantity,
+        branch=line.order.branch,  # el consumo sale de la sede de la comanda (decisión 6)
         movement_type=MovementType.SALE,
         reason=reason,
         actor=membership,
@@ -133,6 +134,7 @@ def _settle_service_line(
         movement = apply_stock_movement(
             consumable.product,
             -used,
+            branch=line.order.branch,
             movement_type=MovementType.SERVICE,
             reason=reason,
             actor=membership,

@@ -14,7 +14,12 @@ Un módulo por responsabilidad; este paquete reexporta la API pública, así que
 
 from apps.inventory.services.categories import create_category, soft_delete_category, update_category
 from apps.inventory.services.consumables import add_consumable, remove_consumable, update_consumable
-from apps.inventory.services.movements import apply_stock_movement, register_adjustment, register_entry
+from apps.inventory.services.movements import (
+    apply_stock_movement,
+    register_adjustment,
+    register_entry,
+    transfer_stock,
+)
 from apps.inventory.services.products import (
     PHOTO_FORMATS,
     PHOTO_MAX_BYTES,
@@ -50,6 +55,7 @@ __all__ = [
     "set_product_branch_price",
     "soft_delete_category",
     "soft_delete_product",
+    "transfer_stock",
     "update_category",
     "update_consumable",
     "update_product",

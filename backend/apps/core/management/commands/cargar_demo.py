@@ -35,6 +35,8 @@ SLUG = "demo"
 OWNER_EMAIL = "demo-dueno@scrumcut.test"
 CASHIER_EMAIL = "demo-cajero@scrumcut.test"
 MAX_BRANCHES = 3
+# Posición de cada sede en las tuplas de existencias iniciales.
+CENTRO, NORTE = 0, 1
 # Comandas por día de la semana (lunes a sábado) en Centro; el domingo no se abre. Norte vende la mitad.
 DAILY_ORDERS = (6, 7, 7, 8, 12, 13)
 BRANCH_TRAFFIC = {"Centro": 1.0, "Norte": 0.5}
@@ -122,26 +124,52 @@ def _barbers(owner: Membership, branches: dict[str, Branch]) -> dict[str, list]:
     return {branch: [barber for barber, works_in in team.values() if branch in works_in] for branch in branches}
 
 
-def _product(owner, name: str, cost: str, price: str, stock: int, **extra):
-    data = {"name": name, "product_type": "venta", "purchase_cost": D(cost), "sale_price": D(price), **extra}
-    return inventory.create_product(owner, data, initial_stock=stock)
+def _stocked_product(owner: Membership, branches: dict[str, Branch], data: dict, stock: tuple[int, int]):
+    """Un producto del catálogo común con su existencia inicial en Centro y en Norte."""
+    product = inventory.create_product(
+        owner, data, scope=_scope(owner, branches["Centro"]), initial_stock=stock[CENTRO]
+    )
+    if stock[NORTE]:
+        inventory.register_entry(
+            owner,
+            product.public_id,
+            scope=_scope(owner, branches["Norte"]),
+            quantity=stock[NORTE],
+            reason="Inventario inicial",
+        )
+    return product
 
 
-def _catalog(owner: Membership, today: date) -> SimpleNamespace:
+def _for_sale(name: str, cost: str, price: str, **extra) -> dict:
+    return {"name": name, "product_type": "venta", "purchase_cost": D(cost), "sale_price": D(price), **extra}
+
+
+def _catalog(owner: Membership, branches: dict[str, Branch], today: date) -> SimpleNamespace:
     services = [
         catalog.create_service(owner, name=name, price=D(price), duration_minutes=minutes)
         for name, price, minutes in (("Corte", "25000", 30), ("Barba", "15000", 20), ("Corte y barba", "35000", 45))
     ]
-    blade = inventory.create_product(
-        owner, {"name": "Cuchilla", "product_type": "consumible", "purchase_cost": D("1000")}, initial_stock=1500
+    blade = _stocked_product(
+        owner, branches, {"name": "Cuchilla", "product_type": "consumible", "purchase_cost": D("1000")}, (1000, 400)
     )
     inventory.add_consumable(owner, services[0].public_id, product=blade.public_id, quantity=1)
     products = [
-        _product(owner, "Cera mate", "11000", "25000", 400),
-        _product(owner, "Aceite para barba", "18000", "35000", 55, minimum_stock=30),
-        _product(owner, "Shampoo anticaída", "17000", "30000", 60),
+        _stocked_product(owner, branches, _for_sale("Cera mate", "11000", "25000"), (400, 150)),
+        # Norte arranca por debajo del mínimo: stock bajo en una sola sede.
+        _stocked_product(owner, branches, _for_sale("Aceite para barba", "18000", "35000", minimum_stock=30), (80, 20)),
+        _stocked_product(owner, branches, _for_sale("Shampoo anticaída", "17000", "30000"), (60, 30)),
     ]
-    _product(owner, "Tónico capilar", "12000", "28000", 5, expiration_date=today + timedelta(days=12))
+    # Solo hay en Centro: por vencer solo se avisa donde hay unidades.
+    expiring = _for_sale("Tónico capilar", "12000", "28000", expiration_date=today + timedelta(days=12))
+    _stocked_product(owner, branches, expiring, (5, 0))
+    inventory.transfer_stock(
+        owner,
+        products[0].public_id,
+        scope=_scope(owner, branches["Centro"]),
+        destination=branches["Norte"].public_id,
+        quantity=10,
+        reason="Reparto inicial entre sedes",
+    )
     return SimpleNamespace(services=services, products=products)
 
 
@@ -160,7 +188,7 @@ def _build_world(shop: Barbershop, password: str, today: date) -> SimpleNamespac
     branches = _branches(owner)
     cashier = _person(shop, CASHIER_EMAIL, "Cajero Demo", password, Role.CASHIER)
     tenancy.set_cashier_branches(owner, cashier.public_id, branches=[branches["Centro"].public_id])
-    world_catalog = _catalog(owner, today)
+    world_catalog = _catalog(owner, branches, today)
     _norte_prices(owner, branches["Norte"], world_catalog)
     return SimpleNamespace(
         owner=owner,

@@ -11,9 +11,10 @@ from django.core.management import CommandError, call_command
 from django.test import override_settings
 from django.utils import timezone
 
-from apps.alerts.models import Alert
+from apps.alerts.models import Alert, AlertType
 from apps.cash.models import CashSession
 from apps.core.tenant_context import tenant_context
+from apps.inventory.models import MovementType, StockLevel, StockMovement
 from apps.sales.models import Order, OrderItem, OrderStatus
 from apps.tenancy.models import Barbershop
 
@@ -56,6 +57,19 @@ def test_carga_ventas_cajas_y_alertas_y_no_se_repite():
 
     with override_settings(DEBUG=True), pytest.raises(CommandError):
         call_command("cargar_demo", stdout=StringIO())
+
+
+def test_cada_sede_tiene_su_stock_con_un_traslado_y_un_stock_bajo_solo_en_norte():
+    shop = _demo_at(12)
+    with tenant_context(shop.pk):
+        cera = dict(StockLevel.objects.filter(product__name="Cera mate").values_list("branch__name", "quantity"))
+        transfers = StockMovement.objects.filter(movement_type=MovementType.TRANSFER_OUT)
+        low = Alert.objects.filter(alert_type=AlertType.LOW_STOCK, resolved_at__isnull=True)
+
+        assert cera["Centro"] != cera["Norte"]
+        assert transfers.count() == 1
+        assert StockMovement.objects.filter(transfer_id=transfers.get().transfer_id).count() == 2
+        assert set(low.values_list("branch__name", flat=True)) == {"Norte"}
 
 
 def test_antes_de_la_apertura_no_hay_caja_ni_ventas_de_hoy():

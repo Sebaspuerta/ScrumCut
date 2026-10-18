@@ -62,33 +62,39 @@ def _mark_cancelled(order: Order, membership: Membership, *, reason: str) -> Non
 
 def _reverse_closed(membership: Membership, order: Order, *, reason: str) -> None:
     receivables.cancel_for_order(order, membership, reason=reason)
+    _refund_payments(membership, order)
+    _return_stock(membership, order)
 
+
+def _refund_payments(membership: Membership, order: Order) -> None:
     payments = list(order.payments.order_by("pk"))
-    if payments:
-        session = open_session_for(order.branch)
-        if session is None:
-            raise ValidationError(
-                "No hay una caja abierta en esta sede para devolver los pagos.", code="no_open_session"
-            )
-        for payment in payments:
-            record_money(
-                session,
-                MovementKind.REFUND,
-                direction=Direction.OUT,
-                method=payment.method,
-                amount=payment.amount,
-                description=f"Devolución comanda #{order.number}",
-                actor=membership,
-            )
+    if not payments:
+        return
+    session = open_session_for(order.branch)
+    if session is None:
+        raise ValidationError("No hay una caja abierta en esta sede para devolver los pagos.", code="no_open_session")
+    for payment in payments:
+        record_money(
+            session,
+            MovementKind.REFUND,
+            direction=Direction.OUT,
+            method=payment.method,
+            amount=payment.amount,
+            description=f"Devolución comanda #{order.number}",
+            actor=membership,
+        )
 
+
+def _return_stock(membership: Membership, order: Order) -> None:
     reference = _stock_reference(order)
     sold = StockMovement.objects.filter(
         reference=reference, movement_type__in=(MovementType.SALE, MovementType.SERVICE)
-    ).select_related("product")
+    ).select_related("product", "branch")
     for movement in sold.order_by("pk"):
         apply_stock_movement(
             movement.product,
             -movement.quantity,
+            branch=movement.branch,  # vuelve a la existencia de la que salió
             movement_type=MovementType.REVERSAL,
             reason=f"Anulación comanda #{order.number}",
             actor=membership,

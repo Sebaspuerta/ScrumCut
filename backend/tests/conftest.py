@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 from allauth.account.models import EmailAddress
+from django.db.models import Sum
 from django.utils import timezone
 
 from apps.accounts.models import User
@@ -13,6 +14,7 @@ from apps.catalog import services as catalog
 from apps.clients import services as clients
 from apps.core.tenant_context import tenant_context
 from apps.inventory import services as inventory
+from apps.inventory.models import Product, StockLevel
 from apps.legal.models import LegalDocument
 from apps.staff import services as staff
 from apps.tenancy.branch_scope import ALL, BranchScope, resolve_scope
@@ -33,6 +35,14 @@ def scope_of(membership: Membership, branch: Branch | None = None, *, everything
     scope = resolve_scope(membership, requested)
     assert requested is None or scope.token == requested, f"{membership.role} no puede usar {requested}"
     return scope
+
+
+def stock_of(product: Product, branch: Branch | None = None) -> int:
+    """Existencias del producto en `branch` o, sin ella, la suma de todas sus sedes."""
+    levels = StockLevel.objects.filter(product=product)
+    if branch is not None:
+        levels = levels.filter(branch=branch)
+    return levels.aggregate(total=Sum("quantity"))["total"] or 0
 
 
 @pytest.fixture
@@ -118,12 +128,14 @@ def world(member, in_shop):
         owner,
         {"name": "Cuchilla", "product_type": "consumible", "purchase_cost": Decimal("1000")},
         initial_stock=10,
+        scope=scope_of(owner),
     )
     inventory.add_consumable(owner, corte.public_id, product=cuchilla.public_id, quantity=1)
     cera = inventory.create_product(
         owner,
         {"name": "Cera", "product_type": "venta", "purchase_cost": Decimal("8000"), "sale_price": Decimal("20000")},
         initial_stock=5,
+        scope=scope_of(owner),
     )
     laura = clients.create_client(
         owner,

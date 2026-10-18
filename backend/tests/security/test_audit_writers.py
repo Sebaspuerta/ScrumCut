@@ -32,13 +32,15 @@ PLATFORM_EVENTS = {"sesion.cerrar_todas"}
 
 
 def _out_of_stock(w):
-    return inventory.create_product(w.owner, {"name": "Talco", "product_type": "venta"})
+    return inventory.create_product(w.owner, {"name": "Talco", "product_type": "venta"}, scope=scope_of(w.owner))
 
 
 def _alert_to_read(w):
     product = _out_of_stock(w)
     alerts.generate_alerts(local_today(w.owner))
-    return partial(alerts.mark_as_read, w.cashier, Alert.objects.get(product=product).public_id)
+    return partial(
+        alerts.mark_as_read, w.cashier, Alert.objects.get(product=product).public_id, scope=scope_of(w.cashier)
+    )
 
 
 def _alerts_to_generate(w):
@@ -61,7 +63,9 @@ CASES = {
         data_consent_at=w.laura.data_consent_at,
         data_policy_version="2026-10",
     ),
-    "producto.crear": lambda w: partial(inventory.create_product, w.owner, {"name": "Gel", "product_type": "venta"}),
+    "producto.crear": lambda w: partial(
+        inventory.create_product, w.owner, {"name": "Gel", "product_type": "venta"}, scope=scope_of(w.owner)
+    ),
     "caja.cerrar": lambda w: partial(
         cash.close_session, w.cashier, w.session.public_id, counted_amount=D("50000"), scope=scope_of(w.cashier)
     ),

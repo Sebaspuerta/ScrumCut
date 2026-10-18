@@ -8,7 +8,9 @@ from apps.alerts import services as alerts
 from apps.core.tenant_context import tenant_context
 from apps.inventory import services as inventory
 from apps.sales.selectors import local_today
+from apps.tenancy.models import Branch, MembershipBranch
 from apps.tenancy.roles import Role
+from tests.conftest import scope_of
 
 pytestmark = pytest.mark.django_db
 
@@ -45,10 +47,11 @@ def test_la_campana_cuenta_las_alertas_sin_leer(client, make_shop, member):
     shop = make_shop("a")
     owner, cashier = member(Role.OWNER, shop), member(Role.CASHIER, shop)
     with tenant_context(shop.pk):
+        MembershipBranch.objects.create(membership=cashier, branch=Branch.objects.get())
         for name in ("Cera", "Gel"):
-            inventory.create_product(owner, {"name": name, "product_type": "venta"})
+            inventory.create_product(owner, {"name": name, "product_type": "venta"}, scope=scope_of(owner))
         alerts.generate_alerts(local_today(owner))
-        expected = alert_selectors.unread_count(cashier)
+        expected = alert_selectors.unread_count(cashier, scope=scope_of(cashier))
     client.force_login(cashier.user)
 
     response = client.get(reverse("home"))

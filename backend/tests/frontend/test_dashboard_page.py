@@ -14,6 +14,7 @@ from openpyxl import load_workbook
 
 from apps.cash import services as cash
 from apps.core.tenant_context import tenant_context
+from apps.inventory import services as inventory
 from apps.sales import services as sales
 from apps.sales.selectors import local_today
 from apps.staff.models import BarberBranch
@@ -95,6 +96,9 @@ def test_exportar_una_sede_no_incluye_las_ventas_de_otra(world, owner_client):
     norte = Branch.objects.create(name="Norte")
     BarberBranch.objects.create(barber=world.beto, branch=norte)  # Beto también trabaja en Norte
     cash.open_session(world.owner, scope_of(world.owner, norte), opening_amount=Decimal("0"))
+    inventory.register_entry(
+        world.owner, world.cera.public_id, scope=scope_of(world.owner, norte), quantity=1, reason="Compra"
+    )
     sell(world, world.ana, service=world.corte)  # en Centro
     sales.quick_register(
         world.owner,

@@ -1,4 +1,4 @@
-"""Barrera 2 para inventario: PostgreSQL aísla las cuatro tablas con SQL directo."""
+"""Barrera 2 para inventario: PostgreSQL aísla las cinco tablas con SQL directo."""
 
 from decimal import Decimal
 
@@ -8,7 +8,8 @@ from django.db import connection
 from apps.accounts.models import User
 from apps.catalog.models import Service
 from apps.core.tenant_context import tenant_context
-from apps.inventory.models import Product, ProductCategory, ServiceConsumable, StockMovement
+from apps.inventory.models import Product, ProductCategory, ServiceConsumable, StockLevel, StockMovement
+from apps.tenancy.models import Branch
 from tests.rls_support import become_app_role, insert_as, insert_is_rejected, visible_barbershops
 
 pytestmark = [
@@ -24,15 +25,20 @@ INSERTS = {
     ),
     "inventory_product": (
         "INSERT INTO inventory_product (public_id, created_at, updated_at, barbershop_id, name, product_type, "
-        "purchase_cost, sale_price, current_stock, supplier, photo, is_active) "
-        "VALUES (gen_random_uuid(), now(), now(), %s, %s, 'venta', 0, 0, 0, '', '', true)",
+        "purchase_cost, sale_price, supplier, photo, is_active) "
+        "VALUES (gen_random_uuid(), now(), now(), %s, %s, 'venta', 0, 0, '', '', true)",
         lambda shop, rows: [shop.pk, f"Nuevo {shop.slug}"],
     ),
     "inventory_stockmovement": (
         "INSERT INTO inventory_stockmovement (public_id, created_at, updated_at, barbershop_id, product_id, "
-        "movement_type, quantity, stock_before, stock_after, unit_cost, reason, reference, created_by_id) "
-        "VALUES (gen_random_uuid(), now(), now(), %s, %s, 'entrada', 1, 0, 1, 0, 'x', '', %s)",
-        lambda shop, rows: [shop.pk, rows[shop.pk]["product"].pk, rows["user"].pk],
+        "branch_id, movement_type, quantity, stock_before, stock_after, unit_cost, reason, reference, "
+        "created_by_id) VALUES (gen_random_uuid(), now(), now(), %s, %s, %s, 'entrada', 1, 0, 1, 0, 'x', '', %s)",
+        lambda shop, rows: [shop.pk, rows[shop.pk]["product"].pk, rows[shop.pk]["branch"].pk, rows["user"].pk],
+    ),
+    "inventory_stocklevel": (
+        "INSERT INTO inventory_stocklevel (public_id, created_at, updated_at, barbershop_id, product_id, "
+        "branch_id, quantity) VALUES (gen_random_uuid(), now(), now(), %s, %s, %s, 0)",
+        lambda shop, rows: [shop.pk, rows[shop.pk]["spare_product"].pk, rows[shop.pk]["branch"].pk],
     ),
     "inventory_serviceconsumable": (
         "INSERT INTO inventory_serviceconsumable (public_id, created_at, updated_at, barbershop_id, service_id, "
@@ -48,11 +54,14 @@ def two_shops(make_shop):
     rows = {"user": User.objects.create_user(email="rls@inventario.test")}
     for shop in (a, b):
         with tenant_context(shop.pk):
+            branch = Branch.objects.get()
             product = Product.objects.create(name=f"Cera {shop.slug}", product_type="venta")
+            StockLevel.objects.create(product=product, branch=branch, quantity=1)
             service = Service.objects.create(name=f"Corte {shop.slug}", price=Decimal("1"), duration_minutes=30)
             ProductCategory.objects.create(name=f"Cuidado {shop.slug}")
             StockMovement.objects.create(
                 product=product,
+                branch=branch,
                 movement_type="entrada",
                 quantity=1,
                 stock_before=0,
@@ -63,7 +72,7 @@ def two_shops(make_shop):
             )
             ServiceConsumable.objects.create(service=service, product=product, quantity=1)
             spare = Product.objects.create(name=f"Repuesto {shop.slug}", product_type="consumible")
-            rows[shop.pk] = {"product": product, "service": service, "spare_product": spare}
+            rows[shop.pk] = {"product": product, "service": service, "spare_product": spare, "branch": branch}
     return a, b, rows
 
 

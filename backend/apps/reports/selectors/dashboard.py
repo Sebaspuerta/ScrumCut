@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.db.models import Count, Q
 from django.utils import timezone
 
-from apps.alerts.conditions import LOW_STOCK, OUT_OF_STOCK, alertable_products
+from apps.alerts.conditions import LOW_STOCK, OUT_OF_STOCK, alertable_levels
 from apps.alerts.selectors import list_alerts, unread_count
 from apps.cash.models import CashMovement, CashSession, MovementKind
 from apps.cash.selectors import expected_cash
@@ -63,10 +63,11 @@ def dashboard_summary(membership: Membership, *, scope: BranchScope) -> dict:
         "orders_closed_today": orders["closed_today"],
         "orders_open": orders["open"],
         "open_cash_sessions": _open_cash_sessions(scope),
-        # Mismo criterio de las alertas "agotado" y "stock bajo".
-        "critical_stock": alertable_products().filter(OUT_OF_STOCK | LOW_STOCK).count(),
+        # Mismo criterio de las alertas "agotado" y "stock bajo". Cuenta existencias, no productos: en
+        # "todas", un producto crítico en dos sedes suma 2 (una por producto × sede).
+        "critical_stock": scope.apply(alertable_levels().filter(OUT_OF_STOCK | LOW_STOCK)).count(),
         "receivables": receivables_summary(membership, scope=scope),
-        "unread_alerts": unread_count(membership),
+        "unread_alerts": unread_count(membership, scope=scope),
     }
 
 
@@ -196,5 +197,5 @@ def executive_dashboard(
         "mix": income_mix(membership, date_from, date_to, scope=scope),
         "products": _with_margins(top_products(membership, date_from, date_to, limit=5, scope=scope)),
         "closings": latest_closings(membership, scope=scope),
-        "alerts": list(list_alerts(membership, unread_only=True, page_size=4)),
+        "alerts": list(list_alerts(membership, scope=scope, unread_only=True, page_size=4)),
     }

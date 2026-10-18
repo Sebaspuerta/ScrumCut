@@ -16,7 +16,9 @@ TODAY = timezone.localdate()
 
 
 def make_product(owner, name, stock=0, **data):
-    return inventory.create_product(owner, {"name": name, "product_type": "venta", **data}, initial_stock=stock)
+    return inventory.create_product(
+        owner, {"name": name, "product_type": "venta", **data}, initial_stock=stock, scope=scope_of(owner)
+    )
 
 
 def make_overdue_debt(owner, name="Laura"):
