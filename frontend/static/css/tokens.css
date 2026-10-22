@@ -60,6 +60,21 @@
   --color-on-dark-muted: #bfae9f;
   --color-field: #ffffff;
 
+  /* Marco de la aplicación (fase F1) */
+  --color-brand-cell: #241912;
+  --color-topbar-edge: #1b130e;
+  --color-surface: #fbfaf8; /* paneles y menús */
+  --color-surface-line: #e4dcd2;
+  --color-alert-badge: #5e7361; /* el acento, con texto blanco: contraste 5,1:1 (AA). Sin rojos. */
+  --color-badge-text: #ffffff;
+
+  /* Tabla calendario de ventas: cinco tonos, de menos a más vendido frente al mejor día del mes */
+  --calendar-0: #f6f3ef;
+  --calendar-1: #ede6dd;
+  --calendar-2: #e2d6c8;
+  --calendar-3: #d4c2b0;
+  --calendar-4: #c4ad97;
+
   /* Inicio de sesión */
   --color-login-light: #f7f1e9;
   --color-login-line: #c4ae99;
@@ -125,7 +140,7 @@
   --tracking-field: 0.08em;
 
   /* Forma */
-  --radius: 4px;
+  --radius: 4px; /* radio único (docs/diseno.md) */
   --radius-chart: 2px;
   --line-width: 1px;
   --icon-stroke: 1.5;
@@ -170,13 +185,16 @@
   --touch-target: 44px;
   --control-height: 40px;
   --control-height-login: 48px;
-  --sidebar-width: 236px;
+  --topbar-height: 64px;
+  --sidebar-width: 248px;
   --sidebar-width-collapsed: 72px;
   --avatar-size: 34px;
   --assistant-width: 340px;
-  /* 1920 − 236 del menú = 1684 px útiles; 1600 (40 × --space-10) deja aire a los lados sin estirar tablas. */
+  /* 1920 − 248 del menú = 1672 px útiles; 1600 (40 × --space-10) deja aire a los lados sin estirar tablas. */
   --content-max-width: 1600px;
   --account-text-max-width: 160px; /* 10 × --space-4 */
+  --menu-width: 280px;
+  --tooltip-offset: 14px;
 }
 
 /* Portátiles: menos ancho útil que la maqueta (1440 px); los espacios y las cifras grandes se reducen

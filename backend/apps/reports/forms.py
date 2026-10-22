@@ -1,51 +1,61 @@
-"""Filtros del tablero y de la exportación, validados en el servidor."""
+"""Filtro del tablero y de la exportación, validado en el servidor: el mes (?mes=AAAA-MM) y la vista de las
+ventas (?vista=tabla|3d) por GET. Nada se guarda en el navegador: lo que se ve va en la URL."""
 
 from datetime import date
 
 from django import forms
-from django.core.exceptions import ValidationError
 
-MAX_RANGE_DAYS = 366
+from apps.core.formatting import month_label
+
+MONTH_FORMAT = "%Y-%m"
+TABLE_VIEW, TOWERS_VIEW = "tabla", "3d"
 
 
-class PeriodFilterForm(forms.Form):
-    """Período por GET: ?periodo=30d|mes|rango&desde=&hasta=. Sin datos válidos: los últimos 30 días.
+def _months_between(first: date, last: date) -> list[date]:
+    """Del mes de `last` hacia atrás hasta el de `first`, como primer día de cada mes."""
+    months, current = [], last.replace(day=1)
+    while current >= first.replace(day=1):
+        months.append(current)
+        current = date(current.year - (current.month == 1), (current.month - 2) % 12 + 1, 1)
+    return months
 
-    La sede no viaja en la URL: es el alcance de la sesión (request.branch_scope, docs/sedes.md).
+
+class MonthFilterForm(forms.Form):
+    """Sin valor, con un formato inválido, en el futuro o antes de que existiera la barbería: el mes actual.
+
+    Nunca da error: un enlace viejo o editado a mano solo vuelve al mes actual. La sede no viaja en
+    la URL: es el alcance de la sesión (request.branch_scope, docs/sedes.md).
     """
 
-    periodo = forms.ChoiceField(
-        label="Período",
-        required=False,
-        choices=[("30d", "Últimos 30 días"), ("mes", "Este mes"), ("rango", "Rango personalizado")],
-    )
-    desde = forms.DateField(label="Desde", required=False, widget=forms.DateInput({"type": "date"}, "%Y-%m-%d"))
-    hasta = forms.DateField(label="Hasta", required=False, widget=forms.DateInput({"type": "date"}, "%Y-%m-%d"))
+    mes = forms.CharField(required=False, max_length=7)
+    vista = forms.CharField(required=False, max_length=8)
 
-    def __init__(self, data, *, today: date) -> None:
-        super().__init__(data or {})  # siempre ligado: sin filtros, todo vacío y válido
-        self.today = today
+    def __init__(self, data, *, today: date, since: date) -> None:
+        super().__init__(data or {})  # siempre ligado: sin filtro, vacío y válido
+        self.today, self.since = today, since
 
-    def clean(self) -> dict:
-        cleaned = super().clean()
-        if cleaned.get("periodo") != "rango":
-            return cleaned
-        start, end = cleaned.get("desde"), cleaned.get("hasta")
-        if not start or not end:
-            raise ValidationError("Indica las dos fechas del rango.")
-        if start > end:
-            raise ValidationError("La fecha inicial no puede ser posterior a la final.")
-        if (end - start).days + 1 > MAX_RANGE_DAYS:
-            raise ValidationError(f"El rango no puede pasar de {MAX_RANGE_DAYS} días.")
-        return cleaned
-
-    def dates(self) -> tuple[date | None, date | None]:
-        """(None, None) son los últimos 30 días contando hoy, el período por defecto."""
+    def month(self) -> date:
+        current = self.today.replace(day=1)
         if not self.is_valid():
-            return None, None
-        chosen = self.cleaned_data.get("periodo")
-        if chosen == "mes":
-            return self.today.replace(day=1), self.today
-        if chosen == "rango":
-            return self.cleaned_data["desde"], self.cleaned_data["hasta"]
-        return None, None
+            return current
+        try:
+            chosen = date.fromisoformat(f"{self.cleaned_data['mes']}-01")
+        except ValueError:
+            return current
+        return chosen if self.since.replace(day=1) <= chosen <= current else current
+
+    def view(self) -> str:
+        """La vista de las ventas por día: "3d" solo si se pidió así; cualquier otro valor, la tabla."""
+        return TOWERS_VIEW if self.is_valid() and self.cleaned_data["vista"] == TOWERS_VIEW else TABLE_VIEW
+
+    def choices(self) -> list[dict]:
+        """Los meses que se pueden elegir, del actual al de la creación de la barbería."""
+        chosen = self.month()
+        return [
+            {
+                "value": month.strftime(MONTH_FORMAT),
+                "label": month_label(month),
+                "selected": month == chosen,
+            }
+            for month in _months_between(self.since, self.today)
+        ]

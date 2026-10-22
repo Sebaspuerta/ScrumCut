@@ -1,0 +1,6 @@
+{# El contador es por alcance de sede. La lista de alertas aún no tiene pantalla: la campana no es enlace. #}
+<span class="bell" role="img" aria-disabled="true" title="Alertas · la lista llega pronto"
+      aria-label="Alertas: {{ shell.unread_alerts }} sin leer">
+  <span class="icon" aria-hidden="true">{% include "icons/bell.svg" %}</span>
+  {% if shell.unread_alerts %}<span class="bell__count num" aria-hidden="true">{{ shell.unread_alerts }}</span>{% endif %}
+</span>

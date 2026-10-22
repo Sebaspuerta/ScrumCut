@@ -1,0 +1,160 @@
+/* Vista 3D de las ventas por día (Main.dc.html): torres con transformaciones CSS, mejora progresiva. */
+
+/* Torres 3D ----------------------------------------------------------------- */
+
+.towers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.towers__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.towers__stage {
+  position: relative;
+  flex: none;
+  min-width: 0;
+  height: 400px;
+  overflow: hidden;
+  perspective: 1200px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.towers__scene {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  translate: -50% -50%;
+  transform-style: preserve-3d;
+}
+
+.towers__floor,
+.towers__tower,
+.towers__axis {
+  position: absolute;
+  width: 40px;
+}
+
+.towers__floor {
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: var(--space-0-5) var(--space-1);
+  font-size: var(--text-micro);
+  color: var(--color-text-muted);
+  border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius-chart);
+}
+
+.towers__floor--outside {
+  border-color: var(--color-floor-outside);
+}
+
+.towers__floor--future {
+  border-style: dashed;
+  border-color: var(--color-floor-closed);
+}
+
+.towers__axis {
+  font-size: var(--text-label);
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.towers__tower {
+  height: 40px;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.towers__face {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.towers__face--north,
+.towers__face--south {
+  width: 40px;
+  height: var(--height);
+  transform-origin: top;
+  transform: rotateX(90deg);
+}
+
+.towers__face--south {
+  top: 40px;
+}
+
+.towers__face--west,
+.towers__face--east {
+  width: var(--height);
+  height: 40px;
+  transform-origin: left;
+  transform: rotateY(-90deg);
+}
+
+.towers__face--east {
+  left: 40px;
+}
+
+.towers__face--top {
+  width: 40px;
+  height: 40px;
+  transform: translateZ(var(--height));
+}
+
+.towers__tower--level-0 { --top: var(--tower-top-0); --front: var(--tower-front-0); --side: var(--tower-side-0); }
+.towers__tower--level-1 { --top: var(--tower-top-1); --front: var(--tower-front-1); --side: var(--tower-side-1); }
+.towers__tower--level-2 { --top: var(--tower-top-2); --front: var(--tower-front-2); --side: var(--tower-side-2); }
+.towers__tower--level-3 { --top: var(--tower-top-3); --front: var(--tower-front-3); --side: var(--tower-side-3); }
+.towers__tower--level-4 { --top: var(--tower-top-4); --front: var(--tower-front-4); --side: var(--tower-side-4); }
+
+.towers__face--north,
+.towers__face--east {
+  background: var(--side);
+}
+
+.towers__face--west,
+.towers__face--south {
+  background: var(--front);
+}
+
+.towers__face--top {
+  background: var(--top);
+}
+
+.towers__tower.is-today .towers__face--top,
+.towers__tower.is-hovered .towers__face--top {
+  background: var(--color-accent);
+}
+
+/* Recuadro con el día y su valor junto al cursor; towers.js lo ubica. */
+.towers__tooltip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-espresso);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-floating);
+  font-size: var(--text-small);
+  color: var(--color-on-dark);
+  pointer-events: none;
+}
+
+.towers__tooltip strong {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-brand);
+}

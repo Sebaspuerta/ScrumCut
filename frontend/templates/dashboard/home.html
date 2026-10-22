@@ -4,30 +4,33 @@
 {% block styles %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'css/modules/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modules/sales-calendar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modules/towers.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modules/cash-flow.css' %}">
 {% endblock %}
 {% block scripts %}
   {{ block.super }}
   {% if state == "ready" %}
-  <script type="module" src="{% static 'js/modules/bar-sizes.js' %}"></script>
-  {% if dashboard.has_sales %}<script type="module" src="{% static 'js/modules/sales-towers.js' %}"></script>{% endif %}
+  <script type="module" src="{% static 'js/modules/month-filter.js' %}"></script>
+  {% if view == "3d" and dashboard.has_sales %}<script type="module" src="{% static 'js/modules/sales-towers.js' %}"></script>{% endif %}
   {% endif %}
 {% endblock %}
 {% block content %}
 {% if state == "ready" %}
-  {% include "dashboard/sections.html#header" %}
-  {% include "dashboard/sections.html#kpis" %}
+  {% include "dashboard/header.html" %}
+  {% include "dashboard/kpis.html" %}
   <div class="dashboard-grid">
-    {% if dashboard.has_sales %}{% include "dashboard/sections.html#towers" %}{% else %}{% include "dashboard/sections.html#no_sales" %}{% endif %}
-    {% include "dashboard/sections.html#cash_flow" %}
-    {% if dashboard.has_sales %}{% include "dashboard/sections.html#barbers" %}{% endif %}
-    {% include "dashboard/sections.html#alerts" %}
-    {% if dashboard.has_sales %}{% include "dashboard/sections.html#products" %}{% endif %}
-    {% include "dashboard/sections.html#closings" %}
+    {% include "dashboard/sales.html" %}
+    {% include "dashboard/cash.html" %}
+    {% include "dashboard/panels.html#barbers" %}
+    {% include "dashboard/panels.html#alerts" %}
+    {% include "dashboard/panels.html#products" %}
+    {% include "dashboard/panels.html#closings" %}
   </div>
 {% elif state == "cuts" %}
-  {% include "dashboard/sections.html#my_cuts" %}
+  {% include "dashboard/panels.html#my_cuts" %}
 {% elif state == "error" %}
-  {% include "dashboard/sections.html#error" %}
+  {% include "dashboard/panels.html#error" %}
 {% else %}
   <section class="page-header"><h1>Resumen ejecutivo</h1></section>
   <section class="empty-state"><p>Elige una barbería para ver su tablero.</p></section>

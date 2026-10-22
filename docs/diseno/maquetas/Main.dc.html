@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Resumen ejecutivo · Santo Varón · ScrumCut</title>
+<title>Tablero · Santo Varón · ScrumCut</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -18,95 +18,225 @@ a{color:#1E1915;text-decoration:none}a:hover{color:#6B5444}
 </helmet>
 <div style="min-height: 100vh; display: flex; flex-direction: column; background: #EEEBE6; font-family: 'Hanken Grotesk', sans-serif; color: #1E1915; font-size: 14px; line-height: 1.5">
 
-<header style="background: #2E211A; color: #F2EDE7; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 10px 24px 10px 16px">
-<div style="display: flex; align-items: center; gap: 14px">
-<button type="button" aria-label="{{toggleLabel}}" aria-expanded="{{sideOpen}}" aria-controls="menu-modulos" onClick="{{toggleSide}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 4px; color: #F2EDE7; cursor: pointer">
+<div style="position: relative; z-index: 30">
+<header style="background: #2E211A; color: #F2EDE7; display: flex; flex-wrap: wrap; align-items: stretch; min-height: 64px; border-bottom: 1px solid #1B130E">
+
+<div style="{{brandCell}}">
+<button type="button" aria-label="{{toggleLabel}}" aria-expanded="{{sideOpen}}" aria-controls="menu-modulos" onClick="{{toggleSide}}" style="flex: 0 0 auto; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 4px; color: #E4DAD0; cursor: pointer">
 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
 </button>
-<div style="width: 36px; height: 36px; border: 1px solid #6B5444; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px">SV</div>
-<div style="display: flex; flex-direction: column; line-height: 1.2">
-<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 16px">Santo Varón</span>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}">
+<a href="#" style="display: flex; align-items: center; gap: 12px; min-width: 0; color: #F2EDE7">
+<span style="flex: 0 0 auto; width: 34px; height: 34px; border: 1px solid #6B5444; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px">SV</span>
+<span style="display: flex; flex-direction: column; line-height: 1.2; min-width: 0">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 16px; white-space: nowrap">Santo Varón</span>
 <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #BFAE9F">Barbería</span>
-</div>
-</div>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px">
-<nav aria-label="Administración" style="display: flex; flex-wrap: wrap; align-items: center; gap: 2px">
-<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
-<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="15" r="3"></circle><circle cx="9" cy="7" r="4"></circle><path d="M10 15H6a4 4 0 0 0-4 4v2"></path><path d="m21.7 16.4-.9-.3"></path><path d="m15.2 13.9-.9-.3"></path><path d="m16.6 18.7.3-.9"></path><path d="m19.1 12.2.3-.9"></path><path d="m19.6 18.7-.4-1"></path><path d="m16.8 12.3-.4-1"></path><path d="m14.3 16.6 1-.4"></path><path d="m20.7 13.8 1-.4"></path></svg>
-Gestión de barberos</a>
-<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
-<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-Usuarios y roles</a>
-<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
-<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
-Auditoría</a>
-<a href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 13px; color: #E4DAD0">
-<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-Ajustes</a>
-</nav>
-<span aria-hidden="true" style="width: 1px; height: 28px; background: #4A382D"></span>
-<div style="display: flex; align-items: center; gap: 8px">
-<button type="button" style="display: flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; font-weight: 500; color: #F2EDE7; background: transparent; border: 1px solid #6B5444; border-radius: 4px; padding: 0 14px; min-height: 40px; cursor: pointer">
-<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
-Exportar</button>
-<a href="#" aria-label="Alertas: 4 sin leer" style="position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #F2EDE7">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
-<span class="num" style="position: absolute; top: 6px; right: 4px; min-width: 18px; height: 18px; border-radius: 9px; background: {{accent}}; color: #F2EDE7; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">4</span>
+</span>
 </a>
-<button type="button" aria-label="Cuenta de Andrés Mora, Dueño" style="display: flex; align-items: center; gap: 10px; font: inherit; background: transparent; border: 0; padding: 0 4px; min-height: 44px; color: #F2EDE7; cursor: pointer">
+</sc-if>
+</div>
+
+<div style="flex: 1 1 640px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 20px">
+
+<div style="position: relative">
+<button type="button" aria-haspopup="true" aria-expanded="{{sedeOpen}}" onClick="{{toggleSede}}" style="{{sedeBtn}}">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15">
+<span style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #BFAE9F">Sede</span>
+<span style="font-size: 14px; font-weight: 600; white-space: nowrap">{{sedeName}}</span>
+</span>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+</button>
+<sc-if value="{{sedeOpen}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; top: calc(100% + 12px); left: 0; width: 300px; background: #FBFAF8; color: #1E1915; border: 1px solid #D9D2C8; border-radius: 6px; box-shadow: 0 16px 40px rgba(30, 20, 14, 0.22); padding: 8px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D; padding: 8px 12px 6px">Ver datos de</span>
+<sc-for list="{{sedes}}" as="s" hint-placeholder-count="3">
+<button type="button" onClick="{{s.pick}}" style="{{s.style}}">
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3">
+<span style="font-weight: 500">{{s.name}}</span>
+<span style="font-size: 12px; color: #6E655D">{{s.note}}</span>
+</span>
+<sc-if value="{{s.selected}}" hint-placeholder-val="{{false}}">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E211A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+</sc-if>
+</button>
+</sc-for>
+<a href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; margin-top: 6px; border-top: 1px solid #E4DCD2; font-size: 13px; font-weight: 500; color: #6B5444">Gestionar sedes</a>
+</div>
+</sc-if>
+</div>
+
+<form role="search" style="flex: 1 1 260px; max-width: 560px; min-width: 0; position: relative; display: flex; align-items: center">
+<label for="buscar-global" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar en Santo Varón</label>
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BFAE9F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px; pointer-events: none"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+<input id="buscar-global" type="search" placeholder="Buscar clientes, comandas, productos…" style="width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; color: #F2EDE7; background: #3A2B22; border: 1px solid #4A382D; border-radius: 6px; padding: 0 76px 0 42px; min-height: 44px">
+<span style="position: absolute; right: 10px; display: flex; gap: 4px; pointer-events: none">
+<kbd style="font: inherit; font-size: 11px; color: #E4DAD0; border: 1px solid #6B5444; border-radius: 3px; padding: 1px 6px">Ctrl</kbd>
+<kbd style="font: inherit; font-size: 11px; color: #E4DAD0; border: 1px solid #6B5444; border-radius: 3px; padding: 1px 6px">K</kbd>
+</span>
+</form>
+
+<div style="margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+
+<div style="position: relative">
+<button type="button" aria-haspopup="true" aria-expanded="{{nuevoOpen}}" onClick="{{toggleNuevo}}" style="display: flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 600; color: #2E211A; background: #F2EDE7; border: 0; border-radius: 6px; padding: 0 16px 0 12px; min-height: 44px; cursor: pointer">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+Nuevo</button>
+<sc-if value="{{nuevoOpen}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; top: calc(100% + 12px); right: 0; width: 300px; background: #FBFAF8; color: #1E1915; border: 1px solid #D9D2C8; border-radius: 6px; box-shadow: 0 16px 40px rgba(30, 20, 14, 0.22); padding: 8px; display: flex; flex-direction: column">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D; padding: 8px 12px 6px">Crear</span>
+<sc-for list="{{nuevos}}" as="n" hint-placeholder-count="7">
+<sc-if value="{{n.divider}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="height: 1px; background: #E4DCD2; margin: 6px 4px"></span></sc-if>
+<a href="#" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 4px; color: #1E1915">
+<span style="display: flex; flex-direction: column; line-height: 1.3">
+<span style="font-weight: 500">{{n.title}}</span>
+<span style="font-size: 12px; color: #6E655D">{{n.desc}}</span>
+</span>
+<kbd style="font: inherit; font-size: 11px; color: #6E655D; border: 1px solid #D9D2C8; border-radius: 3px; padding: 1px 6px">{{n.key}}</kbd>
+</a>
+</sc-for>
+</div>
+</sc-if>
+</div>
+
+<span aria-hidden="true" style="width: 1px; height: 28px; background: #4A382D; margin: 0 6px"></span>
+
+<a href="#" aria-label="Ayuda" title="Ayuda" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 6px; color: #E4DAD0">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+</a>
+
+<a href="#" aria-label="Alertas: 4 sin leer" title="Alertas" style="position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 6px; color: #E4DAD0">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<span class="num" style="position: absolute; top: 6px; right: 5px; min-width: 18px; height: 18px; box-sizing: border-box; border: 2px solid #2E211A; border-radius: 9px; background: #5E7361; color: #FFFFFF; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0 4px">4</span>
+</a>
+
+<button type="button" aria-haspopup="true" aria-expanded="{{adminOpen}}" aria-controls="panel-admin" onClick="{{toggleAdmin}}" style="{{adminBtn}}">
+<svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+Administración
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{adminChevron}}"></path></svg>
+</button>
+
+<span aria-hidden="true" style="width: 1px; height: 28px; background: #4A382D; margin: 0 6px"></span>
+
+<div style="position: relative">
+<button type="button" aria-haspopup="true" aria-expanded="{{cuentaOpen}}" aria-label="Cuenta de Andrés Mora, Dueño" onClick="{{toggleCuenta}}" style="{{cuentaBtn}}">
 <span style="width: 34px; height: 34px; border-radius: 17px; background: #E4DAD0; color: #2E211A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">AM</span>
 <span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25">
 <span style="font-weight: 500; font-size: 13px">Andrés Mora</span>
 <span style="font-size: 11px; color: #BFAE9F">Dueño</span>
 </span>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
 </button>
+<sc-if value="{{cuentaOpen}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; top: calc(100% + 12px); right: 0; width: 300px; background: #FBFAF8; color: #1E1915; border: 1px solid #D9D2C8; border-radius: 6px; box-shadow: 0 16px 40px rgba(30, 20, 14, 0.22); display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; gap: 12px; align-items: center; padding: 16px; background: #F3F0EB; border-bottom: 1px solid #E4DCD2">
+<span style="width: 44px; height: 44px; border-radius: 22px; background: #2E211A; color: #F2EDE7; display: flex; align-items: center; justify-content: center; font-weight: 600">AM</span>
+<span style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0">
+<span style="font-weight: 600">Andrés Mora</span>
+<span style="font-size: 12px; color: #6E655D">Dueño · Santo Varón</span>
+<span style="font-size: 12px; color: #6E655D">Todas las sedes</span>
+</span>
+</div>
+<nav aria-label="Mi cuenta" style="display: flex; flex-direction: column; padding: 8px">
+<sc-for list="{{cuenta}}" as="c" hint-placeholder-count="5">
+<a href="#" style="display: flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 4px 12px; border-radius: 4px; line-height: 1.3; color: #1E1915">
+<span style="font-weight: 500">{{c.title}}</span>
+<span style="font-size: 12px; color: #6E655D">{{c.desc}}</span>
+</a>
+</sc-for>
+</nav>
+<div style="border-top: 1px solid #E4DCD2; padding: 8px">
+<a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 4px; font-weight: 500; color: #2E211A">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+Cerrar sesión</a>
+</div>
+</div>
+</sc-if>
+</div>
+
 </div>
 </div>
 </header>
 
+<sc-if value="{{adminOpen}}" hint-placeholder-val="{{true}}">
+<div id="panel-admin" style="{{panelStyle}}">
+<div style="display: flex; flex-wrap: wrap; gap: 32px 40px; padding: 28px 32px 32px">
+
+<div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.1">Administración</h2>
+<p style="margin: 0; color: #6E655D">Todo lo que configura a Santo Varón, agrupado por tema.</p>
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<label for="buscar-ajuste" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar un ajuste</label>
+<input id="buscar-ajuste" type="search" placeholder="Buscar un ajuste" style="width: 240px; max-width: 60vw; box-sizing: border-box; font: inherit; font-size: 13px; color: #1E1915; background: #FFFFFF; border: 1px solid #CFC6BA; border-radius: 6px; padding: 0 12px; min-height: 40px">
+<button type="button" aria-label="Cerrar administración" onClick="{{toggleAdmin}}" style="font: inherit; font-size: 20px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 6px; color: #2E211A; cursor: pointer">×</button>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 28px 32px">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="6">
+<section style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<h3 style="margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px solid #2E211A; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #6B5444">{{g.name}}</h3>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+<a href="#" style="{{it.style}}">
+<span style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<span style="font-weight: 500">{{it.title}}</span>
+<sc-if value="{{it.soon}}" hint-placeholder-val="{{false}}"><span style="flex: 0 0 auto; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6E655D; border: 1px solid #CFC6BA; border-radius: 3px; padding: 0 5px">Próximamente</span></sc-if>
+<sc-if value="{{it.count}}" hint-placeholder-val="{{false}}"><span class="num" style="flex: 0 0 auto; font-size: 12px; color: #6E655D">{{it.count}}</span></sc-if>
+</span>
+<span style="font-size: 12px; color: #6E655D">{{it.desc}}</span>
+</a>
+</sc-for>
+</section>
+</sc-for>
+</div>
+</div>
+
+<aside aria-label="Resumen de la cuenta" style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 18px; background: #2E211A; color: #F2EDE7; border-radius: 6px; padding: 22px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #BFAE9F">Tu plan</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 22px">[NOMBRE DEL PLAN]</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div class="num" style="display: flex; justify-content: space-between; font-size: 13px"><span>Sedes activas</span><span style="font-weight: 600">2 de 3</span></div>
+<div style="height: 6px; background: #4A382D; border-radius: 3px"><div style="width: 67%; height: 6px; background: #E4DAD0; border-radius: 3px"></div></div>
+</div>
+<div class="num" style="display: flex; justify-content: space-between; font-size: 13px; border-top: 1px solid #4A382D; padding-top: 14px"><span>Usuarios activos</span><span style="font-weight: 600">9</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #4A382D; padding-top: 14px">
+<span style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #BFAE9F">Último cambio</span>
+<span style="font-size: 13px; line-height: 1.4">Andrés Mora cambió el precio de Corte en Norte a $28.000</span>
+<span style="font-size: 12px; color: #BFAE9F">Hoy, 11:20 a. m.</span>
+</div>
+<a href="#" style="display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #6B5444; border-radius: 6px; color: #F2EDE7; font-size: 13px; font-weight: 500">Ver auditoría completa</a>
+</aside>
+
+</div>
+</div>
+</sc-if>
+</div>
+
 <div style="flex: 1 1 auto; display: flex; min-height: 0">
 
 <aside id="menu-modulos" aria-label="Módulos" style="{{sideStyle}}">
-<nav style="display: flex; flex-direction: column; gap: 2px">
+<nav style="display: flex; flex-direction: column; gap: 18px">
+<sc-for list="{{modGroups}}" as="mg" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 2px">
 <sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}">
-<span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A8077; padding: 4px 14px 10px">Operación</span>
+<span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #7A7068; padding: 0 14px 6px">{{mg.name}}</span>
 </sc-if>
-<a href="#" aria-current="page" title="Tablero" style="{{navActive}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Tablero</span></sc-if>
+<sc-for list="{{mg.items}}" as="m" hint-placeholder-count="3">
+<a href="#" title="{{m.label}}" aria-current="{{m.current}}" style="{{m.style}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{m.icon}}"></path></svg>
+<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}">
+<span style="flex: 1 1 auto">{{m.label}}</span>
+<sc-if value="{{m.soon}}" hint-placeholder-val="{{false}}"><span style="font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #6E655D; border: 1px solid #CFC6BA; border-radius: 3px; padding: 0 5px">Pronto</span></sc-if>
+</sc-if>
 </a>
-<a href="#" title="Comandas" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Comandas</span></sc-if>
-</a>
-<a href="#" title="Caja" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Caja</span></sc-if>
-</a>
-<a href="#" title="Clientes" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Clientes</span></sc-if>
-</a>
-<a href="#" title="Servicios" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Servicios</span></sc-if>
-</a>
-<a href="#" title="Inventario" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path><path d="M12 22V12"></path><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"></path><path d="m7.5 4.27 9 5.15"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Inventario</span></sc-if>
-</a>
-<a href="#" title="Fiados" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"></path><path d="M2 6h4"></path><path d="M2 10h4"></path><path d="M2 14h4"></path><path d="M2 18h4"></path><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Fiados</span></sc-if>
-</a>
-<a href="#" title="Reportes" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span>Reportes</span></sc-if>
-</a>
-<a href="#" title="Alertas" style="{{navItem}}">
-<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
-<sc-if value="{{sideOpen}}" hint-placeholder-val="{{true}}"><span style="flex: 1 1 auto">Alertas</span><span class="num" style="font-size: 11px; font-weight: 600; color: #F2EDE7; background: #6B5444; border-radius: 9px; padding: 0 7px; line-height: 18px">4</span></sc-if>
-</a>
+</sc-for>
+</div>
+</sc-for>
 </nav>
 <div style="display: flex; flex-direction: column; gap: 14px">
 <button type="button" aria-label="{{chatLabel}}" aria-expanded="{{chatOpen}}" title="Asistente" onClick="{{toggleChat}}" style="{{chatBtn}}">
@@ -122,25 +252,26 @@ Exportar</button>
 </div>
 </aside>
 
-<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 56px; padding: 40px 40px 64px; max-width: 1320px; box-sizing: border-box">
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 56px; padding: 36px 40px 64px; max-width: 1320px; box-sizing: border-box">
 
 <section style="display: flex; flex-direction: column; gap: 28px">
 <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
 <div style="display: flex; flex-direction: column; gap: 6px">
+<nav aria-label="Ruta" style="font-size: 12px; color: #6E655D"><a href="#" style="color: #6E655D">Inicio</a> <span aria-hidden="true">/</span> Tablero</nav>
 <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 40px; line-height: 1.05; letter-spacing: -0.02em">Resumen ejecutivo</h1>
-<p style="margin: 0; color: #6E655D">Actualizado hoy, 2:45 p. m.</p>
+<p style="margin: 0; color: #6E655D">Sede {{sedeName}} · actualizado hoy, 2:45 p. m.</p>
 </div>
-<div style="display: flex; flex-wrap: wrap; gap: 12px">
-<label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6E655D">Sede
-<select style="font: inherit; font-size: 14px; color: #1E1915; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; padding: 8px 12px; min-height: 40px"><option>Centro</option><option>Norte</option></select>
-</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
 <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6E655D">Período
-<select style="font: inherit; font-size: 14px; color: #1E1915; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; padding: 8px 12px; min-height: 40px"><option>11 sep – 10 oct 2026</option><option>Este mes</option><option>Personalizado</option></select>
+<select value="{{month}}" onChange="{{pickMonth}}" style="font: inherit; font-size: 14px; color: #1E1915; background: #FBFAF8; border: 1px solid #CFC6BA; border-radius: 6px; padding: 8px 12px; min-height: 44px"><option value="2026-10">Octubre 2026</option><option value="2026-09">Septiembre 2026</option></select>
 </label>
+<button type="button" style="display: flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; font-weight: 500; color: #2E211A; background: transparent; border: 1px solid #2E211A; border-radius: 6px; padding: 0 14px; min-height: 44px; cursor: pointer">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+Exportar a Excel</button>
 </div>
 </div>
 
-<div style="background: #2E211A; color: #F2EDE7; border-radius: 4px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr))">
+<div style="background: #2E211A; color: #F2EDE7; border-radius: 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr))">
 <sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
 <div style="{{k.style}}">
 <span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #BFAE9F">{{k.label}}</span>
@@ -157,20 +288,67 @@ Exportar</button>
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
 <div style="display: flex; flex-direction: column; gap: 4px">
 <h2 id="t-3d" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">Ventas por día</h2>
-<p style="margin: 0; color: #6E655D">Cada torre es un día; su altura, lo que vendió. Arrastra para girar.</p>
+<p style="margin: 0; color: #6E655D">{{chartNote}}</p>
 </div>
-<div style="display: flex; gap: 8px">
-<button type="button" aria-label="Girar a la izquierda" onClick="{{rotLeft}}" style="font: inherit; font-size: 16px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; cursor: pointer; color: #2E211A">↺</button>
-<button type="button" aria-label="Girar a la derecha" onClick="{{rotRight}}" style="font: inherit; font-size: 16px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; cursor: pointer; color: #2E211A">↻</button>
-<button type="button" onClick="{{resetView}}" style="font: inherit; font-size: 13px; padding: 0 14px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 4px; cursor: pointer; color: #2E211A">Vista inicial</button>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<div role="group" aria-label="Vista de las ventas por día" style="display: flex; border: 1px solid #2E211A; border-radius: 6px; overflow: hidden">
+<button type="button" aria-pressed="{{isTable}}" onClick="{{showTable}}" style="{{tabTable}}">Tabla</button>
+<button type="button" aria-pressed="{{is3d}}" onClick="{{show3d}}" style="{{tab3d}}">3D</button>
+</div>
+<sc-if value="{{is3d}}" hint-placeholder-val="{{false}}">
+<button type="button" aria-label="Girar a la izquierda" onClick="{{rotLeft}}" style="font: inherit; font-size: 16px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 6px; cursor: pointer; color: #2E211A">↺</button>
+<button type="button" aria-label="Girar a la derecha" onClick="{{rotRight}}" style="font: inherit; font-size: 16px; width: 44px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 6px; cursor: pointer; color: #2E211A">↻</button>
+<button type="button" onClick="{{resetView}}" style="font: inherit; font-size: 13px; padding: 0 14px; height: 44px; background: transparent; border: 1px solid #CFC6BA; border-radius: 6px; cursor: pointer; color: #2E211A">Vista inicial</button>
+</sc-if>
 </div>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; gap: 32px">
-<div role="img" aria-label="Torres de ventas diarias del 11 de septiembre al 10 de octubre; viernes y sábados son los días más altos, los domingos la barbería está cerrada" onPointerDown="{{dragStart}}" onPointerMove="{{dragMove}}" onPointerUp="{{dragEnd}}" onPointerLeave="{{dragEnd}}" style="flex: 3 1 420px; min-width: 0; height: 400px; position: relative; perspective: 1200px; cursor: grab; touch-action: none; user-select: none; overflow: hidden">
+<sc-if value="{{isTable}}" hint-placeholder-val="{{true}}">
+<div style="flex: 3 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<div style="overflow-x: auto">
+<table class="num" style="width: 100%; min-width: 620px; border-collapse: separate; border-spacing: 4px; table-layout: fixed">
+<caption style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Ventas de cada día de {{monthLabel}} en pesos colombianos</caption>
+<thead>
+<tr>
+<sc-for list="{{weekdays}}" as="wd" hint-placeholder-count="7">
+<th scope="col" style="font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #6E655D; text-align: left; padding: 0 8px 4px">{{wd}}</th>
+</sc-for>
+<th scope="col" style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #2E211A; text-align: right; padding: 0 8px 4px">Semana</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{weeks}}" as="w" hint-placeholder-count="5">
+<tr>
+<sc-for list="{{w.cells}}" as="c" hint-placeholder-count="7">
+<td style="{{c.style}}">
+<span style="display: block; font-size: 11px; color: #5A4E45">{{c.day}}</span>
+<span style="{{c.amountStyle}}">{{c.amount}}</span>
+</td>
+</sc-for>
+<td style="height: 60px; padding: 6px 8px; vertical-align: bottom; text-align: right; font-size: 12px; font-weight: 600; color: #1E1915; border-left: 1px solid #2E211A">{{w.total}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 11px; color: #6E655D">
+<span style="display: flex; align-items: center; gap: 4px">Menos
+<span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 3px; background: #F6F3EF; border: 1px solid #E4DCD2"></span>
+<span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 3px; background: #EDE6DD"></span>
+<span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 3px; background: #E2D6C8"></span>
+<span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 3px; background: #D4C2B0"></span>
+<span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 3px; background: #C4AD97"></span>
+más ventas</span>
+<span>Valores en pesos colombianos (COP). Domingo: cerrado.</span>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{is3d}}" hint-placeholder-val="{{false}}">
+<div role="img" aria-label="{{chartAria}}" onPointerDown="{{dragStart}}" onPointerMove="{{dragMove}}" onPointerUp="{{dragEnd}}" onPointerLeave="{{dragEnd}}" style="flex: 3 1 420px; min-width: 0; height: 400px; position: relative; perspective: 1200px; cursor: grab; touch-action: none; user-select: none; overflow: hidden">
 <div style="{{sceneStyle}}">
 <sc-for list="{{floor}}" as="f" hint-placeholder-count="35">
-<div style="{{f.style}}"></div>
+<div style="{{f.style}}">{{f.label}}</div>
 </sc-for>
 <sc-for list="{{axis}}" as="x" hint-placeholder-count="7">
 <span style="{{x.style}}">{{x.label}}</span>
@@ -186,14 +364,15 @@ Exportar</button>
 </sc-for>
 </div>
 </div>
+</sc-if>
 
 <dl style="flex: 1 1 200px; margin: 0; display: flex; flex-direction: column; gap: 16px">
-<div style="display: flex; flex-direction: column; gap: 2px; background: #2E211A; color: #F2EDE7; border-radius: 4px; padding: 16px 18px">
+<div style="display: flex; flex-direction: column; gap: 2px; background: #2E211A; color: #F2EDE7; border-radius: 6px; padding: 16px 18px">
 <dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #BFAE9F">{{readout.label}}</dt>
 <dd class="num" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 26px">{{readout.value}}</dd>
-<dd style="margin: 0; font-size: 12px; color: #BFAE9F">Pasa el cursor sobre una torre</dd>
+<dd style="margin: 0; font-size: 12px; color: #BFAE9F">{{readoutHint}}</dd>
 </div>
-<sc-for list="{{calStats}}" as="s" hint-placeholder-count="4">
+<sc-for list="{{calStats}}" as="s" hint-placeholder-count="3">
 <div style="display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid #D9D2C8; padding-bottom: 12px">
 <dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">{{s.label}}</dt>
 <dd class="num" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 20px">{{s.value}}</dd>
@@ -211,7 +390,7 @@ Exportar</button>
 </div>
 </sc-for>
 </div>
-<p style="margin: 0; font-size: 11px; color: #6E655D">Promedio por día de la semana. Domingo: cerrado.</p>
+<p style="margin: 0; font-size: 11px; color: #6E655D">Promedio de ventas por día de la semana en {{monthLabel}}, en pesos colombianos. Domingo: cerrado.</p>
 </section>
 
 <section aria-labelledby="t-caja" style="flex: 5 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px; border-top: 1px solid #2E211A; padding-top: 20px">
@@ -230,7 +409,7 @@ Exportar</button>
 </div>
 </sc-for>
 </div>
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; background: #E4DAD0; border-radius: 4px; padding: 14px 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; background: #E4DAD0; border-radius: 6px; padding: 14px 18px">
 <span>Diferencia del arqueo</span>
 <span class="num" style="font-weight: 600">▾ −$8.000 · faltante</span>
 </div>
@@ -355,10 +534,13 @@ Exportar</button>
 
 </div>
 
-<footer style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 16px; border-top: 1px solid #D9D2C8; padding-top: 18px; font-size: 12px; color: #6E655D">
+<footer style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; border-top: 1px solid #D9D2C8; padding-top: 18px; font-size: 12px; color: #6E655D">
+<span>ScrumCut · por ScrumTech Solutions</span>
+<span style="display: flex; flex-wrap: wrap; gap: 16px">
 <a href="#" style="color: #6E655D">Términos</a>
 <a href="#" style="color: #6E655D">Privacidad</a>
 <a href="#" style="color: #6E655D">Cookies</a>
+</span>
 </footer>
 
 </main>
@@ -366,7 +548,7 @@ Exportar</button>
 
 <sc-if value="{{chatOpen}}" hint-placeholder-val="{{false}}">
 <div style="{{chatPanelStyle}}">
-<section aria-label="Asistente ScrumCut" style="width: 340px; max-width: calc(100vw - 48px); background: #F8F6F3; border: 1px solid #D9D2C8; border-radius: 4px; box-shadow: 0 12px 32px rgba(46, 33, 26, 0.16); display: flex; flex-direction: column; overflow: hidden">
+<section aria-label="Asistente ScrumCut" style="width: 340px; max-width: calc(100vw - 48px); background: #F8F6F3; border: 1px solid #D9D2C8; border-radius: 6px; box-shadow: 0 12px 32px rgba(46, 33, 26, 0.16); display: flex; flex-direction: column; overflow: hidden">
 <div style="background: #2E211A; color: #F2EDE7; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
 <div style="display: flex; flex-direction: column; line-height: 1.25">
 <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 15px">Asistente</span>
@@ -390,34 +572,142 @@ Exportar</button>
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5E7361","options":["#5E7361","#2F4F5A","#8C6A3F"]},"$preview":{"width":1440,"height":1860}}'>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5E7361","options":["#5E7361","#2F4F5A","#8C6A3F"]},"menuInicial":{"editor":"enum","default":"admin","options":["ninguno","admin","nuevo","sede","cuenta"]},"$preview":{"width":1440,"height":2100}}'>
 class Component extends DCLogic {
   renderVals() {
     const st = this.state || {};
     const rx = st.rx ?? 58;
     const rz = st.rz ?? -36;
-    const hover = st.hover ?? 33;
     const chatOpen = st.chatOpen ?? false;
     const sideOpen = st.sideOpen ?? true;
+    const menu = st.menu !== undefined ? st.menu : (this.props.menuInicial ?? 'admin');
+    const sede = st.sede ?? 'centro';
     const accent = this.props.accent ?? '#5E7361';
     const sep = (n) => String(Math.round(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     const cop = (n) => (n < 0 ? '−$' : '$') + sep(n);
-    const short = (k) => '$' + (k / 1000).toFixed(1).replace('.', ',') + ' M';
 
-    const sideW = sideOpen ? 236 : 72;
-    const sideStyle = 'flex: 0 0 ' + sideW + 'px; width: ' + sideW + 'px; box-sizing: border-box; background: #F3F0EB; border-right: 1px solid #D9D2C8; ' +
-      'display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding: 20px 12px; transition: width 160ms ease, flex-basis 160ms ease';
-    const item = 'display: flex; align-items: center; gap: 12px; min-height: 44px; border-radius: 4px; font: inherit; font-size: 14px; text-align: left; cursor: pointer; ' +
+    const toggle = (name) => () => this.setState({ menu: menu === name ? 'ninguno' : name });
+    const sedeOpen = menu === 'sede', nuevoOpen = menu === 'nuevo', adminOpen = menu === 'admin', cuentaOpen = menu === 'cuenta';
+
+    const sideW = sideOpen ? 248 : 72;
+    const brandCell = 'flex: 0 0 ' + sideW + 'px; width: ' + sideW + 'px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 ' + (sideOpen ? '16px 0 14px' : '14px') + '; background: #241912; border-right: 1px solid #1B130E; transition: width 160ms ease, flex-basis 160ms ease';
+    const headBtn = 'display: flex; align-items: center; gap: 10px; font: inherit; color: #F2EDE7; border-radius: 6px; min-height: 44px; cursor: pointer; ';
+    const sedeBtn = headBtn + 'font-size: 14px; padding: 0 12px; background: ' + (sedeOpen ? '#4A382D' : '#3A2B22') + '; border: 1px solid ' + (sedeOpen ? '#8A735F' : '#4A382D');
+    const adminBtn = headBtn + 'gap: 8px; font-size: 13px; font-weight: 500; padding: 0 12px; background: ' + (adminOpen ? '#F2EDE7' : 'transparent') + '; color: ' + (adminOpen ? '#2E211A' : '#E4DAD0') + '; border: 1px solid ' + (adminOpen ? '#F2EDE7' : 'transparent');
+    const cuentaBtn = headBtn + 'padding: 0 8px 0 4px; background: ' + (cuentaOpen ? '#4A382D' : 'transparent') + '; border: 0';
+    const adminChevron = adminOpen ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6';
+    const panelStyle = 'position: absolute; top: 100%; left: ' + sideW + 'px; right: 0; background: #FBFAF8; color: #1E1915; border-bottom: 1px solid #CFC6BA; box-shadow: 0 24px 48px rgba(30, 20, 14, 0.18); max-height: calc(100vh - 80px); overflow-y: auto';
+
+    const sedeList = [
+      { id: 'todas', name: 'Todas las sedes', note: 'Vista consolidada · solo lectura' },
+      { id: 'centro', name: 'Centro', note: 'Sede principal · caja abierta' },
+      { id: 'norte', name: 'Norte', note: 'Caja abierta desde 8:15 a. m.' },
+    ];
+    const sedes = sedeList.map((s) => ({
+      ...s,
+      selected: s.id === sede,
+      pick: () => this.setState({ sede: s.id, menu: 'ninguno' }),
+      style: 'display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 6px 12px; font: inherit; text-align: left; color: #1E1915; border: 0; border-radius: 4px; cursor: pointer; background: ' + (s.id === sede ? '#EDE6DD' : 'transparent'),
+    }));
+    const sedeName = sedeList.find((s) => s.id === sede).name;
+
+    const nuevos = [
+      { title: 'Nueva comanda', desc: 'Servicios y productos de un cliente', key: 'N' },
+      { title: 'Cobro rápido', desc: 'Venta sin comanda abierta', key: 'R' },
+      { title: 'Nuevo cliente', desc: 'Registro con nombre y celular', key: 'C' },
+      { title: 'Abono a fiado', desc: 'Pago parcial o total de una deuda', key: 'A', divider: true },
+      { title: 'Registrar gasto', desc: 'Salida de dinero de la caja', key: 'G' },
+      { title: 'Entrada de inventario', desc: 'Compra o ajuste de productos', key: 'I', divider: true },
+      { title: 'Traslado entre sedes', desc: 'Mover productos de una sede a otra', key: 'T' },
+    ];
+
+    const cuenta = [
+      { title: 'Mi perfil', desc: 'Nombre, foto y datos de contacto' },
+      { title: 'Seguridad', desc: 'Contraseña y verificación en dos pasos' },
+      { title: 'Sesiones activas', desc: 'Equipos donde tienes la sesión abierta' },
+      { title: 'Preferencias', desc: 'Notificaciones y formato de fechas' },
+      { title: 'Cambiar de barbería', desc: 'Si trabajas en más de una' },
+    ];
+
+    const itemStyle = (soon) => 'display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; margin: 0 -10px; border-radius: 4px; line-height: 1.35; color: ' + (soon ? '#6E655D' : '#1E1915');
+    const g = (name, items) => ({ name, items: items.map((it) => ({ ...it, soon: !!it.soon, count: it.count || false, style: itemStyle(it.soon) })) });
+    const groups = [
+      g('Barbería', [
+        { title: 'Datos de la barbería', desc: 'Nombre, NIT, logo y contacto' },
+        { title: 'Sedes', desc: 'Crear, editar y desactivar sedes', count: '2 de 3' },
+        { title: 'Horarios de atención', desc: 'Días y horas de cada sede', soon: true },
+        { title: 'Medios de pago', desc: 'Efectivo, transferencia y otros', soon: true },
+      ]),
+      g('Equipo', [
+        { title: 'Barberos', desc: 'Altas, sedes asignadas y rotación', count: '4' },
+        { title: 'Usuarios y roles', desc: 'Quién entra y con qué rol', count: '9' },
+        { title: 'Permisos por rol', desc: 'Qué puede ver y hacer cada rol' },
+        { title: 'Comisiones', desc: 'Porcentaje por barbero y servicio' },
+      ]),
+      g('Catálogo y precios', [
+        { title: 'Servicios', desc: 'Cortes, barba y combos' },
+        { title: 'Precios por sede', desc: 'Cada sede con su propio precio' },
+        { title: 'Productos y categorías', desc: 'Lo que se vende en mostrador' },
+        { title: 'Insumos por servicio', desc: 'Lo que gasta cada servicio' },
+      ]),
+      g('Clientes y fiados', [
+        { title: 'Niveles de cliente', desc: 'Reglas de nivel por sede' },
+        { title: 'Reglas de fiado', desc: 'Cupo y plazo de pago' },
+        { title: 'Recordatorios', desc: 'Avisos a clientes por WhatsApp', soon: true },
+        { title: 'Reseñas', desc: 'Opiniones después del servicio', soon: true },
+      ]),
+      g('Seguridad y datos', [
+        { title: 'Auditoría', desc: 'Quién cambió qué y cuándo' },
+        { title: 'Seguridad de acceso', desc: 'Dos pasos y bloqueo por intentos' },
+        { title: 'Datos personales', desc: 'Tratamiento de datos (Ley 1581)' },
+        { title: 'Exportar información', desc: 'Copia de tus datos en Excel' },
+      ]),
+      g('Cuenta y plan', [
+        { title: 'Plan y facturación', desc: 'Plan, pagos y facturas', soon: true },
+        { title: 'Integraciones', desc: 'Conectar otras herramientas', soon: true },
+        { title: 'Textos legales', desc: 'Términos, privacidad y cookies' },
+        { title: 'Soporte', desc: 'Ayuda y contacto con ScrumCut' },
+      ]),
+    ];
+
+    const item = 'display: flex; align-items: center; gap: 12px; min-height: 42px; border-radius: 4px; font: inherit; font-size: 14px; text-align: left; cursor: pointer; ' +
       (sideOpen ? 'padding: 0 14px; justify-content: flex-start' : 'padding: 0; justify-content: center');
     const navItem = item + '; color: #4A4039; background: transparent; border: 0';
+    const navSoon = item + '; color: #7A7068; background: transparent; border: 0';
     const navActive = item + '; color: #2E211A; font-weight: 600; background: #E4DAD0; box-shadow: inset 3px 0 0 ' + accent;
+    const P = {
+      tablero: 'M3 3h7v9H3z M14 3h7v5h-7z M14 12h7v9h-7z M3 16h7v5H3z',
+      agenda: 'M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+      comandas: 'M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z M8 8h8 M8 12h8 M8 16h5',
+      caja: 'M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4z',
+      clientes: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8z M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
+      fiados: 'M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4 M2 6h4 M2 10h4 M2 14h4 M2 18h4 M21.4 5.6a1 1 0 1 0-3-3l-5 5a2 2 0 0 0-.5.9l-.8 2.9a.5.5 0 0 0 .6.6l2.9-.8a2 2 0 0 0 .9-.5z',
+      resenas: 'M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z',
+      servicios: 'M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z M7.5 7a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1z',
+      inventario: 'M11 21.7a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7z M12 22V12 M3.3 7l7.7 4.7a2 2 0 0 0 2 0L20.7 7',
+      reportes: 'M3 3v16a2 2 0 0 0 2 2h16 M18 17V9 M13 17V5 M8 17v-3',
+      sedes: 'M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-6h6v6',
+    };
+    const mod = (label, icon, opts) => {
+      const o = opts || {};
+      return { label, icon: P[icon], soon: !!o.soon, current: o.current ? 'page' : 'false', style: o.current ? navActive : o.soon ? navSoon : navItem };
+    };
+    const modGroups = [
+      { name: 'Operación', items: [mod('Tablero', 'tablero', { current: true }), mod('Agenda', 'agenda', { soon: true }), mod('Comandas', 'comandas'), mod('Caja', 'caja')] },
+      { name: 'Clientes', items: [mod('Clientes', 'clientes'), mod('Fiados', 'fiados'), mod('Reseñas', 'resenas', { soon: true })] },
+      { name: 'Catálogo', items: [mod('Servicios', 'servicios'), mod('Inventario', 'inventario')] },
+      { name: 'Análisis', items: [mod('Reportes', 'reportes'), mod('Comparativo de sedes', 'sedes')] },
+    ];
+
+    const sideStyle = 'flex: 0 0 ' + sideW + 'px; width: ' + sideW + 'px; box-sizing: border-box; background: #F3F0EB; border-right: 1px solid #D9D2C8; ' +
+      'display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding: 22px 12px 20px; transition: width 160ms ease, flex-basis 160ms ease';
     const chatBtn = item + '; width: 100%; color: ' + (chatOpen ? '#F2EDE7' : '#2E211A') + '; background: ' + (chatOpen ? '#2E211A' : 'transparent') + '; border: 1px solid #CFC6BA';
     const toggleSide = () => this.setState({ sideOpen: !sideOpen });
     const toggleLabel = sideOpen ? 'Ocultar menú de módulos' : 'Mostrar menú de módulos';
-    const chatPanelStyle = 'position: fixed; left: ' + (sideW + 16) + 'px; bottom: 24px; z-index: 20';
+    const chatPanelStyle = 'position: fixed; left: ' + (sideW + 16) + 'px; bottom: 24px; z-index: 40';
 
     const cell = 'padding: 18px 24px; display: flex; flex-direction: column; gap: 6px; border-left: 1px solid #4A382D';
-    const up = 'color: #9DB09F; font-weight: 600';
+    const up = 'color: #A9C0AB; font-weight: 600';
     const down = 'color: #E4DAD0; font-weight: 600';
     const kpis = [
       { label: 'Ingresos de hoy', value: '$2.480.000', delta: '▴ +12,4 %', deltaStyle: up, note: 'vs. sábado anterior' },
@@ -427,42 +717,92 @@ class Component extends DCLogic {
       { label: 'Fiados pendientes', value: '$845.000', delta: '3 vencidos', deltaStyle: down, note: '· 11 clientes' },
     ].map((k, i) => ({ ...k, style: i === 0 ? cell.replace('border-left: 1px solid #4A382D', 'border-left: 0') : cell }));
 
-    const raw = [null, null, null, null, 2860, 3140, 0,
-      1180, 1420, 1510, 1760, 2690, 3020, 0,
-      1090, 1380, 1620, 1840, 2950, 3310, 0,
-      1240, 1460, 1550, 1930, 3080, 3460, 0,
-      1150, 1510, 1690, 2010, 2870, 2480, null];
-    const dates = ['7 sep', '8 sep', '9 sep', '10 sep', '11 sep', '12 sep', '13 sep', '14 sep', '15 sep', '16 sep', '17 sep', '18 sep', '19 sep', '20 sep',
-      '21 sep', '22 sep', '23 sep', '24 sep', '25 sep', '26 sep', '27 sep', '28 sep', '29 sep', '30 sep', '1 oct', '2 oct', '3 oct', '4 oct',
-      '5 oct', '6 oct', '7 oct', '8 oct', '9 oct', '10 oct', '11 oct'];
+    // Mes calendario real, del día 1 al último día. Lunes primero. Valores en miles de COP.
+    const view = st.view ?? 'tabla';
+    const isTable = view === 'tabla', is3d = view === '3d';
+    const month = st.month ?? '2026-10';
+    const MONTHS = {
+      '2026-10': { name: 'octubre', label: 'octubre de 2026', short: 'oct', offset: 3, days: 31, upTo: 18, today: 18 },
+      '2026-09': { name: 'septiembre', label: 'septiembre de 2026', short: 'sep', offset: 1, days: 30, upTo: 30, today: null },
+    };
+    const M = MONTHS[month];
     const weekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const weekdaysLong = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const baseByDay = [1150, 1400, 1550, 1850, 2900, 3200, 0];
+    const cellsN = Math.ceil((M.offset + M.days) / 7) * 7;
+    const raw = Array.from({ length: cellsN }, (_, i) => {
+      const d = i - M.offset + 1;
+      if (d < 1 || d > M.days) return { d: null, v: null };
+      if (d > M.upTo) return { d, v: null, future: true };
+      if (i % 7 === 6) return { d, v: 0 };
+      return { d, v: baseByDay[i % 7] + (((d * 37 + M.offset * 11) % 17) - 8) * 30 };
+    });
+    const vals = raw.map((r) => r.v || 0);
+    const maxV = Math.max(...vals);
+    const todayIdx = M.today ? M.offset + M.today - 1 : -1;
+    const lastIdx = vals.reduce((acc, v, i) => (v > 0 ? i : acc), 0);
+    const hover = st.hover ?? lastIdx;
+    const level = (v) => { const r = v / maxV; return r < 0.45 ? 0 : r < 0.6 ? 1 : r < 0.75 ? 2 : r < 0.9 ? 3 : 4; };
+    const dayName = (i) => weekdaysLong[i % 7] + ' ' + raw[i].d + ' de ' + M.name;
 
-    const STEP = 56, SIDE = 40, W = 7 * STEP - (STEP - SIDE), D = 5 * STEP - (STEP - SIDE);
+    const shade = ['#F6F3EF', '#EDE6DD', '#E2D6C8', '#D4C2B0', '#C4AD97'];
+    const cellBase = 'height: 60px; padding: 6px 8px; vertical-align: top; text-align: left; border-radius: 4px; box-sizing: border-box; ';
+    const amountBase = 'display: block; margin-top: 8px; font-size: 12px; ';
+    const weeks = [];
+    for (let r = 0; r < cellsN / 7; r++) {
+      const row = raw.slice(r * 7, r * 7 + 7);
+      const cells = row.map((c, j) => {
+        const i = r * 7 + j;
+        const ring = i === todayIdx ? 'box-shadow: inset 0 0 0 2px ' + accent + '; ' : '';
+        if (c.d === null) return { day: '', amount: '', style: cellBase + 'background: transparent', amountStyle: amountBase };
+        if (c.future) return { day: String(c.d), amount: '', style: cellBase + 'background: transparent; border: 1px dashed #D9D2C8', amountStyle: amountBase };
+        if (c.v === 0) return { day: String(c.d), amount: 'Cerrado', style: cellBase + ring + 'background: #F3F0EB', amountStyle: amountBase + 'color: #6E655D' };
+        return { day: String(c.d), amount: cop(c.v * 1000), style: cellBase + ring + 'background: ' + shade[level(c.v)], amountStyle: amountBase + 'font-weight: 600; color: #1E1915' };
+      });
+      const sum = row.reduce((a, c) => a + (c.v || 0), 0);
+      weeks.push({ cells, total: sum ? cop(sum * 1000) : '—' });
+    }
+
+    const pickMonth = (e) => this.setState({ month: e.target.value, hover: undefined });
+    const tab = (on) => 'font: inherit; font-size: 13px; font-weight: 600; min-height: 40px; padding: 0 18px; border: 0; cursor: pointer; ' +
+      (on ? 'background: #2E211A; color: #F2EDE7' : 'background: transparent; color: #2E211A');
+    const tabTable = tab(isTable), tab3d = tab(is3d);
+    const showTable = () => this.setState({ view: 'tabla' });
+    const show3d = () => this.setState({ view: '3d' });
+    const chartNote = isTable
+      ? 'Ventas de cada día de ' + M.label + ', en pesos colombianos.'
+      : 'Cada torre es un día de ' + M.label + '; su altura, lo que vendió. Arrastra para girar.';
+    const chartAria = 'Torres de ventas diarias de ' + M.label + ' en pesos colombianos; viernes y sábados son los días más altos, los domingos la barbería está cerrada';
+    const readoutHint = is3d ? 'Pasa el cursor sobre una torre' : 'Último día con ventas';
+
+    const STEP = 56, SIDE = 40, W = 7 * STEP - (STEP - SIDE), D = (cellsN / 7) * STEP - (STEP - SIDE);
     const sceneStyle = 'position: absolute; left: 50%; top: 56%; width: ' + W + 'px; height: ' + D + 'px; margin-left: -' + W / 2 + 'px; margin-top: -' + D / 2 +
       'px; transform-style: preserve-3d; transform: rotateX(' + rx + 'deg) rotateZ(' + rz + 'deg)';
     const top = ['#E4DAD0', '#CBB8A6', '#A68B76', '#6B5444', '#2E211A'];
     const south = ['#D3C6BA', '#B9A390', '#927663', '#5A4638', '#241913'];
     const east = ['#C4B5A7', '#A9917D', '#806653', '#4C3B2F', '#1B130E'];
-    const level = (v) => (v < 1500 ? 0 : v < 2000 ? 1 : v < 2600 ? 2 : v < 3100 ? 3 : 4);
     const pos = (i) => ({ x: (i % 7) * STEP, y: Math.floor(i / 7) * STEP });
     const face = 'position: absolute; box-sizing: border-box; ';
 
-    const floor = raw.map((v, i) => {
+    const floor = raw.map((c, i) => {
       const p = pos(i);
-      const border = v === null ? 'border: 1px solid #DDD6CC' : v === 0 ? 'border: 1px dashed #A99E92' : 'border: 1px solid #CFC6BA';
-      return { style: face + 'left: ' + p.x + 'px; top: ' + p.y + 'px; width: ' + SIDE + 'px; height: ' + SIDE + 'px; border-radius: 2px; ' + border };
+      const border = c.d === null ? 'border: 1px solid transparent' : c.future ? 'border: 1px dashed #DDD6CC' : c.v === 0 ? 'border: 1px dashed #A99E92' : 'border: 1px solid #CFC6BA';
+      return {
+        label: c.d === null ? '' : String(c.d),
+        style: face + 'left: ' + p.x + 'px; top: ' + p.y + 'px; width: ' + SIDE + 'px; height: ' + SIDE + 'px; border-radius: 2px; padding: 2px 4px; font-size: 10px; line-height: 1.2; color: #6E655D; ' + border,
+      };
     });
     const axis = weekdays.map((label, c) => ({
       label,
       style: face + 'left: ' + c * STEP + 'px; top: ' + (D + 10) + 'px; width: ' + SIDE + 'px; text-align: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6E655D',
     }));
 
-    const pxPer = 160 / 3460;
+    const pxPer = 160 / maxV;
     const bars = [];
-    raw.forEach((v, i) => {
+    vals.forEach((v, i) => {
       if (!v) return;
       const p = pos(i), h = Math.round(v * pxPer), lv = level(v);
-      const isToday = i === 33, isHover = i === hover;
+      const isToday = i === todayIdx, isHover = i === hover;
       const topColor = isToday || isHover ? accent : top[lv];
       bars.push({
         hover: () => this.setState({ hover: i }),
@@ -474,8 +814,7 @@ class Component extends DCLogic {
         top: face + 'left: 0; top: 0; width: ' + SIDE + 'px; height: ' + SIDE + 'px; transform: translateZ(' + h + 'px); background: ' + topColor,
       });
     });
-    const hv = raw[hover] || 0;
-    const readout = { label: weekdays[hover % 7] + ' ' + dates[hover] + (hover === 33 ? ' · hoy' : ''), value: cop(hv * 1000) };
+    const readout = { label: dayName(hover) + (hover === todayIdx ? ' · hoy' : ''), value: cop((vals[hover] || 0) * 1000) };
 
     const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
     const dragStart = (e) => {
@@ -492,15 +831,16 @@ class Component extends DCLogic {
     const resetView = () => this.setState({ rx: 58, rz: -36 });
 
     const weekAvg = weekdays.map((day, col) => {
-      const vals = raw.filter((v, i) => i % 7 === col && v);
-      return { day, avg: vals.length ? short(vals.reduce((a, b) => a + b, 0) / vals.length) : 'Cerrado' };
+      const colVals = vals.filter((v, i) => i % 7 === col && v > 0);
+      return { day, avg: colVals.length ? cop(Math.round(colVals.reduce((a, b) => a + b, 0) / colVals.length) * 1000) : 'Cerrado' };
     });
-    const open = raw.filter((v) => v);
+    const open = vals.filter((v) => v > 0);
     const total = open.reduce((a, b) => a + b, 0);
+    const bestIdx = vals.indexOf(maxV);
     const calStats = [
-      { label: 'Total del período', value: cop(total * 1000), note: open.length + ' días abiertos' },
-      { label: 'Mejor día', value: '$3.460.000', note: 'Sábado 3 de octubre' },
-      { label: 'Promedio diario', value: cop((total / open.length) * 1000), note: 'Días abiertos' },
+      { label: 'Total de ' + M.name, value: cop(total * 1000), note: open.length + ' días abiertos' + (M.today ? ', hasta hoy' : '') },
+      { label: 'Mejor día', value: cop(maxV * 1000), note: dayName(bestIdx) },
+      { label: 'Promedio diario', value: cop(Math.round(total / open.length) * 1000), note: 'Solo días abiertos' },
     ];
 
     const flow = [
@@ -570,7 +910,14 @@ class Component extends DCLogic {
     const toggleChat = (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ chatOpen: !chatOpen }); };
     const chatLabel = chatOpen ? 'Ocultar asistente' : 'Abrir asistente';
 
-    return { accent, sideOpen, sideStyle, navItem, navActive, chatBtn, toggleSide, toggleLabel, chatPanelStyle, kpis, sceneStyle, floor, axis, bars, readout, dragStart, dragMove, dragEnd, rotLeft, rotRight, resetView,
+    return { accent, sideOpen, brandCell, toggleSide, toggleLabel,
+      sedeOpen, sedeBtn, toggleSede: toggle('sede'), sedes, sedeName,
+      nuevoOpen, toggleNuevo: toggle('nuevo'), nuevos,
+      adminOpen, adminBtn, adminChevron, toggleAdmin: toggle('admin'), panelStyle, groups,
+      cuentaOpen, cuentaBtn, toggleCuenta: toggle('cuenta'), cuenta,
+      modGroups, sideStyle, chatBtn, chatPanelStyle,
+      month, pickMonth, monthLabel: M.label, isTable, is3d, tabTable, tab3d, showTable, show3d, chartNote, chartAria, readoutHint, weekdays, weeks,
+      kpis, sceneStyle, floor, axis, bars, readout, dragStart, dragMove, dragEnd, rotLeft, rotRight, resetView,
       weekAvg, calStats, steps, barbers, alerts, products, closings, chatOpen, toggleChat, chatLabel };
   }
 }

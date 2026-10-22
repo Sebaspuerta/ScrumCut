@@ -30,7 +30,7 @@ def test_el_inicio_cumple_la_csp(owner_page):
 
 def test_el_tablero_con_datos_cumple_la_csp(world):
     sell(world, world.ana, service=world.corte)
-    html = logged_in_with_mfa(world.owner.user).get(reverse("home")).content.decode()
+    html = logged_in_with_mfa(world.owner.user).get(reverse("home"), {"vista": "3d"}).content.decode()
     assert 'type="application/json"' in html  # los datos de las torres
     _assert_csp_friendly(html)
 

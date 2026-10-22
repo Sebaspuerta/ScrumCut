@@ -1,0 +1,78 @@
+/* Cuadre de caja de hoy (Main.dc.html): la cascada de la base al esperado y la diferencia del arqueo. */
+
+/* Cuadre de caja (cascada) ---------------------------------------------------- */
+
+.cascade {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--space-2-5);
+  align-items: end;
+}
+
+.cascade__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-5);
+  min-width: 0;
+}
+
+.cascade__track {
+  position: relative;
+  height: 210px;
+}
+
+/* bar-sizes.js fija bottom y height en porcentaje del punto más alto. */
+.cascade__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  min-height: 3px;
+  border-radius: var(--radius-chart);
+}
+
+.cascade__bar--total {
+  background: var(--color-espresso);
+}
+
+.cascade__bar--up {
+  background: var(--color-accent);
+}
+
+.cascade__bar--down {
+  background: var(--color-espresso-300);
+}
+
+.cascade__bar--counted {
+  background: transparent;
+  border: 1.5px solid var(--color-espresso);
+}
+
+.cascade__amount {
+  position: absolute;
+  left: calc(-1 * var(--space-1-5));
+  right: calc(-1 * var(--space-1-5));
+  bottom: calc(100% + var(--space-1-5));
+  font-size: var(--text-label);
+  font-weight: 600;
+  text-align: center;
+}
+
+.cascade__label {
+  padding-top: var(--space-2);
+  border-top: var(--line-width) solid var(--color-espresso);
+  font-size: var(--text-label);
+  line-height: 1.3;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.cascade__result {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3-5) var(--space-4-5);
+  background: var(--color-espresso-200);
+  border-radius: var(--radius);
+}

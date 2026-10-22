@@ -1,38 +1,13 @@
+{# Barra superior (fase F1). Cada menú es un <details>: abre sin JavaScript; menus.js agrega Esc y clic fuera. #}
 <header class="topbar">
-  <div class="topbar__start">
-    <button type="button" class="icon-button" aria-controls="menu-modulos"
-            aria-expanded="true" x-bind:aria-expanded="sideExpanded"
-            aria-label="Ocultar menú de módulos" x-bind:aria-label="sideLabel" x-on:click="toggleSide">
-      <span class="icon" aria-hidden="true">{% include "icons/panel-left.svg" %}</span>
-    </button>
-    {% if shell.shop %}
-    <span class="shop-mark" aria-hidden="true">{{ shell.shop.initials }}</span>
-    <span class="shop-name">
-      <span class="shop-name__title">{{ shell.shop.name }}</span>
-      <span class="shop-name__label">Barbería</span>
-    </span>
-    {% endif %}
-  </div>
-  <div class="topbar__end">
-    {% if shell.admin_links %}
-    <nav class="admin-nav" aria-label="Administración">
-      {% for link in shell.admin_links %}{% include "layout/nav.html#link" with css="admin-link" %}{% endfor %}
-    </nav>
-    <span class="topbar__divider" aria-hidden="true"></span>
-    {% endif %}
-    <div class="topbar__actions">
-      {% if shell.can_export %}
-      <a class="button button--on-dark" href="{% url 'reports_export' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
-        <span class="icon" aria-hidden="true">{% include "icons/download.svg" %}</span>Exportar
-      </a>
-      {% endif %}
-      {% if shell.unread_alerts is not None %}
-      <a class="bell" aria-disabled="true" title="Alertas · Próximamente" aria-label="Alertas: {{ shell.unread_alerts }} sin leer">
-        <span class="icon" aria-hidden="true">{% include "icons/bell.svg" %}</span>
-        {% if shell.unread_alerts %}<span class="bell__count num" aria-hidden="true">{{ shell.unread_alerts }}</span>{% endif %}
-      </a>
-      {% endif %}
-      {% include "layout/account_menu.html" %}
+  {% include "layout/topbar/brand.html" %}
+  <div class="topbar__main">
+    {% if shell.branches %}{% include "layout/topbar/branch_menu.html" %}{% else %}<span></span>{% endif %}
+    <div class="topbar__end">
+      {% if shell.unread_alerts is not None %}{% include "layout/topbar/bell.html" %}{% endif %}
+      {% if shell.admin %}{% include "layout/topbar/admin_menu.html" %}{% endif %}
+      <span class="topbar__divider" aria-hidden="true"></span>
+      {% include "layout/topbar/account_menu.html" %}
     </div>
   </div>
 </header>

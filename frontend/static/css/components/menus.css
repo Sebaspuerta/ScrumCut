@@ -1,0 +1,287 @@
+/* Menús de la barra superior (fase F1): <details> nativos, así abren sin JavaScript.
+   menus.js solo agrega: uno abierto a la vez, Esc, clic fuera y el foco de vuelta al botón. */
+
+.menu {
+  position: relative;
+}
+
+.menu__button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2-5);
+  border-radius: var(--radius);
+  color: var(--color-on-dark);
+  list-style: none;
+  cursor: pointer;
+}
+
+.menu__button::-webkit-details-marker {
+  display: none;
+}
+
+.menu__button:hover,
+.menu[open] > .menu__button {
+  background: var(--color-espresso-800);
+}
+
+.menu__chevron {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--color-on-dark-muted);
+}
+
+.menu__panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 30;
+  min-width: var(--menu-width);
+  padding: var(--space-1-5);
+  background: var(--color-surface);
+  border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-floating);
+  color: var(--color-text);
+}
+
+.menu__panel--end {
+  left: auto;
+  right: 0;
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  font-size: var(--text-body);
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.menu__item:hover {
+  background: var(--color-espresso-200);
+}
+
+.menu__item .icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+.menu__item--soon,
+.menu__item--soon:hover {
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.menu__note {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.menu__separator {
+  height: var(--line-width);
+  margin: var(--space-1-5) 0;
+  background: var(--color-surface-line);
+}
+
+/* Selector de sede ---------------------------------------------------------- */
+
+.topbar__label {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-group);
+  text-transform: uppercase;
+  color: var(--color-on-dark-muted);
+}
+
+.branch-menu__current {
+  max-width: 180px;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.branch-menu__check {
+  margin-left: auto;
+  color: var(--color-accent);
+}
+
+/* Campana de alertas -------------------------------------------------------- */
+
+.bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border-radius: var(--radius);
+  color: var(--color-on-dark);
+}
+
+/* Sin lista de alertas todavía: la campana muestra el contador pero no es enlace. */
+.bell[aria-disabled="true"] {
+  cursor: default;
+}
+
+.bell__count {
+  position: absolute;
+  top: var(--space-1-5);
+  right: var(--space-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--badge-size);
+  height: var(--badge-size);
+  padding: 0 var(--space-1);
+  border-radius: calc(var(--badge-size) / 2);
+  background: var(--color-alert-badge);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--color-badge-text);
+}
+
+/* Cuenta -------------------------------------------------------------------- */
+
+.avatar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: 50%;
+  background: var(--color-espresso-200);
+  color: var(--color-espresso);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.account__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: var(--account-text-max-width);
+  line-height: 1.25;
+}
+
+.account__name,
+.account__role {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account__name {
+  font-size: var(--text-meta);
+  font-weight: 500;
+}
+
+.account__role {
+  font-size: var(--text-label);
+  color: var(--color-on-dark-muted);
+}
+
+.account__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding: var(--space-2-5) var(--space-3);
+}
+
+/* Administración: panel ancho bajo la barra, del borde de la barra lateral a la derecha ---------- */
+
+.admin-menu > .menu__panel {
+  position: fixed;
+  top: var(--topbar-height);
+  left: var(--sidebar-current);
+  right: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--menu-width);
+  max-height: calc(100vh - var(--topbar-height));
+  overflow-y: auto;
+  padding: 0;
+  border-width: 0 0 var(--line-width);
+  border-radius: 0;
+}
+
+.admin-menu__groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-6);
+  padding: var(--space-6);
+}
+
+.admin-menu__title {
+  padding: 0 var(--space-3) var(--space-1-5);
+  font-size: var(--text-label);
+  font-variant-caps: all-small-caps;
+  letter-spacing: var(--tracking-group);
+  color: var(--color-espresso-600);
+}
+
+.admin-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-espresso);
+  color: var(--color-on-dark);
+}
+
+.admin-summary__label {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-on-dark-muted);
+}
+
+.admin-summary__value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h2);
+}
+
+.admin-summary__track {
+  height: var(--space-1-5);
+  background: var(--color-espresso-700);
+  border-radius: var(--radius-chart);
+}
+
+.admin-summary__bar {
+  height: 100%;
+  background: var(--color-accent-on-dark);
+  border-radius: var(--radius-chart);
+}
+
+.admin-summary__note {
+  font-size: var(--text-small);
+  color: var(--color-on-dark-muted);
+}
+
+@media (max-width: 860px) {
+  .admin-menu > .menu__panel {
+    left: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .menu__panel {
+    min-width: min(var(--menu-width), calc(100vw - var(--space-8)));
+  }
+
+  .admin-menu__label {
+    display: none;
+  }
+}

@@ -1,0 +1,37 @@
+{% with menu=shell.branches %}
+<details class="menu branch-menu" data-menu>
+  <summary class="menu__button" aria-controls="menu-sede" aria-expanded="false"
+           aria-label="Sede: {{ menu.current }}. Cambiar de sede">
+    <span class="icon" aria-hidden="true">{% include "icons/map-pin.svg" %}</span>
+    <span class="topbar__label" aria-hidden="true">Sede</span>
+    <span class="branch-menu__current" aria-hidden="true">{{ menu.current }}</span>
+    <span class="icon menu__chevron" aria-hidden="true">{% include "icons/chevron-down.svg" %}</span>
+  </summary>
+  <div class="menu__panel" id="menu-sede">
+    {% if menu.all %}
+    {% include "layout/topbar/branch_menu.html#choice" with token=menu.all.token label="Todas las sedes · vista consolidada" current=menu.all.current %}
+    <div class="menu__separator" aria-hidden="true"></div>
+    {% endif %}
+    {% for option in menu.options %}
+    {% include "layout/topbar/branch_menu.html#choice" with token=option.token label=option.label current=option.current %}
+    {% endfor %}
+    {% if menu.manage %}
+    <div class="menu__separator" aria-hidden="true"></div>
+    <span class="menu__item menu__item--soon">Gestionar sedes <span class="soon-tag">Próximamente</span></span>
+    {% endif %}
+  </div>
+</details>
+{% endwith %}
+
+{% partialdef choice %}
+{# El cambio de sede es un POST con CSRF que ya existe (tenancy.views.switch_branch). #}
+<form method="post" action="{% url 'switch_branch' %}">
+  {% csrf_token %}
+  <input type="hidden" name="sede" value="{{ token }}">
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <button type="submit" class="menu__item"{% if current %} aria-current="true"{% endif %}>
+    {{ label }}
+    {% if current %}<span class="icon branch-menu__check" aria-hidden="true">{% include "icons/check.svg" %}</span><span class="visually-hidden">(actual)</span>{% endif %}
+  </button>
+</form>
+{% endpartialdef %}

@@ -1,0 +1,32 @@
+{# Encabezado del tablero: ruta, título, sede del alcance, el mes (?mes=AAAA-MM) y la exportación. #}
+<section class="dashboard-header">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol>
+        <li><a href="{% url 'home' %}">Inicio</a></li>
+        <li aria-current="page">Tablero</li>
+      </ol>
+    </nav>
+    <h1>Resumen ejecutivo</h1>
+    <p class="muted">Sede {{ dashboard.scope_label }} · actualizado {% now "g:i a" %}</p>
+  </div>
+  <div class="dashboard-header__actions">
+    {# Sin JavaScript se aplica con el botón; month-filter.js lo aplica al elegir el mes. #}
+    <form class="filters" method="get" data-month-filter>
+      <label class="filters__field">Mes
+        <select name="mes">
+          {% for option in form.choices %}
+          <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <input type="hidden" name="vista" value="{{ view }}">
+      <button type="submit" class="button button--outline" data-month-submit>Ver</button>
+    </form>
+    {% if can_export %}
+    <a class="button button--primary" href="{% url 'reports_export' %}?mes={{ dashboard.date_from|date:'Y-m' }}">
+      <span class="icon" aria-hidden="true">{% include "icons/download.svg" %}</span>Exportar a Excel
+    </a>
+    {% endif %}
+  </div>
+</section>

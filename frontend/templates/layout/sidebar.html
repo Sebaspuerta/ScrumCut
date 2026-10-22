@@ -1,13 +1,29 @@
+{# La barra lateral sale de apps/core/navigation.SIDEBAR: grupos e ítems con su permiso. #}
 <aside id="menu-modulos" class="sidebar" aria-label="Módulos">
-  <nav class="sidebar__nav">
-    <span class="sidebar__group">Operación</span>
-    {% for link in shell.module_links %}{% include "layout/nav.html#link" with css="module-link" %}{% endfor %}
+  <nav class="sidebar__nav" aria-label="Trabajo diario">
+    {% for group in shell.sidebar %}
+    <div class="sidebar__group" role="group" aria-labelledby="grupo-{{ forloop.counter }}">
+      <span class="sidebar__title" id="grupo-{{ forloop.counter }}">{{ group.title }}</span>
+      {% for item in group.items %}
+      {% if item.url %}
+      <a class="module-link" href="{{ item.url }}" title="{{ item.label }}" aria-label="{{ item.label }}"{% if item.active %} aria-current="page"{% endif %}>
+        <span class="icon" aria-hidden="true">{% include item.icon %}</span>
+        <span class="module-link__label">{{ item.label }}</span>
+      </a>
+      {% else %}
+      <span class="module-link module-link--soon" title="{{ item.label }} · Pronto" aria-label="{{ item.label }}, pronto">
+        <span class="icon" aria-hidden="true">{% include item.icon %}</span>
+        <span class="module-link__label">{{ item.label }}</span>
+        <span class="soon-tag" aria-hidden="true">Pronto</span>
+      </span>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
   </nav>
   <div class="sidebar__foot">
     <button type="button" class="module-link assistant-toggle" title="Asistente" aria-controls="assistant-panel"
-            aria-expanded="false" x-bind:aria-expanded="chatExpanded"
-            aria-label="Abrir asistente" x-bind:aria-label="chatLabel"
-            x-bind:class="chatButtonClass" x-on:click="toggleChat">
+            aria-expanded="false" aria-label="Abrir asistente" data-assistant-toggle>
       <span class="icon" aria-hidden="true">{% include "icons/message-circle.svg" %}</span>
       <span class="module-link__label">Asistente</span>
     </button>

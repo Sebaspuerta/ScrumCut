@@ -1,0 +1,57 @@
+{# Solo aparece si el rol ve algún ítem. Ninguna pantalla de administración existe todavía: todo es "Próximamente". #}
+{% with panel=shell.admin %}
+<details class="menu admin-menu" data-menu>
+  <summary class="menu__button" aria-controls="menu-administracion" aria-expanded="false" aria-label="Administración">
+    <span class="icon" aria-hidden="true">{% include "icons/settings.svg" %}</span>
+    <span class="admin-menu__label" aria-hidden="true">Administración</span>
+    <span class="icon menu__chevron" aria-hidden="true">{% include "icons/chevron-down.svg" %}</span>
+  </summary>
+  <div class="menu__panel" id="menu-administracion">
+    <div class="admin-menu__groups">
+      {% for group in panel.groups %}
+      <section aria-labelledby="admin-{{ forloop.counter }}">
+        <h2 class="admin-menu__title" id="admin-{{ forloop.counter }}">{{ group.title }}</h2>
+        {% for item in group.items %}
+        {% if item.url %}
+        <a class="menu__item" href="{{ item.url }}">{{ item.label }}</a>
+        {% else %}
+        <span class="menu__item menu__item--soon">{{ item.label }} <span class="soon-tag">Próximamente</span></span>
+        {% endif %}
+        {% endfor %}
+      </section>
+      {% endfor %}
+    </div>
+    {% if panel.summary %}{% include "layout/topbar/admin_menu.html#summary" with summary=panel.summary %}{% endif %}
+  </div>
+</details>
+{% endwith %}
+
+{% partialdef summary %}
+<aside class="admin-summary" aria-label="Resumen de la barbería">
+  {% if summary.branches %}
+  <div>
+    <p class="admin-summary__label">Sedes activas</p>
+    <p class="admin-summary__value num">{{ summary.branches.active }} de {{ summary.branches.limit }}</p>
+    <div class="admin-summary__track"><div class="admin-summary__bar" data-bar-width="{{ summary.branches.bar }}"></div></div>
+  </div>
+  {% endif %}
+  {% if summary.members is not None %}
+  <div>
+    <p class="admin-summary__label">Usuarios activos</p>
+    <p class="admin-summary__value num">{{ summary.members }}</p>
+  </div>
+  {% endif %}
+  {% if summary.audit %}
+  <div>
+    <p class="admin-summary__label">Último cambio</p>
+    {% if summary.audit.event %}
+    <p>{{ summary.audit.event.action }}</p>
+    <p class="admin-summary__note num">{{ summary.audit.event.actor }} · {{ summary.audit.event.at|date:"j M Y, g:i a" }}</p>
+    {% else %}
+    <p class="admin-summary__note">Todavía no hay cambios registrados.</p>
+    {% endif %}
+    <p class="admin-summary__note">Ver auditoría completa · Próximamente</p>
+  </div>
+  {% endif %}
+</aside>
+{% endpartialdef %}

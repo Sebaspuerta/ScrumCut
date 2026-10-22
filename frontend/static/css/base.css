@@ -89,8 +89,8 @@ img {
   stroke-width: var(--icon-stroke);
 }
 
-/* Alpine quita x-cloak al iniciar: evita que paneles cerrados se vean un instante. */
-[x-cloak] {
+/* `hidden` gana sobre cualquier display de un componente (paneles que el JS abre y cierra). */
+[hidden] {
   display: none !important;
 }
 

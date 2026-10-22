@@ -1,0 +1,129 @@
+{% load formatting %}
+{# Ventas por día del mes. La vista va en la URL (?vista=tabla, por defecto, o ?vista=3d) y la valida el servidor. #}
+{# La 3D es mejora progresiva: sus datos llegan por json_script y sales-towers.js dibuja las torres; #}
+{# sin JavaScript, en ?vista=3d se sigue viendo la tabla. #}
+{% with sales=dashboard.calendar %}
+<section class="dashboard-section dashboard-section--main" aria-labelledby="t-ventas">
+  <div class="section-head">
+    <div class="section-head__text">
+      <h2 id="t-ventas">Ventas por día</h2>
+      <p class="muted">Ventas netas de cada día de {{ sales.month|month_label|lower }} en {{ dashboard.scope_label }}.</p>
+    </div>
+    {% if dashboard.has_sales %}
+    <nav class="view-switch" aria-label="Vista de las ventas">
+      <a class="view-switch__link" href="?mes={{ dashboard.date_from|date:'Y-m' }}&amp;vista=tabla"{% if view == "tabla" %} aria-current="page"{% endif %}>Tabla</a>
+      <a class="view-switch__link" href="?mes={{ dashboard.date_from|date:'Y-m' }}&amp;vista=3d"{% if view == "3d" %} aria-current="page"{% endif %}>3D</a>
+    </nav>
+    {% endif %}
+  </div>
+  <div class="sales-month">
+    <div class="sales-month__view">
+      {% if view == "3d" and dashboard.has_sales %}
+      {% include "dashboard/sales.html#towers" %}
+      {% include "dashboard/sales.html#table" with without_js_only=True %}
+      {% else %}
+      {% include "dashboard/sales.html#table" %}
+      {% endif %}
+    </div>
+    {% include "dashboard/sales.html#stats" %}
+  </div>
+  <div class="sales-weekdays">
+    {% for weekday in sales.weekdays %}
+    <div class="sales-weekdays__day">
+      <span>{{ weekday.day }}</span>
+      <span class="num">{% if weekday.average is None %}Sin ventas{% else %}{{ weekday.average|cop }}{% endif %}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="sales-weekdays__note muted">Promedio por día de la semana, solo con los días que vendieron.</p>
+  {% if view == "3d" and dashboard.has_sales %}{{ sales.chart|json_script:"sales-chart-data" }}{% endif %}
+</section>
+{% endwith %}
+
+{% partialdef table %}
+<div class="sales-calendar-wrap{% if without_js_only %} sales-calendar-wrap--no-js{% endif %}">
+  <table class="sales-calendar num">
+    <caption class="visually-hidden">Ventas netas por día de {{ sales.month|month_label|lower }}, de lunes a domingo, con el total de cada semana. Valores en pesos colombianos.</caption>
+    <thead>
+      <tr>
+        {% for weekday in sales.weekdays %}<th scope="col">{{ weekday.day }}</th>{% endfor %}
+        <th scope="col">Semana</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in sales.weeks %}
+      <tr>
+        {% for cell in week.days %}
+        {% if cell is None %}
+        <td class="sales-calendar__day is-blank"></td>
+        {% else %}
+        <td class="sales-calendar__day{% if cell.future %} is-future{% elif cell.has_sales %} tone-{{ cell.level }}{% endif %}{% if cell.today %} is-today{% endif %}"{% if cell.today %} aria-current="date"{% endif %}>
+          <span class="sales-calendar__number">{{ cell.day }}</span>
+          {% if cell.future %}
+          <span class="visually-hidden">aún no llega</span>
+          {% elif cell.has_sales or cell.today %}
+          <span class="sales-calendar__amount">{{ cell.amount }}</span>
+          {% else %}
+          <span class="sales-calendar__none">Sin ventas</span>
+          {% endif %}
+        </td>
+        {% endif %}
+        {% endfor %}
+        <td class="sales-calendar__week">{{ week.total|cop }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="sales-legend">
+    <span>Menos</span>
+    <span class="sales-legend__scale" aria-hidden="true">{% for level in "01234" %}<span class="sales-legend__swatch tone-{{ level }}"></span>{% endfor %}</span>
+    <span>más ventas · Valores en pesos colombianos (COP)</span>
+  </p>
+</div>
+{% endpartialdef %}
+
+{% partialdef towers %}
+<div class="towers" data-sales-3d>
+  <div class="towers__controls">
+    <button type="button" class="button button--outline button--square" aria-label="Girar a la izquierda" data-towers-turn="-30">↺</button>
+    <button type="button" class="button button--outline button--square" aria-label="Girar a la derecha" data-towers-turn="30">↻</button>
+    <button type="button" class="button button--outline" data-towers-reset>Vista inicial</button>
+  </div>
+  <div class="towers__stage" data-towers role="img"
+       aria-label="Torres de ventas por día de {{ sales.month|month_label|lower }}; la tabla tiene las mismas cifras">
+    <div class="towers__tooltip" data-towers-tooltip hidden>
+      <span data-towers-label></span>
+      <strong class="num" data-towers-value></strong>
+    </div>
+  </div>
+</div>
+{% endpartialdef %}
+
+{% partialdef stats %}
+<dl class="sales-stats">
+  <div class="sales-stats__item">
+    <dt>Total del mes</dt>
+    <dd class="sales-stats__value num">{{ sales.total|cop }}</dd>
+    <dd class="muted">{{ sales.selling_days }} día{{ sales.selling_days|pluralize }} con ventas</dd>
+  </div>
+  <div class="sales-stats__item">
+    <dt>Mejor día</dt>
+    {% if sales.best %}
+    <dd class="sales-stats__value num">{{ sales.best.total|cop }}</dd>
+    <dd class="muted">{{ sales.best.date|day_label }}</dd>
+    {% else %}<dd class="sales-stats__value">—</dd>{% endif %}
+  </div>
+  <div class="sales-stats__item">
+    <dt>Promedio diario</dt>
+    <dd class="sales-stats__value num">{{ sales.daily_average|cop }}</dd>
+    <dd class="muted">Solo días con ventas</dd>
+  </div>
+  <div class="sales-stats__item">
+    <dt>Último día con ventas</dt>
+    {% if sales.last_sale %}
+    <dd class="sales-stats__value num">{{ sales.last_sale.total|cop }}</dd>
+    <dd class="muted">{{ sales.last_sale.date|day_label }}</dd>
+    {% else %}<dd class="sales-stats__value">—</dd>{% endif %}
+  </div>
+</dl>
+{% endpartialdef %}

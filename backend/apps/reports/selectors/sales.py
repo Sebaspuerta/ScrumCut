@@ -4,20 +4,24 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.db.models import Count, Q, QuerySet, Sum
-from django.db.models.functions import Coalesce, TruncDate
+from django.db.models.functions import TruncDate
 
-from apps.reports.scope import LINE_COST, NET_SALE, closed_items, closed_orders, money_sum, resolve_period
+from apps.reports.scope import (
+    LINE_COST,
+    NET_SALE,
+    closed_items,
+    closed_orders,
+    display_name,
+    money_sum,
+    resolve_period,
+)
+from apps.reports.selectors.production import barber_sales
 from apps.sales.models import ItemType
-from apps.sales.selectors import DELETED_SUFFIX
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
 _EMPTY_DAY = {"orders": 0, "subtotal": Decimal("0.00"), "discount": Decimal("0.00"), "total": Decimal("0.00")}
-
-
-def display_name(name: str | None, deleted_at) -> str | None:
-    return name + DELETED_SUFFIX if name and deleted_at else name
 
 
 def sales_by_period(
@@ -48,30 +52,7 @@ def sales_by_barber(
 ) -> list[dict]:
     """Regla 50: ventas netas y comisión de cada barbero, tal como quedaron al cerrar."""
     ensure_permission(membership, "reportes.ver")
-    period = resolve_period(membership, date_from, date_to, scope=scope)
-    rows = (
-        closed_items(membership, period)
-        .filter(barber__isnull=False)
-        .values("barber__public_id", "barber__display_name", "barber__deleted_at")
-        .annotate(
-            orders=Count("order", distinct=True),
-            services=Coalesce(Sum("quantity", filter=Q(item_type=ItemType.SERVICE)), 0),
-            sales=money_sum(NET_SALE),
-            commission=money_sum("commission_amount"),
-        )
-        .order_by("-sales", "barber__display_name")
-    )
-    return [
-        {
-            "barber": row["barber__public_id"],
-            "name": display_name(row["barber__display_name"], row["barber__deleted_at"]),
-            "orders": row["orders"],
-            "services": row["services"],
-            "sales": row["sales"],
-            "commission": row["commission"],
-        }
-        for row in rows
-    ]
+    return barber_sales(membership, resolve_period(membership, date_from, date_to, scope=scope))
 
 
 def top_products(

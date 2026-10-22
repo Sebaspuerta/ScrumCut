@@ -2,7 +2,7 @@
 
 .assistant {
   position: fixed;
-  left: calc(var(--sidebar-width) + var(--space-4));
+  left: calc(var(--sidebar-current, var(--sidebar-width)) + var(--space-4));
   bottom: var(--space-6);
   z-index: 20;
   width: var(--assistant-width);
@@ -16,8 +16,10 @@
   box-shadow: var(--shadow-floating);
 }
 
-.is-collapsed .assistant {
-  left: calc(var(--sidebar-width-collapsed) + var(--space-4));
+@media (max-width: 860px) {
+  .assistant {
+    left: var(--space-4);
+  }
 }
 
 .assistant__header {

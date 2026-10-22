@@ -9,6 +9,7 @@ from apps.cash import services as cash
 from apps.receivables import services as receivables
 from apps.reports.selectors.dashboard import executive_dashboard
 from apps.sales import services as sales
+from apps.sales.selectors import local_today
 from apps.tenancy.forms import CROSS_TAB_MESSAGE, BranchBoundForm
 from tests.conftest import scope_of
 from tests.reports.helpers import sell
@@ -33,7 +34,7 @@ def sold_in_both(world, norte):
 
 
 def _kpis(world, scope) -> dict:
-    return executive_dashboard(world.owner, None, None, scope=scope)["kpis"]
+    return executive_dashboard(world.owner, local_today(world.owner), scope=scope)["kpis"]
 
 
 def test_los_indicadores_del_consolidado_son_la_suma_de_las_sedes(world, sold_in_both):

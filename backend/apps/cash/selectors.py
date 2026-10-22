@@ -25,12 +25,20 @@ def _sum(**filters) -> Coalesce:
     )
 
 
-def expected_cash(session: CashSession) -> Decimal:
-    """Base + entradas en efectivo − salidas en efectivo, solo desde el libro de movimientos."""
-    totals = CashMovement.objects.filter(session=session, payment_method=PaymentMethod.CASH).aggregate(
+def expected_cash_total(sessions: list[CashSession]) -> Decimal:
+    """Base + entradas en efectivo − salidas en efectivo, solo desde el libro de movimientos.
+
+    De varias cajas a la vez en una sola consulta (el tablero en "todas" suma las de cada sede).
+    """
+    totals = CashMovement.objects.filter(session__in=sessions, payment_method=PaymentMethod.CASH).aggregate(
         cash_in=_sum(direction=Direction.IN), cash_out=_sum(direction=Direction.OUT)
     )
-    return session.opening_amount + totals["cash_in"] - totals["cash_out"]
+    opening = sum((session.opening_amount for session in sessions), Decimal("0.00"))
+    return opening + totals["cash_in"] - totals["cash_out"]
+
+
+def expected_cash(session: CashSession) -> Decimal:
+    return expected_cash_total([session])
 
 
 def open_session_for(branch: Branch) -> CashSession | None:

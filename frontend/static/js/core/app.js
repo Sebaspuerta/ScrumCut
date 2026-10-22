@@ -1,10 +1,8 @@
-// Arranque de la interfaz: registra los componentes de Alpine (versión CSP) y lo inicia.
-import Alpine from "../../vendor/alpinejs-csp-3.17.4.esm.min.js";
-import accountMenu from "../components/account-menu.js";
-import periodFilter from "../components/period-filter.js";
-import shell from "../components/shell.js";
+// Arranque del marco de la aplicación: JavaScript propio, sin frameworks. La clase "js" en <html>
+// activa lo que solo tiene sentido con JavaScript (el panel lateral del celular).
+document.documentElement.classList.add("js");
 
-Alpine.data("shell", shell);
-Alpine.data("accountMenu", accountMenu);
-Alpine.data("periodFilter", periodFilter);
-Alpine.start();
+import "../components/menus.js";
+import "../components/sidebar.js";
+import "../components/assistant.js";
+import "../modules/bar-sizes.js";

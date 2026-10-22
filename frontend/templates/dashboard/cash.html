@@ -1,0 +1,37 @@
+{% load formatting %}
+{# Cuadre de caja de hoy de la sede del alcance. En "todas" no se mezclan cajas: se pide elegir una sede. #}
+{% with flow=dashboard.cash.flow %}
+<section class="dashboard-section dashboard-section--side" aria-labelledby="t-caja">
+  <div class="section-head__text">
+    <h2 id="t-caja">Cuadre de caja de hoy</h2>
+    <p class="muted">De la base de apertura al dinero que debe haber en caja.</p>
+  </div>
+  {% if dashboard.cash.needs_branch %}
+  <p class="empty-state empty-state--plain">Elige una sede para ver su caja.</p>
+  {% elif flow %}
+  <div class="cascade" role="img" aria-label="{% for step in flow.steps %}{{ step.label }} {{ step.amount|cop }}{% if not forloop.last %}; {% endif %}{% endfor %}">
+    {% for step in flow.steps %}
+    <div class="cascade__step">
+      <div class="cascade__track">
+        <div class="cascade__bar cascade__bar--{{ step.kind }}" data-bar-bottom="{{ step.bar.bottom }}" data-bar-height="{{ step.bar.height }}">
+          <span class="cascade__amount num">{% if step.amount %}{% if step.kind == "up" %}+{% elif step.kind == "down" %}−{% endif %}{% endif %}{{ step.amount|cop }}</span>
+        </div>
+      </div>
+      <span class="cascade__label">{{ step.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="cascade__result">
+    {% if flow.is_open %}
+    <span>Caja abierta</span>
+    <span class="num">Esperado {{ flow.expected|cop }}</span>
+    {% else %}
+    <span>Diferencia del arqueo</span>
+    <span class="num strong">{{ flow.difference|difference }}{% if flow.difference < 0 %} · faltante{% elif flow.difference > 0 %} · sobrante{% endif %}</span>
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="empty-state empty-state--plain">No hay caja abierta hoy.</p>
+  {% endif %}
+</section>
+{% endwith %}

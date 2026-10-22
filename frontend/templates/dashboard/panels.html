@@ -1,0 +1,131 @@
+{% load formatting %}
+
+{% partialdef barbers %}
+<section class="dashboard-section dashboard-section--main" aria-labelledby="t-barb">
+  <div class="section-head__text">
+    <h2 id="t-barb">Rendimiento por barbero</h2>
+    <p class="muted">Comandas, ventas de sus líneas y comisión causada en el período.</p>
+  </div>
+  <div class="barbers">
+    {% for barber in dashboard.barbers %}
+    <div class="barber">
+      <div class="barber__who">
+        <span class="strong">{{ barber.name }}</span>
+        <span class="num muted">{{ barber.orders }} comanda{{ barber.orders|pluralize }}</span>
+      </div>
+      <div class="barber__track"><div class="barber__bar" data-bar-width="{{ barber.bar }}"></div></div>
+      <div class="barber__money">
+        <span class="num strong">{{ barber.sales|cop }}</span>
+        <span class="num accent">Comisión {{ barber.commission|cop }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <p class="muted">Sin ventas de barberos en el período.</p>
+    {% endfor %}
+  </div>
+  {% with mix=dashboard.mix %}
+  <div class="mix">
+    <div class="mix__head">
+      <span class="label">Mezcla de ingresos</span>
+      <span class="num muted">Total {{ mix.total|cop }}</span>
+    </div>
+    <div class="mix__bar">
+      <div class="mix__part mix__part--services" data-bar-width="{{ mix.services.percent }}"></div>
+      <div class="mix__part mix__part--products" data-bar-width="{{ mix.products.percent }}"></div>
+    </div>
+    <div class="mix__legend">
+      <span class="num"><strong>{{ mix.services.percent }} %</strong> Servicios · {{ mix.services.amount|cop }}</span>
+      <span class="num"><strong>{{ mix.products.percent }} %</strong> Productos · {{ mix.products.amount|cop }}</span>
+    </div>
+  </div>
+  {% endwith %}
+</section>
+{% endpartialdef %}
+
+{% partialdef alerts %}
+<section class="dashboard-section dashboard-section--side" aria-labelledby="t-alert">
+  <div class="section-head">
+    <div class="section-head__text">
+      <h2 id="t-alert">Alertas sin leer</h2>
+      <p class="muted num">{{ shell.unread_alerts|default:0 }} sin leer</p>
+    </div>
+    {# La lista de alertas aún no tiene pantalla. #}
+    <span class="section-head__link" aria-disabled="true">Ver todas · Próximamente</span>
+  </div>
+  <ul class="alert-list">
+    {% for alert in dashboard.alerts %}
+    <li class="alert-list__item">
+      <span class="label alert-list__kind">{{ alert.get_alert_type_display }}</span>
+      <span class="alert-list__text strong">{{ alert.message }}</span>
+    </li>
+    {% empty %}
+    <li class="muted">No hay alertas sin leer.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endpartialdef %}
+
+{% partialdef products %}
+<section class="dashboard-section dashboard-section--main" aria-labelledby="t-prod">
+  <h2 id="t-prod">Productos más vendidos</h2>
+  <div class="table-scroll">
+    <table class="data-table num">
+      <thead><tr><th scope="col">Producto</th><th scope="col">Unidades</th><th scope="col">Ventas</th><th scope="col">Margen</th></tr></thead>
+      <tbody>
+        {% for product in dashboard.products %}
+        <tr>
+          <td>{{ product.name }}</td>
+          <td>{{ product.quantity }}</td>
+          <td class="strong">{{ product.sales|cop }}</td>
+          <td class="muted">{% if product.margin is None %}—{% else %}{{ product.margin }} %{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="muted">Sin productos vendidos en el período.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endpartialdef %}
+
+{% partialdef closings %}
+<section class="dashboard-section dashboard-section--side" aria-labelledby="t-cierres">
+  <h2 id="t-cierres">Últimos cierres de caja</h2>
+  <div class="table-scroll">
+    <table class="data-table num">
+      <thead><tr><th scope="col">Fecha</th><th scope="col">Esperado</th><th scope="col">Contado</th><th scope="col">Diferencia</th></tr></thead>
+      <tbody>
+        {% for closing in dashboard.closings %}
+        <tr>
+          <td>{{ closing.date|day_label }}</td>
+          <td>{{ closing.expected|cop }}</td>
+          <td>{{ closing.counted|cop }}</td>
+          <td class="data-table__difference{% if closing.difference > 0 %} is-up{% elif closing.difference < 0 %} is-down{% endif %}">{{ closing.difference|difference }}{% if closing.difference > 0 %} · sobrante{% elif closing.difference < 0 %} · faltante{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="muted">Todavía no hay cierres de caja.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endpartialdef %}
+
+{% partialdef my_cuts %}
+<section class="page-header"><h1>Resumen ejecutivo</h1></section>
+<div class="kpi-band kpi-band--single">
+  <div class="kpi">
+    <span class="kpi__label">Mis cortes de hoy</span>
+    <span class="kpi__value num">{{ cuts.cuts_today }}</span>
+  </div>
+</div>
+<section class="empty-state"><p>Los reportes de la barbería los ven el dueño, los administradores y la caja.</p></section>
+{% endpartialdef %}
+
+{% partialdef error %}
+<section class="page-header"><h1>Resumen ejecutivo</h1></section>
+<div class="form-error" role="alert">
+  <span class="icon" aria-hidden="true">{% include "icons/circle-alert.svg" %}</span>
+  <p>No pudimos cargar el tablero. Intenta de nuevo en unos minutos.</p>
+</div>
+{% endpartialdef %}

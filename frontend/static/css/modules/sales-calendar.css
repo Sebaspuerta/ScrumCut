@@ -1,0 +1,228 @@
+/* Ventas por día (fase F2): tabla calendario de lunes a domingo con el total de la semana, sus cifras
+   del mes al lado y el promedio por día de la semana debajo. Cinco tonos según el mejor día del mes. */
+
+.sales-month {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.sales-month__view {
+  min-width: 0;
+}
+
+.sales-calendar-wrap {
+  overflow-x: auto;
+}
+
+.sales-calendar {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: var(--space-1);
+  table-layout: fixed;
+  font-size: var(--text-small);
+}
+
+.sales-calendar th {
+  padding-bottom: var(--space-1);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.sales-calendar__day {
+  height: 64px;
+  padding: var(--space-1-5) var(--space-2);
+  vertical-align: top;
+  background: var(--color-panel);
+  border: var(--line-width) solid var(--color-surface-line);
+  border-radius: var(--radius);
+}
+
+.sales-calendar__number {
+  display: block;
+  font-weight: 600;
+  color: var(--color-espresso-600);
+}
+
+.sales-calendar__amount {
+  display: block;
+  margin-top: var(--space-1);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sales-calendar__none {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.sales-calendar__day.is-blank {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Días que aún no llegan: vacíos, con borde punteado. */
+.sales-calendar__day.is-future {
+  background: transparent;
+  border: var(--line-width) dashed var(--color-control-border);
+}
+
+/* Hoy: un aro de 2 px en el acento. */
+.sales-calendar__day.is-today {
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.sales-calendar__week {
+  padding: var(--space-1-5) var(--space-2);
+  vertical-align: top;
+  font-weight: 600;
+  text-align: right;
+  border-left: var(--line-width) solid var(--color-surface-line);
+}
+
+.tone-0 { background: var(--calendar-0); }
+.tone-1 { background: var(--calendar-1); }
+.tone-2 { background: var(--calendar-2); }
+.tone-3 { background: var(--calendar-3); }
+.tone-4 { background: var(--calendar-4); }
+
+.sales-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.sales-legend__scale {
+  display: inline-flex;
+  gap: var(--space-0-5);
+}
+
+.sales-legend__swatch {
+  width: var(--space-3);
+  height: var(--space-3);
+  border: var(--line-width) solid var(--color-surface-line);
+  border-radius: var(--radius-chart);
+}
+
+/* Cifras del mes ------------------------------------------------------------ */
+
+.sales-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sales-stats__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--line-width) solid var(--color-surface-line);
+}
+
+.sales-stats__item dt {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-espresso-600);
+}
+
+.sales-stats__value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h2);
+}
+
+.sales-stats__item dd.muted {
+  font-size: var(--text-small);
+}
+
+/* Promedio por día de la semana ---------------------------------------------- */
+
+.sales-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1-5);
+  padding-top: var(--space-2-5);
+  border-top: var(--line-width) solid var(--color-surface-line);
+}
+
+.sales-weekdays__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-0-5);
+  font-size: var(--text-meta);
+  font-weight: 500;
+  text-align: center;
+}
+
+.sales-weekdays__day span:first-child {
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.sales-weekdays__note {
+  font-size: var(--text-label);
+}
+
+/* Tabla | 3D: enlaces con ?vista=, nunca guardado en el navegador ----------------------------------
+   En la vista 3D, la tabla queda solo para quien navega sin JavaScript, y las torres solo con él. */
+
+.js .sales-calendar-wrap--no-js,
+html:not(.js) .towers {
+  display: none;
+}
+
+
+.view-switch {
+  display: inline-flex;
+  border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.view-switch__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  font-size: var(--text-meta);
+  font-weight: 500;
+  color: var(--color-espresso);
+}
+
+.view-switch__link[aria-current="page"] {
+  background: var(--color-espresso);
+  color: var(--color-on-dark);
+}
+
+@media (max-width: 860px) {
+  .sales-month {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sales-calendar__day {
+    height: 52px;
+    padding: var(--space-1);
+  }
+
+  .sales-calendar__amount,
+  .sales-calendar__none {
+    font-size: var(--text-micro);
+  }
+}

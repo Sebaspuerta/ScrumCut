@@ -42,12 +42,12 @@ v3. Pagos en línea — sin empezar.
 
 Especificación, diagnóstico y conflictos por decidir en [sedes.md](sedes.md). La barbería sigue siendo la frontera de seguridad (RLS); la sede se controla en servicios, selectores y permisos.
 
-- S1. Modelo de datos — sin empezar.
-- S2. Alcance por petición, solo backend — sin empezar.
-- S3. Ajustes → Sedes, selector de sede y modo "todas" (requiere maqueta aprobada) — sin empezar.
-- S4a. Caja, comandas, gastos y precios por sede — sin empezar.
-- S4b. Inventario por sede y traslados — sin empezar.
-- S5. Consolidado y comparativo (requiere maqueta aprobada) — sin empezar.
+- S1. Modelo de datos — hecho.
+- S2. Alcance por petición, solo backend — hecho.
+- S3. Ajustes → Sedes, selector de sede y modo "todas" — el selector de sede de la barra superior y la vista consolidada están hechos (frontend F1); falta la pantalla de Ajustes → Sedes.
+- S4a. Caja, comandas, gastos y precios por sede — hecho (backend).
+- S4b. Inventario por sede y traslados — hecho (backend).
+- S5. Consolidado y comparativo — hecho (backend: comparativo y Excel por sede); falta su pantalla.
 
 ## Pendientes de seguridad
 

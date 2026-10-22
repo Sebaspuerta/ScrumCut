@@ -1,23 +1,28 @@
-/* Estructura de la plantilla base (Main.dc.html): barra superior, menú lateral, contenido y pie. */
+/* Marco de la aplicación (fase F1): barra superior, barra lateral, contenido y pie.
+   La celda de la marca mide lo mismo que la barra lateral: juntas forman una L. */
 
-/* Alto fijo con scroll propio en el contenido: el menú lateral siempre cabe en la pantalla y su firma se ve. */
 .shell {
+  --sidebar-current: var(--sidebar-width);
+
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+.shell.is-collapsed {
+  --sidebar-current: var(--sidebar-width-collapsed);
+}
+
 /* Barra superior ---------------------------------------------------------- */
 
 .topbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-6);
+  position: relative;
+  z-index: 20;
   flex: none;
-  padding: var(--space-2-5) var(--space-6) var(--space-2-5) var(--space-4);
+  display: flex;
+  height: var(--topbar-height);
   background: var(--color-espresso);
+  border-bottom: var(--line-width) solid var(--color-topbar-edge);
   color: var(--color-on-dark);
 }
 
@@ -25,25 +30,80 @@
   outline-color: var(--color-accent-on-dark);
 }
 
-.topbar__start,
-.topbar__actions {
+.brand-cell {
+  flex: none;
   display: flex;
   align-items: center;
+  gap: var(--space-2-5);
+  width: var(--sidebar-current);
+  padding: 0 var(--space-3);
+  background: var(--color-brand-cell);
+  border-right: var(--line-width) solid var(--color-topbar-edge);
+  overflow: hidden;
+  transition: width 160ms ease;
 }
 
-.topbar__start {
-  gap: var(--space-3-5);
+.shop-mark {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-9);
+  height: var(--space-9);
+  border: var(--line-width) solid var(--color-espresso-600);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-meta);
 }
 
-.topbar__actions {
-  gap: var(--space-2);
+.shop-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.shop-name__title {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-brand);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop-name__label {
+  font-size: var(--text-micro);
+  font-variant-caps: all-small-caps;
+  letter-spacing: var(--tracking-group);
+  color: var(--color-on-dark-muted);
+}
+
+.is-collapsed .brand-cell {
+  justify-content: center;
+  padding: 0;
+}
+
+.is-collapsed .brand-cell .shop-mark,
+.is-collapsed .brand-cell .shop-name {
+  display: none;
+}
+
+.topbar__main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: 0 var(--space-5) 0 var(--space-4);
 }
 
 .topbar__end {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-1) var(--space-5);
+  gap: var(--space-2);
 }
 
 .topbar__divider {
@@ -61,102 +121,11 @@
   background: transparent;
   border: 0;
   border-radius: var(--radius);
+  color: inherit;
   cursor: pointer;
 }
 
-.shop-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--space-9);
-  height: var(--space-9);
-  border: var(--line-width) solid var(--color-espresso-600);
-  border-radius: var(--radius);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-meta);
-}
-
-.shop-name {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.shop-name__title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-brand);
-}
-
-.shop-name__label {
-  font-size: var(--text-micro);
-  letter-spacing: var(--tracking-group);
-  text-transform: uppercase;
-  color: var(--color-on-dark-muted);
-}
-
-.admin-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-0-5);
-}
-
-.admin-link {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch-target);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius);
-  font-size: var(--text-meta);
-  color: var(--color-espresso-200);
-}
-
-.admin-link .icon {
-  width: var(--icon-md);
-  height: var(--icon-md);
-}
-
-.bell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--touch-target);
-  height: var(--touch-target);
-}
-
-.bell__count {
-  position: absolute;
-  top: var(--space-1-5);
-  right: var(--space-1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: var(--badge-size);
-  height: var(--badge-size);
-  border-radius: calc(var(--badge-size) / 2);
-  background: var(--color-accent);
-  font-size: var(--text-label);
-  font-weight: 600;
-}
-
-/* Módulos sin pantalla todavía: atenuados y sin enlace. */
-.admin-link[aria-disabled="true"],
-.bell[aria-disabled="true"] {
-  opacity: var(--opacity-disabled);
-  cursor: default;
-}
-
-/* En el menú lateral se atenúan con un tono café en vez de opacidad, para conservar el contraste AA. */
-.module-link[aria-disabled="true"] {
-  color: var(--color-espresso-600);
-  cursor: default;
-}
-
-/* Menú lateral ------------------------------------------------------------ */
+/* Barra lateral ----------------------------------------------------------- */
 
 .shell__body {
   flex: 1 1 auto;
@@ -165,27 +134,26 @@
 }
 
 .sidebar {
-  flex: 0 0 var(--sidebar-width);
-  width: var(--sidebar-width);
+  flex: 0 0 var(--sidebar-current);
+  width: var(--sidebar-current);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: var(--space-6);
-  padding: var(--space-5) var(--space-3);
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-3);
   background: var(--color-sidebar);
   border-right: var(--line-width) solid var(--color-line);
   transition: width 160ms ease, flex-basis 160ms ease;
 }
 
-/* Si la lista no cabe, se desplaza ella sola y el pie con el asistente y la firma queda fijo. */
+/* Si la lista no cabe, se desplaza sola y el pie con el asistente y la firma queda fijo. */
 .sidebar__nav {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-0-5);
-  /* Sin la barra nativa con flechas: fina, en los tonos del diseño y solo al pasar el cursor. */
+  gap: var(--space-4);
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
@@ -195,10 +163,16 @@
 }
 
 .sidebar__group {
-  padding: var(--space-1) var(--space-3-5) var(--space-2-5);
-  font-size: var(--text-micro);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+
+.sidebar__title {
+  padding: 0 var(--space-3-5) var(--space-1);
+  font-size: var(--text-label);
+  font-variant-caps: all-small-caps;
   letter-spacing: var(--tracking-group);
-  text-transform: uppercase;
   color: var(--color-espresso-600);
 }
 
@@ -228,26 +202,30 @@
   box-shadow: inset var(--marker-width) 0 0 var(--color-accent);
 }
 
-.nav-count {
-  padding: 0 var(--badge-padding);
-  border-radius: calc(var(--badge-size) / 2);
-  background: var(--color-espresso-600);
-  font-size: var(--text-label);
-  font-weight: 600;
-  line-height: var(--badge-size);
-  color: var(--color-on-dark);
+/* Sin pantalla todavía: tono café apagado (contraste AA) y la etiqueta "Pronto"; no es enlace. */
+.module-link--soon {
+  color: var(--color-espresso-600);
+  cursor: default;
+}
+
+.soon-tag {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-espresso-600);
 }
 
 .sidebar__foot {
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3-5);
+  gap: var(--space-3);
 }
 
 .assistant-toggle {
   width: 100%;
   border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius);
   color: var(--color-espresso);
 }
 
@@ -276,46 +254,17 @@
   color: var(--color-text-muted);
 }
 
-/* Menú contraído: solo íconos (el nombre sigue en title y aria-label). */
-.is-collapsed .sidebar {
-  flex-basis: var(--sidebar-width-collapsed);
-  width: var(--sidebar-width-collapsed);
-}
-
+/* Cerrada: solo íconos; el nombre sigue en title y aria-label. */
 .is-collapsed .module-link {
   justify-content: center;
   padding: 0;
 }
 
-.is-collapsed .sidebar__group,
+.is-collapsed .sidebar__title,
 .is-collapsed .module-link__label,
-.is-collapsed .nav-count,
+.is-collapsed .soon-tag,
 .is-collapsed .signature {
   display: none;
-}
-
-/* Pantallas bajas (portátiles con escalado): los 9 módulos, el Asistente y la firma caben sin scroll. */
-@media (max-height: 760px) {
-  .sidebar {
-    gap: var(--space-3);
-    padding: var(--space-3);
-  }
-
-  .sidebar__group {
-    padding: var(--space-0-5) var(--space-3-5) var(--space-1-5);
-  }
-
-  .module-link {
-    min-height: var(--control-height);
-  }
-
-  .sidebar__foot {
-    gap: var(--space-2-5);
-  }
-
-  .signature {
-    padding-top: var(--space-2);
-  }
 }
 
 /* Contenido --------------------------------------------------------------- */
@@ -326,7 +275,6 @@
   overflow-y: auto;
 }
 
-/* Llena el ancho disponible hasta el máximo y, por encima, se centra en el espacio que deja el menú. */
 .content__inner {
   min-height: 100%;
   width: 100%;
@@ -347,11 +295,33 @@
 .page-footer {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: var(--space-4);
   margin-top: auto;
   padding-top: var(--space-4-5);
   border-top: var(--line-width) solid var(--color-line);
   font-size: var(--text-small);
   color: var(--color-text-muted);
+}
+
+.page-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+/* Pantallas bajas: los grupos, el Asistente y la firma caben sin scroll. */
+@media (max-height: 760px) {
+  .sidebar {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .sidebar__nav {
+    gap: var(--space-2-5);
+  }
+
+  .module-link {
+    min-height: var(--control-height);
+  }
 }

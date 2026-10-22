@@ -16,17 +16,16 @@ def test_los_cierres_de_sesion_son_post_con_csrf(owner_page, url_name):
 
 
 def test_los_cierres_de_sesion_estan_en_el_details_sin_depender_de_js(owner_page):
-    menu = [
-        (tag, attrs)
-        for tag, attrs, ancestors in elements(owner_page.content.decode())
-        if tag == "details" or "details" in {name for name, _ in ancestors}
+    html = owner_page.content.decode()
+    actions = {form["action"] for form in inside(html, "menu-cuenta", "form")}
+    [account] = [
+        attrs for tag, attrs, _ in elements(html) if tag == "summary" and attrs.get("aria-controls") == "menu-cuenta"
     ]
-    actions = {attrs.get("action") for tag, attrs in menu if tag == "form"}
 
     assert actions == {reverse("account_logout"), reverse("logout_everywhere")}
-    assert [tag for tag, _ in menu].count("summary") == 1
-    # Nada que lo esconda hasta que cargue Alpine: al abrir el <details> se ve sin JavaScript.
-    assert not any("x-show" in attrs or "x-cloak" in attrs for _, attrs in menu)
+    assert account["aria-expanded"] == "false"  # menus.js lo mantiene al día al abrir y cerrar
+    # Nada que lo esconda hasta que cargue el JavaScript: al abrir el <details> se ve igual.
+    assert not [attrs for attrs in inside(html, "menu-cuenta", "div") if "hidden" in attrs]
 
 
 def test_el_asistente_no_tiene_funcionalidad(owner_page):
@@ -40,7 +39,10 @@ def test_el_asistente_no_tiene_funcionalidad(owner_page):
 
 
 def test_el_nombre_completo_de_la_cuenta_queda_en_title_aunque_se_corte(owner_page):
-    [summary] = [attrs for tag, attrs, _ in elements(owner_page.content.decode()) if tag == "summary"]
+    html = owner_page.content.decode()
+    [summary] = [
+        attrs for tag, attrs, _ in elements(html) if tag == "summary" and attrs.get("aria-controls") == "menu-cuenta"
+    ]
     assert summary["title"] == "dueno@example.com · Dueño"
     assert summary["aria-label"] == "Cuenta de dueno@example.com, Dueño"
 

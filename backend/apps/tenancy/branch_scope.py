@@ -50,6 +50,10 @@ class BranchScope:
             return queryset.none()
         return queryset.filter(**{lookup: self.branch})
 
+    def choices(self) -> QuerySet[Branch]:
+        """Las sedes activas que esta membresía puede elegir, por nombre (el selector de sede)."""
+        return Branch.objects.filter(pk__in=self.allowed_ids, is_active=True).order_by("name")
+
     def branches(self) -> QuerySet[Branch]:
         """Las sedes del alcance. En "todas", también las inactivas, como `apply` con su historial."""
         if self.is_all:

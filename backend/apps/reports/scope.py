@@ -15,7 +15,7 @@ from django.db.models import DecimalField, F, Q, QuerySet, Sum, Value
 from django.db.models.functions import Coalesce
 
 from apps.sales.models import Order, OrderItem, OrderStatus
-from apps.sales.selectors import day_bounds, period_dates, scoped_orders
+from apps.sales.selectors import DELETED_SUFFIX, day_bounds, period_dates, scoped_orders
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 
@@ -49,6 +49,11 @@ def money_sum(expression, condition: Q | None = None) -> Coalesce:
         Value(Decimal("0.00")),
         output_field=DecimalField(max_digits=14, decimal_places=2),
     )
+
+
+def display_name(name: str | None, deleted_at) -> str | None:
+    """El nombre copiado de un barbero o producto, marcado si ya se borró."""
+    return name + DELETED_SUFFIX if name and deleted_at else name
 
 
 def closed_orders(membership: Membership, period: Period) -> QuerySet[Order]:

@@ -30,3 +30,13 @@ def active_branches(public_ids: Iterable[UUID | str]) -> list[Branch]:
     if len(branches) != len(wanted):
         raise ValidationError({"branches": INVALID_BRANCHES})
     return branches
+
+
+def plan_usage(barbershop: Barbershop) -> dict:
+    """Sedes activas frente al límite del plan (decisión 8 de docs/sedes.md)."""
+    return {"active": Branch.objects.filter(is_active=True).count(), "limit": barbershop.max_branches}
+
+
+def active_member_count(barbershop: Barbershop) -> int:
+    # Membership no lleva RLS (docs/sedes.md): se filtra por la barbería aquí, nunca en una vista.
+    return Membership.objects.filter(barbershop=barbershop, is_active=True).count()

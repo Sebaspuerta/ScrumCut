@@ -5,6 +5,10 @@ from decimal import ROUND_HALF_UP, Decimal
 
 MINUS = "−"  # signo menos tipográfico, como en las maquetas
 MONTHS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+MONTH_NAMES = (
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+)  # fmt: skip
 WEEKDAYS = ("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
 WEEKDAY_NAMES = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 
@@ -47,6 +51,11 @@ def weekday_short(day: date) -> str:
 
 def weekday_name(day: date) -> str:
     return WEEKDAY_NAMES[day.weekday()]
+
+
+def month_label(day: date) -> str:
+    """Octubre 2026."""
+    return f"{MONTH_NAMES[day.month - 1]} {day.year}"
 
 
 def day_label(day: date) -> str:

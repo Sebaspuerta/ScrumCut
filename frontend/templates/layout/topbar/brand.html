@@ -1,0 +1,13 @@
+<div class="brand-cell">
+  <button type="button" class="icon-button" aria-controls="menu-modulos" aria-expanded="true"
+          aria-label="Cerrar la barra lateral" data-sidebar-toggle>
+    <span class="icon" aria-hidden="true">{% include "icons/panel-left.svg" %}</span>
+  </button>
+  {% if shell.shop %}
+  <span class="shop-mark" aria-hidden="true">{{ shell.shop.initials }}</span>
+  <span class="shop-name">
+    <span class="shop-name__title">{{ shell.shop.name }}</span>
+    <span class="shop-name__label">Barbería</span>
+  </span>
+  {% endif %}
+</div>

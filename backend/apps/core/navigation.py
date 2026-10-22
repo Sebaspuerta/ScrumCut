@@ -1,7 +1,8 @@
-"""Barra superior y menú lateral: qué enlaces ve cada membresía, según `roles.py`.
+"""El marco de la aplicación (fase F1): qué ve cada membresía en la barra superior y la lateral.
 
-Es la única lista de módulos de la interfaz. Ocultar un enlace es solo comodidad:
-cada vista exige su permiso en el servidor (`require_permission`).
+Es la única definición de grupos e ítems, con su permiso de `roles.py`; las plantillas solo la pintan.
+Un ítem sin `url_name` no tiene pantalla todavía: se muestra como "Próximamente" y nunca como enlace.
+Ocultar un ítem es solo comodidad: cada vista exige su permiso en el servidor (`require_permission`).
 """
 
 from dataclasses import dataclass
@@ -10,73 +11,152 @@ from django.http import HttpRequest
 from django.urls import reverse
 
 from apps.alerts.selectors import unread_count
-from apps.tenancy.branch_scope import BranchScope
+from apps.core.shell_menus import account_menu, admin_panel, branch_menu, initials
 from apps.tenancy.roles import role_has_permission
 
 
 @dataclass(frozen=True)
 class NavItem:
-    key: str
     label: str
-    icon: str
     permission: str | None  # None: lo ve toda membresía activa
-    url_name: str | None = None  # None: el módulo aún no tiene pantalla
+    url_name: str | None = None  # None: aún sin pantalla ("Próximamente")
+    icon: str | None = None
 
 
-ADMIN_ITEMS = (
-    NavItem("barberos", "Gestión de barberos", "user-cog", "barberos.ver"),
-    NavItem("usuarios", "Usuarios y roles", "shield-check", "usuarios.ver"),
-    NavItem("auditoria", "Auditoría", "history", "auditoria.ver"),
-    NavItem("ajustes", "Ajustes", "settings", "barberia.ver"),
+@dataclass(frozen=True)
+class NavGroup:
+    title: str
+    items: tuple[NavItem, ...]
+
+
+SIDEBAR = (
+    NavGroup(
+        "Operación",
+        (
+            NavItem("Tablero", None, "home", "layout-dashboard"),
+            NavItem("Agenda", "agenda.ver", icon="calendar"),
+            NavItem("Comandas", "comandas.ver", icon="receipt"),
+            NavItem("Caja", "caja.ver", icon="banknote"),
+        ),
+    ),
+    NavGroup(
+        "Clientes",
+        (
+            NavItem("Clientes", "clientes.ver", icon="users"),
+            NavItem("Fiados", "fiados.ver", icon="notebook-pen"),
+            NavItem("Reseñas", "clientes.ver", icon="star"),
+        ),
+    ),
+    NavGroup(
+        "Catálogo",
+        (NavItem("Servicios", "servicios.ver", icon="tag"), NavItem("Inventario", "inventario.ver", icon="package")),
+    ),
+    NavGroup(
+        "Análisis",
+        (
+            NavItem("Reportes", "reportes.ver", icon="chart-column"),
+            NavItem("Comparativo de sedes", "sedes.ver", icon="git-compare-arrows"),
+        ),
+    ),
 )
 
-MODULE_ITEMS = (
-    NavItem("tablero", "Tablero", "layout-dashboard", None, "home"),
-    NavItem("comandas", "Comandas", "receipt", "comandas.ver"),
-    NavItem("caja", "Caja", "banknote", "caja.ver"),
-    NavItem("clientes", "Clientes", "users", "clientes.ver"),
-    NavItem("servicios", "Servicios", "tag", "servicios.ver"),
-    NavItem("inventario", "Inventario", "package", "inventario.ver"),
-    NavItem("fiados", "Fiados", "notebook-pen", "fiados.ver"),
-    NavItem("reportes", "Reportes", "chart-column", "reportes.ver"),
-    NavItem("alertas", "Alertas", "bell", "alertas.ver"),
+# Ninguna de estas pantallas existe todavía: todas salen como "Próximamente", cada una con su permiso.
+ADMINISTRATION = (
+    NavGroup(
+        "Barbería",
+        (
+            NavItem("Datos de la barbería", "barberia.ver"),
+            NavItem("Sedes", "sedes.gestionar"),
+            NavItem("Horarios de atención", "barberia.ver"),
+            NavItem("Medios de pago", "barberia.ver"),
+        ),
+    ),
+    NavGroup(
+        "Equipo",
+        (
+            NavItem("Barberos", "barberos.ver"),
+            NavItem("Usuarios y roles", "usuarios.ver"),
+            NavItem("Permisos por rol", "usuarios.ver"),
+            NavItem("Comisiones", "barberos.ver"),
+        ),
+    ),
+    NavGroup(
+        "Catálogo y precios",
+        (
+            NavItem("Servicios", "servicios.editar"),
+            NavItem("Precios por sede", "servicios.editar"),
+            NavItem("Productos y categorías", "inventario.editar"),
+            NavItem("Insumos por servicio", "inventario.editar"),
+        ),
+    ),
+    NavGroup(
+        "Clientes y fiados",
+        (
+            NavItem("Niveles de cliente", "barberia.ver"),
+            NavItem("Reglas de fiado", "barberia.ver"),
+            NavItem("Recordatorios", "barberia.ver"),
+            NavItem("Reseñas", "barberia.ver"),
+        ),
+    ),
+    NavGroup(
+        "Seguridad y datos",
+        (
+            NavItem("Auditoría", "auditoria.ver"),
+            NavItem("Seguridad de acceso", "usuarios.editar"),
+            NavItem("Datos personales", "clientes.anonimizar"),
+            NavItem("Exportar información", "reportes.exportar"),
+        ),
+    ),
+    NavGroup(
+        "Cuenta y plan",
+        (
+            NavItem("Plan y facturación", "barberia.editar"),
+            NavItem("Integraciones", "barberia.editar"),
+            NavItem("Textos legales", "barberia.ver"),
+            NavItem("Soporte", "barberia.ver"),
+        ),
+    ),
 )
 
 
-def initials(text: str) -> str:
-    return "".join(word[0] for word in text.split()[:2]).upper()
+def _visible(item: NavItem, role: str) -> bool:
+    return item.permission is None or role_has_permission(role, item.permission)
 
 
-def _links(items: tuple[NavItem, ...], role: str, current_url_name: str | None) -> list[dict]:
-    return [
-        {
-            "key": item.key,
-            "label": item.label,
-            "icon": f"icons/{item.icon}.svg",
-            "url": reverse(item.url_name) if item.url_name else None,
-            "active": item.url_name is not None and item.url_name == current_url_name,
-        }
-        for item in items
-        if item.permission is None or role_has_permission(role, item.permission)
-    ]
+def _item(item: NavItem, current_url_name: str | None) -> dict:
+    return {
+        "label": item.label,
+        "icon": f"icons/{item.icon}.svg" if item.icon else None,
+        "url": reverse(item.url_name) if item.url_name else None,
+        "active": item.url_name is not None and item.url_name == current_url_name,
+    }
 
 
-def _account(user, membership) -> dict:
-    name = user.full_name or user.email
-    return {"name": name, "initials": initials(name), "role": membership.get_role_display() if membership else ""}
+def visible_groups(groups: tuple[NavGroup, ...], role: str, current_url_name: str | None = None) -> list[dict]:
+    """Los grupos con al menos un ítem que el rol puede ver, y solo esos ítems."""
+    built = []
+    for group in groups:
+        items = [_item(item, current_url_name) for item in group.items if _visible(item, role)]
+        if items:
+            built.append({"title": group.title, "items": items})
+    return built
 
 
-def _membership_shell(membership, current_url_name: str | None, *, scope: BranchScope) -> dict:
-    role = membership.role
+def _membership_shell(request: HttpRequest, membership, current_url_name: str | None) -> dict:
     shop = membership.barbershop.trade_name
+    scope = request.branch_scope
     return {
         "shop": {"name": shop, "initials": initials(shop)},
-        "admin_links": _links(ADMIN_ITEMS, role, current_url_name),
-        "module_links": _links(MODULE_ITEMS, role, current_url_name),
-        "can_export": role_has_permission(role, "reportes.exportar"),
+        "branches": branch_menu(membership, scope),
+        "admin": admin_panel(membership, visible_groups(ADMINISTRATION, membership.role)),
+        "sidebar": visible_groups(SIDEBAR, membership.role, current_url_name),
         # Las de la sede activa, o las de todas en "todas" (fase S4b de docs/sedes.md).
-        "unread_alerts": unread_count(membership, scope=scope) if role_has_permission(role, "alertas.ver") else None,
+        "unread_alerts": unread_alerts(membership, scope),
     }
+
+
+def unread_alerts(membership, scope) -> int | None:
+    return unread_count(membership, scope=scope) if role_has_permission(membership.role, "alertas.ver") else None
 
 
 def shell(request: HttpRequest) -> dict:
@@ -88,8 +168,8 @@ def shell(request: HttpRequest) -> dict:
     if user is None or not user.is_authenticated:
         return {}
     membership = getattr(request, "membership", None)
-    data = {"account": _account(user, membership), "shop": None, "admin_links": [], "module_links": []}
+    data = {"account": account_menu(user, membership, getattr(request, "branch_scope", None)), "shop": None}
     if membership is not None:
         current = request.resolver_match.url_name if request.resolver_match else None
-        data |= _membership_shell(membership, current, scope=request.branch_scope)
+        data |= _membership_shell(request, membership, current)
     return {"shell": data}

@@ -1,0 +1,40 @@
+{# Cerrar sesión siempre por POST: un enlace GET nunca cierra la sesión. #}
+{% with account=shell.account %}
+<details class="menu account-menu" data-menu>
+  <summary class="menu__button" aria-controls="menu-cuenta" aria-expanded="false"
+           title="{{ account.name }}{% if account.role %} · {{ account.role }}{% endif %}"
+           aria-label="Cuenta de {{ account.name }}{% if account.role %}, {{ account.role }}{% endif %}">
+    <span class="avatar" aria-hidden="true">{{ account.initials }}</span>
+    <span class="account__text" aria-hidden="true">
+      <span class="account__name">{{ account.name }}</span>
+      {% if account.role %}<span class="account__role">{{ account.role }}</span>{% endif %}
+    </span>
+  </summary>
+  <div class="menu__panel menu__panel--end" id="menu-cuenta">
+    <div class="account__head">
+      <span class="strong">{{ account.name }}</span>
+      {% if account.role %}<span class="menu__note">{{ account.role }} · {{ account.shop }}</span>{% endif %}
+      {% if account.scope %}<span class="menu__note">Sede: {{ account.scope }}</span>{% endif %}
+    </div>
+    <div class="menu__separator" aria-hidden="true"></div>
+    {% for link in account.links %}
+    <a class="menu__item" href="{{ link.url }}">
+      <span class="icon" aria-hidden="true">{% include "icons/shield-check.svg" %}</span>{{ link.label }}
+    </a>
+    {% endfor %}
+    <form method="post" action="{% url 'logout_everywhere' %}">
+      {% csrf_token %}
+      <button type="submit" class="menu__item">
+        <span class="icon" aria-hidden="true">{% include "icons/history.svg" %}</span>Cerrar sesión en todos los dispositivos
+      </button>
+    </form>
+    <div class="menu__separator" aria-hidden="true"></div>
+    <form method="post" action="{% url 'account_logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="menu__item">
+        <span class="icon" aria-hidden="true">{% include "icons/log-out.svg" %}</span>Cerrar sesión
+      </button>
+    </form>
+  </div>
+</details>
+{% endwith %}

@@ -1,0 +1,81 @@
+/* Marco de la aplicación en el celular (fase F1). Va después de layout.css. */
+
+/* Celular --------------------------------------------------------------------
+   Sin JavaScript, la barra lateral va arriba del contenido. Con JavaScript es un panel que se abre
+   desde la marca. En ningún caso hay scroll horizontal. */
+@media (max-width: 860px) {
+  .shell {
+    --sidebar-current: auto;
+  }
+
+  .brand-cell {
+    width: auto;
+  }
+
+  .brand-cell .shop-name,
+  .topbar__label,
+  .account__text {
+    display: none;
+  }
+
+  .topbar__main {
+    padding: 0 var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .shell__body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar {
+    flex: none;
+    width: auto;
+    border-right: 0;
+    border-bottom: var(--line-width) solid var(--color-line);
+  }
+
+  .js .shell__body {
+    flex-direction: row;
+  }
+
+  .js .sidebar {
+    position: fixed;
+    top: var(--topbar-height);
+    bottom: 0;
+    left: 0;
+    z-index: 15;
+    width: min(var(--sidebar-width), 85vw);
+    translate: -100% 0;
+    transition: translate 160ms ease;
+  }
+
+  .js .shell.is-mobile-open .sidebar {
+    translate: 0 0;
+    box-shadow: var(--shadow-floating);
+  }
+
+  /* El estado "cerrada" es del escritorio: en el celular el panel siempre muestra los nombres. */
+  .is-collapsed .brand-cell .shop-mark {
+    display: flex;
+  }
+
+  .is-collapsed .module-link {
+    justify-content: flex-start;
+    padding: 0 var(--space-3-5);
+  }
+
+  .is-collapsed .sidebar__title,
+  .is-collapsed .module-link__label,
+  .is-collapsed .soon-tag {
+    display: revert;
+  }
+
+  .is-collapsed .signature {
+    display: flex;
+  }
+
+  .content__inner {
+    padding: var(--space-5) var(--space-4) var(--space-10);
+  }
+}

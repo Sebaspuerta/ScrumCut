@@ -1,0 +1,36 @@
+{% load formatting %}
+{# Franja de indicadores: hoy contra el mismo día de la semana anterior; el ticket, contra el período anterior. #}
+{% with kpis=dashboard.kpis %}
+<div class="kpi-band">
+  <div class="kpi">
+    <span class="kpi__label">Ingresos de hoy</span>
+    <span class="kpi__value num">{{ kpis.income.value|cop }}</span>
+    <span class="kpi__note num"><span class="kpi__delta kpi__delta--{{ kpis.income.variation.direction|default:'none' }}">{{ kpis.income.variation|variation:"Sin referencia" }}</span>{% if kpis.income.variation %} {{ kpis.comparison }}{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__label">Comandas cerradas</span>
+    <span class="kpi__value num">{{ kpis.orders.value }}</span>
+    <span class="kpi__note num"><span class="kpi__delta kpi__delta--{{ kpis.orders.variation.direction|default:'none' }}">{{ kpis.orders.variation|variation:"Sin referencia" }}</span> · {{ kpis.orders.open }} abierta{{ kpis.orders.open|pluralize }}</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__label">Ticket promedio</span>
+    <span class="kpi__value num">{{ kpis.ticket.value|cop }}</span>
+    <span class="kpi__note num"><span class="kpi__delta kpi__delta--{{ kpis.ticket.variation.direction|default:'none' }}">{{ kpis.ticket.variation|variation }}</span> vs. período anterior</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__label">Esperado en caja</span>
+    {% if kpis.cash %}
+    <span class="kpi__value num">{{ kpis.cash.expected|cop }}</span>
+    <span class="kpi__note num"><span class="kpi__delta kpi__delta--up">Abierta</span> desde las {{ kpis.cash.opened_at|time:"g:i a" }}</span>
+    {% else %}
+    <span class="kpi__value num">—</span>
+    <span class="kpi__note">Sin caja abierta</span>
+    {% endif %}
+  </div>
+  <div class="kpi">
+    <span class="kpi__label">Fiados pendientes</span>
+    <span class="kpi__value num">{{ kpis.receivables.pending_balance|cop }}</span>
+    <span class="kpi__note num"><span class="kpi__delta kpi__delta--{% if kpis.receivables.overdue_count %}down{% else %}none{% endif %}">{{ kpis.receivables.overdue_count }} vencido{{ kpis.receivables.overdue_count|pluralize }}</span> · {{ kpis.receivables.clients }} cliente{{ kpis.receivables.clients|pluralize }}</span>
+  </div>
+</div>
+{% endwith %}

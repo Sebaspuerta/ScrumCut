@@ -1,8 +1,8 @@
 {# Sin funcionalidad hasta que el backend esté completo (docs/diseno.md): no envía nada al servidor. #}
-<section id="assistant-panel" class="assistant" aria-label="Asistente ScrumCut" x-show="chatOpen" x-cloak>
+<section id="assistant-panel" class="assistant" aria-label="Asistente ScrumCut" hidden>
   <div class="assistant__header">
     <span class="assistant__title">Asistente</span>
-    <button type="button" class="icon-button" aria-label="Cerrar asistente" x-on:click="toggleChat">
+    <button type="button" class="icon-button" aria-label="Cerrar asistente" data-assistant-close>
       <span class="icon" aria-hidden="true">{% include "icons/x.svg" %}</span>
     </button>
   </div>

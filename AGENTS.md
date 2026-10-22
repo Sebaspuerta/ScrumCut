@@ -33,7 +33,7 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 
 - Django genera las vistas; todo lo visual vive en frontend/. Nada de HTML, CSS o JS dentro de backend/.
 - HTML: plantillas de Django con partials ({% partialdef %}), una subcarpeta por módulo en frontend/templates/.
-- Interacción con el servidor: HTMX. Interacción en pantalla: Alpine.js en su versión CSP (@alpinejs/csp).
+- Interacción con el servidor: HTMX. Interacción en pantalla: JavaScript propio sobre elementos nativos (<details> para menús), sin frameworks.
 - JavaScript propio: vanilla, ES modules, sin compilación, en frontend/static/js/ con core/, components/ y modules/.
 - CSS propio con variables de diseño (tokens.css, base.css, components/, modules/). Sin Bootstrap ni Tailwind.
 - Gráficas: Chart.js. Íconos: Lucide. Librerías de terceros descargadas en frontend/static/vendor/ con su licencia; sin CDN.

@@ -9,16 +9,16 @@ from django.utils import timezone
 from apps.alerts.conditions import LOW_STOCK, OUT_OF_STOCK, alertable_levels
 from apps.alerts.selectors import list_alerts, unread_count
 from apps.cash.models import CashMovement, CashSession, MovementKind
-from apps.cash.selectors import expected_cash
+from apps.cash.selectors import expected_cash, expected_cash_total
 from apps.core.formatting import weekday_name
 from apps.receivables.models import OPEN_STATUSES, Receivable
 from apps.receivables.selectors import receivables_summary
 from apps.reports.scope import money_sum
+from apps.reports.selectors.calendar import month_bounds, sales_calendar
 from apps.reports.selectors.cash import cash_flow_today, latest_closings
 from apps.reports.selectors.sales import income_mix, sales_by_barber, sales_by_period, top_products
-from apps.reports.selectors.towers import build_towers
 from apps.sales.models import EDITABLE_STATUSES, OrderStatus
-from apps.sales.selectors import day_bounds, local_today, period_dates, scoped_orders
+from apps.sales.selectors import day_bounds, local_today, scoped_orders
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
@@ -131,7 +131,7 @@ def _cash_kpi(scope: BranchScope) -> dict | None:
     sessions = list(_open_sessions(scope))
     if not sessions:
         return None
-    expected = sum((expected_cash(session) for session in sessions), Decimal("0"))
+    expected = expected_cash_total(sessions)
     return {"expected": expected, "opened_at": min(session.opened_at for session in sessions)}
 
 
@@ -176,23 +176,35 @@ def _kpis(
     }
 
 
-def executive_dashboard(
-    membership: Membership, date_from: date | None, date_to: date | None, *, scope: BranchScope
-) -> dict:
-    """El tablero de la sede del alcance; en "todas", los indicadores suman las sedes (docs/sedes.md)."""
+def _period_end(last: date, today: date) -> date:
+    """El mes en curso va hasta hoy; uno pasado, completo."""
+    return min(last, today)
+
+
+def _cash_today(membership: Membership, scope: BranchScope) -> dict:
+    """En "todas" no se mezclan cajas: cada sede tiene la suya y el tablero pide elegir una."""
+    if scope.is_all:
+        return {"needs_branch": True, "flow": None}
+    return {"needs_branch": False, "flow": cash_flow_today(membership, scope=scope)}
+
+
+def executive_dashboard(membership: Membership, month: date, *, scope: BranchScope) -> dict:
+    """El tablero del mes en la sede del alcance; en "todas", los indicadores suman las sedes (docs/sedes.md)."""
     ensure_permission(membership, "reportes.ver")
     scope.check(membership)
-    date_from, date_to = period_dates(membership, date_from, date_to)
     today = local_today(membership)
-    days = sales_by_period(membership, date_from, date_to, scope=scope)
+    sales_month = sales_calendar(membership, month, scope=scope)
+    date_from, last = month_bounds(month)
+    date_to = _period_end(last, today)
     previous_days = sales_by_period(membership, *_previous_range(date_from, date_to), scope=scope)
     return {
         "date_from": date_from,
         "date_to": date_to,
-        "has_sales": any(day["orders"] for day in days),
-        "kpis": _kpis(membership, scope, today, days=days, previous_days=previous_days),
-        "towers": build_towers(days, today),
-        "cash_flow": cash_flow_today(membership, scope=scope),
+        "scope_label": scope.branch.name if scope.branch else "Todas las sedes",
+        "has_sales": sales_month["selling_days"] > 0,
+        "kpis": _kpis(membership, scope, today, days=sales_month["days"], previous_days=previous_days),
+        "calendar": sales_month,
+        "cash": _cash_today(membership, scope),
         "barbers": _with_bar_widths(sales_by_barber(membership, date_from, date_to, scope=scope)),
         "mix": income_mix(membership, date_from, date_to, scope=scope),
         "products": _with_margins(top_products(membership, date_from, date_to, limit=5, scope=scope)),
