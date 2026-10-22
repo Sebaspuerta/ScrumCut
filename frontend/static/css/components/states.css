@@ -86,3 +86,19 @@
   width: var(--icon-sm);
   height: var(--icon-sm);
 }
+
+/* Aviso de una línea arriba del contenido (caja de otro día): fondo café claro, sin rojos. */
+.notice-banner {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-espresso-200);
+  border-left: var(--marker-width) solid var(--color-espresso);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  color: var(--color-text);
+}
+
+.notice-banner a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -126,7 +126,10 @@ def test_anular_y_descontar_exigen_su_permiso_y_quedan_en_la_auditoria(world):
     assert barber.post(reverse("orders_discount", args=[order.public_id]), discount).status_code == 403
     _client(world.cashier).post(reverse("orders_discount", args=[order.public_id]), discount)
     sales.checkout_order(
-        world.cashier, order.public_id, scope=scope_of(world.cashier), checkout=sales.Checkout("efectivo", D("20000"))
+        world.cashier,
+        order.public_id,
+        scope=scope_of(world.cashier),
+        checkout=sales.Checkout.whole("efectivo", received=D("20000")),
     )
     cancel = {"motivo": "Error de cobro", "confirmar": "on"}
     assert _client(world.cashier).post(reverse("orders_cancel", args=[order.public_id]), cancel).status_code == 403
@@ -149,8 +152,9 @@ def test_en_todas_las_sedes_no_se_crea_una_comanda(world):
     assert any("Elige una sede" in notice for notice in _notices(response))
 
 
-# Sesión, alcance, marco, conteos de pestañas, la lista con sus líneas y pagos, y la barra del menú.
-BOARD_QUERIES = 17
+# Sesión, alcance, marco, conteos de pestañas, la lista con sus líneas y pagos, el aviso de la caja
+# (¿viene de otro día?) y la barra del menú.
+BOARD_QUERIES = 19
 
 
 @pytest.mark.parametrize("orders", [1, 6])

@@ -102,8 +102,8 @@ def test_despues_de_cerrar_no_se_registran_movimientos(world):
     assert "cerrada" in _notices(response) or response.status_code == 404
 
 
-# Sesión, alcance, marco, la caja con su franja, movimientos, otros medios y cierres.
-CASH_QUERIES = 19
+# Sesión, alcance, marco, la caja con su franja, si viene de otro día, movimientos, otros medios y cierres.
+CASH_QUERIES = 20
 
 
 @pytest.mark.parametrize("expenses", [1, 8])

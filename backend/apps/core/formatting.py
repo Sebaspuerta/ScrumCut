@@ -1,9 +1,10 @@
 """Formato colombiano para la interfaz: una sola implementación que usan las plantillas y los datos del JS."""
 
-from datetime import date
+from datetime import date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 MINUS = "−"  # signo menos tipográfico, como en las maquetas
+NOON = 12
 MASK_MIN_DIGITS = 7  # con menos dígitos, mostrar inicio y final dejaría el número a la vista
 MONTHS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
 MONTH_NAMES = (
@@ -69,3 +70,19 @@ def month_label(day: date) -> str:
 
 def day_label(day: date) -> str:
     return f"{weekday_short(day)} {short_date(day)}"
+
+
+def clock(moment: datetime) -> str:
+    """8:00 a. m. / 3:15 p. m. (hora local ya convertida)."""
+    suffix = "a. m." if moment.hour < NOON else "p. m."
+    return f"{(moment.hour - 1) % NOON + 1}:{moment.minute:02d} {suffix}"
+
+
+def opened_since(moment: datetime, today: date) -> str:
+    """Desde cuándo está abierta una caja: "desde las 8:00 a. m.", "desde ayer, 8:00 a. m." o
+    "desde el lun 19 oct, 8:00 a. m."."""
+    if moment.date() == today:
+        return f"desde las {clock(moment)}"
+    if moment.date() == today - timedelta(days=1):
+        return f"desde ayer, {clock(moment)}"
+    return f"desde el {weekday_short(moment.date()).lower()} {short_date(moment.date())}, {clock(moment)}"

@@ -1,22 +1,43 @@
 {% load formatting %}
-{# Cobro: efectivo con lo recibido (las vueltas las calcula el servidor; change-preview.js solo muestra una #}
-{# vista previa), transferencia con referencia opcional o fiado, que exige un cliente registrado. #}
+{# Cobro: una forma de pago, o dividido en hasta 3 partes ("Dividir el pago", solo con JavaScript). Las #}
+{# vueltas sobre la parte en efectivo y la suma exacta las valida el servidor; change-preview.js solo #}
+{# muestra la vista previa. El fiado exige un cliente registrado. #}
 <form class="checkout" method="post" action="{% url 'orders_checkout' order.public_id %}" data-checkout data-total="{{ order.total|floatformat:0 }}">
   {% csrf_token %}
-  <fieldset class="checkout__methods">
+  <fieldset class="checkout__methods" data-single>
     <legend class="label">Forma de pago</legend>
     <div class="checkout__segments">
-      <label class="checkout__method"><input type="radio" name="metodo" value="efectivo" checked> Efectivo</label>
-      <label class="checkout__method"><input type="radio" name="metodo" value="transferencia"> Transferencia</label>
+      {% for value, label in methods %}
+      <label class="checkout__method"><input type="radio" name="metodo" value="{{ value }}"{% if forloop.first %} checked{% endif %}> {{ label }}</label>
+      {% endfor %}
       <label class="checkout__method{% if not order.client %} is-disabled{% endif %}"><input type="radio" name="metodo" value="fiado"{% if not order.client %} disabled{% endif %}> Fiado</label>
     </div>
   </fieldset>
+  <button type="button" class="link-button" data-split-open hidden>Dividir el pago</button>
+  <fieldset class="checkout__split" data-split hidden>
+    <legend class="label">Pago dividido · las partes deben sumar {{ order.total|cop }}</legend>
+    {% for number in "123" %}
+    <div class="checkout__part">
+      <label class="visually-hidden" for="parte-{{ number }}-metodo">Forma de pago de la parte {{ number }}</label>
+      <select id="parte-{{ number }}-metodo" class="field" name="parte_{{ number }}_metodo" data-part-method>
+        <option value="">—</option>
+        {% for value, label in methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+        {% if order.client %}<option value="fiado">Fiado</option>{% endif %}
+      </select>
+      <label class="visually-hidden" for="parte-{{ number }}-monto">Monto de la parte {{ number }}</label>
+      <input id="parte-{{ number }}-monto" class="field" type="number" name="parte_{{ number }}_monto" min="1" step="1" inputmode="numeric" placeholder="Monto" data-part-amount>
+      <label class="visually-hidden" for="parte-{{ number }}-referencia">Referencia de la parte {{ number }}</label>
+      <input id="parte-{{ number }}-referencia" class="field" type="text" name="parte_{{ number }}_referencia" maxlength="80" placeholder="Referencia (opcional)">
+    </div>
+    {% endfor %}
+    <p class="muted checkout__note" data-split-sum aria-live="polite"></p>
+  </fieldset>
   <div class="checkout__group num" data-method="efectivo">
-    <label class="field-label">Recibido<input class="field field--figure" type="number" name="recibido" min="0" step="1" inputmode="numeric" data-received></label>
+    <label class="field-label">Recibido en efectivo<input class="field field--figure" type="number" name="recibido" min="0" step="1" inputmode="numeric" data-received></label>
     <p class="field-label">Vueltas <output class="checkout__change" data-change aria-live="polite">—</output></p>
   </div>
-  <div class="checkout__group" data-method="transferencia">
-    <label class="field-label">Referencia de la transferencia (opcional)<input class="field" type="text" name="referencia" maxlength="80" placeholder="Ej.: Nequi 4821"></label>
+  <div class="checkout__group" data-method="{% for value, label in methods %}{% if value != 'efectivo' %}{{ value }} {% endif %}{% endfor %}">
+    <label class="field-label">Referencia (opcional)<input class="field" type="text" name="referencia" maxlength="80" placeholder="Ej.: Nequi 4821"></label>
     <p class="muted checkout__note">No entra a la caja física: queda en "otros medios" del cierre.</p>
   </div>
   {% if page.credit %}

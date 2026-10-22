@@ -18,14 +18,14 @@
     </nav>
     <h1>Caja</h1>
     <p class="muted cash-status">
-      {% if session %}<span class="status-tag">Abierta</span> Sede {{ session.branch.name }} · desde las {{ session.opened_at|time:"g:i a" }} · abrió {{ session.opened_by.full_name|default:session.opened_by.email }}
+      {% if session %}<span class="status-tag">Abierta</span> Sede {{ session.branch.name }} · {{ since }} · abrió {{ session.opened_by.full_name|default:session.opened_by.email }}
       {% elif needs_branch %}Todas las sedes
       {% else %}Sede {{ shell.branches.current }} · sin caja abierta{% endif %}
     </p>
   </div>
   {% if session %}
   <div class="page-head__actions">
-    {% if can.movement %}
+    {% if can.movement and not stale %}
     <a class="button button--outline" href="#gasto">Registrar gasto</a>
     <a class="button button--outline" href="#retiro">Registrar retiro</a>
     {% endif %}
@@ -39,12 +39,13 @@
 {% elif not session %}
 {% include "cash/parts.html#open" %}
 {% else %}
+{% if stale %}<p class="notice-banner" role="status">Esta caja viene de otro día. Ciérrala con su arqueo y abre la de hoy.</p>{% endif %}
 {% include "cash/parts.html#strip" %}
 <div class="cash-columns">
   {% include "cash/parts.html#movements" %}
   {% if can.close %}{% include "cash/parts.html#count" %}{% endif %}
 </div>
-{% if can.movement %}{% include "cash/parts.html#manual" %}{% endif %}
+{% if can.movement and not stale %}{% include "cash/parts.html#manual" %}{% endif %}
 {% endif %}
 {% if not needs_branch %}{% include "cash/parts.html#closings" %}{% endif %}
 {% endblock %}

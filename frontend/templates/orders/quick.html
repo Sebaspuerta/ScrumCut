@@ -35,11 +35,12 @@
     <fieldset class="checkout__methods">
       <legend class="label">Forma de pago</legend>
       <div class="checkout__segments">
-        <label class="checkout__method"><input type="radio" name="metodo" value="efectivo" checked> Efectivo</label>
-        <label class="checkout__method"><input type="radio" name="metodo" value="transferencia"> Transferencia</label>
+        {% for value, label in methods %}
+        <label class="checkout__method"><input type="radio" name="metodo" value="{{ value }}"{% if forloop.first %} checked{% endif %}> {{ label }}</label>
+        {% endfor %}
       </div>
     </fieldset>
-    <label class="field-label">Referencia de la transferencia (opcional)<input class="field" type="text" name="referencia" maxlength="80"></label>
+    <label class="field-label">Referencia (opcional, para pagos que no son en efectivo)<input class="field" type="text" name="referencia" maxlength="80"></label>
     <button type="submit" class="button button--primary button--large">Cobrar</button>
   </form>
   {% endif %}

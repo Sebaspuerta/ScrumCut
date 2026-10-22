@@ -32,6 +32,7 @@
     {% endif %}
   </div>
 </section>
+{% include "layout/stale_cash.html" %}
 {% if not request.branch_scope.branch %}
 <p class="notice-line">Estás viendo todas las sedes: para crear o cobrar una comanda, elige una sede en la barra superior.</p>
 {% endif %}

@@ -70,6 +70,10 @@
 .link-button {
   display: inline-flex;
   align-items: center;
+  width: fit-content;
+  padding: 0;
+  background: transparent;
+  border: 0;
   min-height: var(--touch-target);
   font-size: var(--text-meta);
   font-weight: 500;

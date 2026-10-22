@@ -16,10 +16,19 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.cash.selectors import payment_methods
 from apps.core.formatting import format_cop
 from apps.sales import services
 from apps.sales.board import CLOSED_TODAY
-from apps.sales.forms import CREDIT, AddItemForm, CancelForm, CheckoutForm, DiscountForm, NewOrderForm, QuickChargeForm
+from apps.sales.forms import (
+    AddItemForm,
+    CancelForm,
+    ChangeClientForm,
+    CheckoutForm,
+    DiscountForm,
+    NewOrderForm,
+    QuickChargeForm,
+)
 from apps.tenancy.permissions import require_permission
 
 
@@ -83,6 +92,19 @@ def add_line(request: HttpRequest, public_id: UUID) -> HttpResponse:
 
 @require_POST
 @require_permission("comandas.editar")
+def change_client(request: HttpRequest, public_id: UUID) -> HttpResponse:
+    """El cliente sale de la barbería activa; uno de otra barbería no se encuentra (lo valida el service)."""
+
+    def action(data: dict) -> str:
+        services.change_order_client(request.membership, public_id, scope=request.branch_scope, client=data["cliente"])
+        messages.success(request, "Cliente de la comanda actualizado.")
+        return _detail(public_id)
+
+    return _with_form(request, ChangeClientForm(request.POST), action, back=_detail(public_id))
+
+
+@require_POST
+@require_permission("comandas.editar")
 def remove_line(request: HttpRequest, public_id: UUID, item: UUID) -> HttpResponse:
     def action() -> str:
         services.remove_item(request.membership, public_id, scope=request.branch_scope, item=item)
@@ -103,10 +125,14 @@ def discount(request: HttpRequest, public_id: UUID) -> HttpResponse:
     return _with_form(request, DiscountForm(request.POST), action, back=_detail(public_id))
 
 
-def _checkout_notice(order, change, method: str) -> str:
-    if method == CREDIT:
-        return f"Comanda #{order.number} quedó como fiado por {format_cop(order.total)}."
-    notice = f"Comanda #{order.number} cobrada: {format_cop(order.total)}."
+def _checkout_notice(order, change) -> str:
+    """Lo cobrado y, si quedó saldo, lo que quedó como fiado; las vueltas, si hubo efectivo."""
+    paid, credit = order.amount_paid, order.total - order.amount_paid
+    if not paid and credit:
+        return f"Comanda #{order.number} quedó como fiado por {format_cop(credit)}."
+    notice = f"Comanda #{order.number} cobrada: {format_cop(paid)}."
+    if credit:
+        notice += f" Quedó como fiado: {format_cop(credit)}."
     return f"{notice} Vueltas: {format_cop(change)}." if change else notice
 
 
@@ -114,18 +140,16 @@ def _checkout_notice(order, change, method: str) -> str:
 @require_permission("comandas.cerrar")
 def checkout(request: HttpRequest, public_id: UUID) -> HttpResponse:
     """Un segundo envío del mismo cobro encuentra la comanda cerrada y no cobra dos veces."""
+    form = CheckoutForm(request.POST, methods=payment_methods())
 
-    def action(data: dict) -> str:
-        plan = services.Checkout(
-            method=data["metodo"], received=data["recibido"], reference=data["referencia"], due_date=data["vence"]
-        )
+    def action(_data: dict) -> str:
         order, change = services.checkout_order(
-            request.membership, public_id, scope=request.branch_scope, checkout=plan
+            request.membership, public_id, scope=request.branch_scope, checkout=form.checkout()
         )
-        messages.success(request, _checkout_notice(order, change, plan.method))
+        messages.success(request, _checkout_notice(order, change))
         return f"{reverse('orders_board')}?pestana={CLOSED_TODAY}"
 
-    return _with_form(request, CheckoutForm(request.POST), action, back=_detail(public_id))
+    return _with_form(request, form, action, back=_detail(public_id))
 
 
 @require_POST
@@ -156,4 +180,5 @@ def quick(request: HttpRequest) -> HttpResponse:
         messages.success(request, f"Comanda #{order.number} cobrada: {format_cop(order.total)}.")
         return f"{reverse('orders_board')}?pestana={CLOSED_TODAY}"
 
-    return _with_form(request, QuickChargeForm(request.POST), action, back=reverse("orders_quick"))
+    form = QuickChargeForm(request.POST, methods=payment_methods())
+    return _with_form(request, form, action, back=reverse("orders_quick"))

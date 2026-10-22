@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.http import require_GET
 
+from apps.cash.board import stale_session
 from apps.reports.excel.builder import build_business_report
 from apps.reports.forms import MonthFilterForm
 from apps.reports.selectors.calendar import month_bounds
@@ -31,7 +32,15 @@ def _filters(request: HttpRequest, membership: Membership) -> MonthFilterForm:
 def _ready(request: HttpRequest, membership: Membership, form: MonthFilterForm) -> dict:
     data = executive_dashboard(membership, form.month(), scope=request.branch_scope)
     can_export = role_has_permission(membership.role, "reportes.exportar")
-    return {"state": "ready", "form": form, "dashboard": data, "can_export": can_export, "view": form.view()}
+    stale_cash = stale_session(membership, scope=request.branch_scope)
+    return {
+        "state": "ready",
+        "form": form,
+        "dashboard": data,
+        "can_export": can_export,
+        "view": form.view(),
+        "stale_cash": stale_cash,
+    }
 
 
 @require_GET

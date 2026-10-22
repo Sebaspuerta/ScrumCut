@@ -5,18 +5,21 @@ o una lista: el número de consultas no crece con el número de movimientos.
 """
 
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from django.db.models import Count, DecimalField, Q, QuerySet, Sum, Value
 from django.db.models.functions import Coalesce
 
 from apps.cash.choices import PaymentMethod
 from apps.cash.models import CashMovement, CashSession, MovementKind
-from apps.cash.selectors import current_session, expected_cash
+from apps.cash.selectors import current_session, expected_cash, is_from_previous_day
+from apps.core.formatting import opened_since
 from apps.receivables.models import Receivable
 from apps.sales.selectors import day_bounds, local_today
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
+from apps.tenancy.roles import role_has_permission
 
 LAST_CLOSINGS = 5
 STRIP = (MovementKind.SALE, MovementKind.RECEIVABLE_PAYMENT, MovementKind.EXPENSE, MovementKind.WITHDRAWAL)
@@ -63,6 +66,23 @@ def _other_media(membership: Membership, session: CashSession, scope: BranchScop
     return {"transfers": transfers, "credit": credit}
 
 
+def _opened(membership: Membership, session: CashSession) -> dict:
+    """Desde cuándo está abierta y si viene de otro día (entonces la acción principal es el arqueo)."""
+    local = session.opened_at.astimezone(ZoneInfo(membership.barbershop.timezone))
+    return {"since": opened_since(local, local_today(membership)), "stale": is_from_previous_day(session)}
+
+
+def stale_session(membership: Membership, *, scope: BranchScope) -> CashSession | None:
+    """La caja de la sede del alcance si viene de otro día; para el aviso del tablero y de Comandas.
+
+    Sin `caja.ver` o en "todas" no hay aviso: ese rol no puede cerrarla y en "todas" no hay una caja.
+    """
+    if scope.is_all or not role_has_permission(membership.role, "caja.ver"):
+        return None
+    session = current_session(membership, scope=scope)
+    return session if session is not None and is_from_previous_day(session) else None
+
+
 def last_closings(scope: BranchScope) -> QuerySet[CashSession]:
     closed = scope.apply(CashSession.objects.filter(closed_at__isnull=False)).select_related("closed_by")
     return closed.order_by("-closed_at", "-pk")[:LAST_CLOSINGS]
@@ -80,6 +100,7 @@ def cash_register(membership: Membership, *, scope: BranchScope, kind: str | Non
         return data
     return {
         **data,
+        **_opened(membership, session),
         **_strip(session),
         "movements": list(_movements(session, kind)),
         "other_media": _other_media(membership, session, scope),

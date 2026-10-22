@@ -12,9 +12,10 @@ from django.core.exceptions import ValidationError
 
 from apps.cash.choices import PaymentMethod
 from apps.sales.board import OPEN, TABS, BoardFilter
+from apps.sales.services.checkout import MAX_PARTS, Checkout, PaymentPart
 
-CASH, TRANSFER, CREDIT = PaymentMethod.CASH, PaymentMethod.TRANSFER, "fiado"
-CHECKOUT_METHODS = ((CASH, "Efectivo"), (TRANSFER, "Transferencia"), (CREDIT, "Fiado"))
+CASH, CREDIT = PaymentMethod.CASH, "fiado"
+_MONEY = {"max_digits": 14, "decimal_places": 2}
 SERVICE_PREFIX, PRODUCT_PREFIX = "servicio:", "producto:"
 
 
@@ -39,6 +40,12 @@ class NewOrderForm(forms.Form):
     cliente = forms.UUIDField(required=False)
 
 
+class ChangeClientForm(forms.Form):
+    """El cliente elegido; vacío deja la comanda como de mostrador."""
+
+    cliente = forms.UUIDField(required=False)
+
+
 class AddItemForm(forms.Form):
     """El ítem viaja como "servicio:<uuid>" o "producto:<uuid>"; el barbero es opcional."""
 
@@ -59,19 +66,59 @@ class DiscountForm(forms.Form):
     motivo = forms.CharField(required=False, max_length=200)
 
 
-class CheckoutForm(forms.Form):
-    """Cobro: efectivo con lo recibido, transferencia con su referencia o fiado con su fecha de pago."""
+def _part_fields(number: int) -> dict[str, forms.Field]:
+    return {
+        f"parte_{number}_metodo": forms.ChoiceField(required=False),
+        f"parte_{number}_monto": forms.DecimalField(required=False, min_value=Decimal("0.01"), **_MONEY),
+        f"parte_{number}_referencia": forms.CharField(required=False, max_length=80),
+    }
 
-    metodo = forms.ChoiceField(choices=CHECKOUT_METHODS)
-    recibido = forms.DecimalField(required=False, min_value=Decimal("0"), max_digits=14, decimal_places=2)
+
+class CheckoutForm(forms.Form):
+    """Cobro con una forma de pago o dividido en hasta tres partes ("parte_1_metodo", "parte_1_monto"...).
+
+    Sin JavaScript se elige una sola forma; el JS solo muestra las filas para dividir. Que las partes sumen
+    el total y las vueltas los decide `checkout_order`.
+    """
+
+    metodo = forms.ChoiceField()
+    recibido = forms.DecimalField(required=False, min_value=Decimal("0"), **_MONEY)
     referencia = forms.CharField(required=False, max_length=80)
     vence = forms.DateField(required=False)
 
+    def __init__(self, data, *, methods: list[tuple[str, str]]) -> None:
+        super().__init__(data)
+        for number in range(1, MAX_PARTS + 1):
+            self.fields.update(_part_fields(number))
+        choices = [*methods, (CREDIT, "Fiado")]
+        for name, field in self.fields.items():
+            if name == "metodo" or name.endswith("_metodo"):
+                field.choices = choices if name == "metodo" else [("", "—"), *choices]
+
+    def _parts(self) -> list[PaymentPart]:
+        data = self.cleaned_data
+        rows = [n for n in range(1, MAX_PARTS + 1) if data.get(f"parte_{n}_monto") is not None]
+        if not rows:
+            return [PaymentPart(data["metodo"], reference=data.get("referencia", ""))]
+        if any(not data.get(f"parte_{n}_metodo") for n in rows):
+            raise ValidationError("Elige la forma de pago de cada parte.")
+        return [
+            PaymentPart(data[f"parte_{n}_metodo"], data[f"parte_{n}_monto"], data[f"parte_{n}_referencia"])
+            for n in rows
+        ]
+
     def clean(self) -> dict:
         cleaned = super().clean()
-        if cleaned.get("metodo") == CASH and cleaned.get("recibido") is None:
+        if self.errors:
+            return cleaned
+        cleaned["parts"] = tuple(self._parts())
+        if any(part.method == CASH for part in cleaned["parts"]) and cleaned.get("recibido") is None:
             raise ValidationError({"recibido": "Indica cuánto recibiste en efectivo."})
         return cleaned
+
+    def checkout(self) -> Checkout:
+        data = self.cleaned_data
+        return Checkout(parts=data["parts"], received=data["recibido"], due_date=data["vence"])
 
 
 class CancelForm(forms.Form):
@@ -84,7 +131,11 @@ class QuickChargeForm(forms.Form):
 
     item = AddItemForm.base_fields["item"]
     barbero = forms.UUIDField()
-    metodo = forms.ChoiceField(choices=CHECKOUT_METHODS[:2])
+    metodo = forms.ChoiceField()
     referencia = forms.CharField(required=False, max_length=80)
+
+    def __init__(self, data, *, methods: list[tuple[str, str]]) -> None:
+        super().__init__(data)
+        self.fields["metodo"].choices = methods
 
     clean_item = AddItemForm.clean_item

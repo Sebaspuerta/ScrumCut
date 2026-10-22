@@ -16,10 +16,11 @@ Un módulo por responsabilidad; este paquete reexporta la API pública, así que
 
 from apps.sales.services._shared import NOT_EDITABLE
 from apps.sales.services.cancellation import cancel_order
-from apps.sales.services.checkout import Checkout, cash_change, checkout_order
+from apps.sales.services.checkout import Checkout, PaymentPart, cash_change, checkout_order
 from apps.sales.services.closing import close_order
 from apps.sales.services.open_orders import (
     add_item,
+    change_order_client,
     create_order,
     hold_order,
     remove_item,
@@ -32,7 +33,9 @@ from apps.sales.services.quick_charge import quick_register
 __all__ = [
     "NOT_EDITABLE",
     "Checkout",
+    "PaymentPart",
     "cash_change",
+    "change_order_client",
     "checkout_order",
     "add_item",
     "cancel_order",

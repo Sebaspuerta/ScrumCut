@@ -4,16 +4,19 @@
 resumen, así que la pantalla y el arqueo nunca dan cifras distintas (defecto 23).
 """
 
+from datetime import date
 from decimal import Decimal
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from django.db.models import DecimalField, Q, Sum, Value
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 
 from apps.cash.choices import PaymentMethod
 from apps.cash.models import CashMovement, CashSession, Direction
 from apps.tenancy.branch_scope import BranchScope
-from apps.tenancy.models import Branch, Membership
+from apps.tenancy.models import Barbershop, BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
 
 _ZERO = Decimal("0.00")
@@ -39,6 +42,24 @@ def expected_cash_total(sessions: list[CashSession]) -> Decimal:
 
 def expected_cash(session: CashSession) -> Decimal:
     return expected_cash_total([session])
+
+
+def payment_methods() -> list[tuple[str, str]]:
+    """Las formas de pago habilitadas en la barbería, en el orden de `PaymentMethod` (efectivo primero)."""
+    enabled = set(BarbershopSettings.objects.values_list("enabled_payment_methods", flat=True).get())
+    return [(method.value, method.label) for method in PaymentMethod if method.value in enabled]
+
+
+def opened_and_today(session: CashSession) -> tuple[date, date]:
+    """El día local en que se abrió la caja y el día local de hoy, en la zona de la barbería."""
+    tz = ZoneInfo(Barbershop.objects.values_list("timezone", flat=True).get(pk=session.barbershop_id))
+    return session.opened_at.astimezone(tz).date(), timezone.now().astimezone(tz).date()
+
+
+def is_from_previous_day(session: CashSession) -> bool:
+    """Una caja abierta que empezó otro día: se cierra con su arqueo y se abre la de hoy."""
+    opened, today = opened_and_today(session)
+    return session.is_open and opened < today
 
 
 def open_session_for(branch: Branch) -> CashSession | None:

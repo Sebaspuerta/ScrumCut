@@ -1,0 +1,4 @@
+{# Aviso corto cuando la caja de la sede viene de otro día: no recibe efectivo hasta cerrarla y abrir la de hoy. #}
+{% if stale_cash %}
+<p class="notice-banner" role="status">La caja de la sede viene de otro día y no recibe efectivo. <a href="{% url 'cash_register' %}#arqueo">Ciérrala en Caja</a> y abre la de hoy.</p>
+{% endif %}

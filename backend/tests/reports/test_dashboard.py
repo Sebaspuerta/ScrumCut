@@ -30,14 +30,16 @@ def test_el_esperado_del_tablero_coincide_con_el_arqueo_de_una_caja_abierta_ayer
     with mock.patch("django.utils.timezone.now", return_value=yesterday):
         sell(w, w.ana, service=w.corte)  # 25 000 en efectivo, ayer
     CashSession.objects.filter(pk=w.session.pk).update(opened_at=yesterday - timedelta(hours=2))
-    sell(w, w.beto, product=w.cera)  # 20 000 en efectivo, hoy
+    # Hoy la caja de ayer ya no recibe efectivo (fase F3b): la venta de hoy entra por Nequi.
+    sell(w, w.beto, product=w.cera, method="nequi")  # 20 000, hoy
     sales.create_order(w.cashier, scope_of(w.cashier, w.branch))  # una comanda abierta
 
     summary = dashboard_summary(w.owner, scope=scope_of(w.owner))
-    closed = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("95000"), scope=scope_of(w.cashier))
+    closed = cash.close_session(w.cashier, w.session.public_id, counted_amount=D("75000"), scope=scope_of(w.cashier))
 
-    assert [session["expected_cash"] for session in summary["open_cash_sessions"]] == [D("95000")]
-    assert closed.expected_amount == D("95000")
+    # Base 50 000 + 25 000 en efectivo de ayer; lo de Nequi no entra a la caja física.
+    assert [session["expected_cash"] for session in summary["open_cash_sessions"]] == [D("75000")]
+    assert closed.expected_amount == D("75000")
     assert summary["income"]["total"] == D("20000")  # lo de ayer no es ingreso de hoy
     assert (summary["orders_closed_today"], summary["orders_open"]) == (1, 1)
 

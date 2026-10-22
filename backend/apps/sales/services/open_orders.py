@@ -108,6 +108,25 @@ def create_order(
     return order
 
 
+def change_order_client(
+    membership: Membership, order: UUID | str, *, scope: BranchScope, client: UUID | str | None
+) -> Order:
+    """Cambia el cliente de una comanda abierta o en espera de la sede del alcance; None la deja de mostrador.
+
+    El cliente debe ser de esta barbería (el manager ya filtra por ella). Queda en la auditoría con
+    el antes y el después. Sin cliente, la comanda ya no puede cerrarse como fiado (`close_order`).
+    """
+    ensure_permission(membership, "comandas.editar")
+    with transaction.atomic():
+        locked = _locked_order(membership, order, scope=scope)
+        _require_editable(locked)
+        before = _order_snapshot(locked)
+        locked.client = _order_client(client)
+        locked.save(update_fields=["client", "updated_at"])
+        _audit(membership, "comanda.cambiar_cliente", order=locked, before=before, after=_order_snapshot(locked))
+    return locked
+
+
 def _check_new_item(service: UUID | str | None, product: UUID | str | None, *, quantity: int) -> None:
     if (service is None) == (product is None):
         raise ValidationError("Indica un servicio o un producto.")

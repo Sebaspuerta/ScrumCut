@@ -6,6 +6,7 @@
     <h2 id="t-detalle" class="order-head__client">{% if order.client %}{{ order.client.full_name }}{% else %}Cliente de mostrador{% endif %}</h2>
     <span class="muted">{% include "orders/detail.html#client_note" %}</span>
   </div>
+  {% if page.editable and can.edit %}{% include "orders/detail.html#change_client" %}{% endif %}
 
   <div class="table-scroll">
     <table class="data-table">
@@ -49,6 +50,41 @@
 {% partialdef client_note %}
 {% if page.client %}Cliente {{ page.client.status|lower }} en {{ order.branch.name }} · {{ page.client.visits }} visita{{ page.client.visits|pluralize }}{% with phone=order.client.phone|mask_phone %}{% if phone %} · cel. {{ phone }}{% endif %}{% endwith %}
 {% else %}Sin cliente registrado · no puede quedar como fiado{% endif %}
+{% endpartialdef %}
+
+{% partialdef change_client %}
+{# Buscar por GET en los clientes de la barbería y elegir por POST; vacío la deja de mostrador. #}
+<details class="change-client"{% if client_search %} open{% endif %}>
+  <summary class="button button--outline">Cambiar cliente</summary>
+  <div class="change-client__panel">
+    <form class="inline-form" method="get" action="{% url 'orders_detail' order.public_id %}">
+      <label for="buscar-cliente" class="visually-hidden">Buscar cliente</label>
+      <input id="buscar-cliente" class="field" type="search" name="buscar_cliente" value="{{ client_search.term }}" placeholder="Nombre o celular">
+      <button type="submit" class="button button--outline">Buscar</button>
+    </form>
+    {% if client_search.term %}
+    <ul class="change-client__results">
+      {% for client in client_search.results %}
+      <li>
+        <form method="post" action="{% url 'orders_change_client' order.public_id %}">
+          {% csrf_token %}
+          <input type="hidden" name="cliente" value="{{ client.public_id }}">
+          <button type="submit" class="menu__item">{{ client.full_name }}{% with phone=client.phone|mask_phone %}{% if phone %} · <span class="muted">{{ phone }}</span>{% endif %}{% endwith %}</button>
+        </form>
+      </li>
+      {% empty %}
+      <li class="muted">Ningún cliente coincide con "{{ client_search.term }}".</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if order.client %}
+    <form method="post" action="{% url 'orders_change_client' order.public_id %}">
+      {% csrf_token %}
+      <button type="submit" class="link-button">Dejar como cliente de mostrador</button>
+    </form>
+    {% endif %}
+  </div>
+</details>
 {% endpartialdef %}
 
 {% partialdef add_line %}

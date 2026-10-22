@@ -18,6 +18,7 @@
 {% block content %}
 {% if state == "ready" %}
   {% include "dashboard/header.html" %}
+  {% include "layout/stale_cash.html" %}
   {% include "dashboard/kpis.html" %}
   <div class="dashboard-grid">
     {% include "dashboard/sales.html" %}

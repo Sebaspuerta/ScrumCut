@@ -119,12 +119,11 @@
   border: 0;
 }
 
+/* Una casilla por forma de pago; con muchas formas, pasan a la línea siguiente. */
 .checkout__segments {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  border: var(--line-width) solid var(--color-espresso);
-  border-radius: var(--radius);
-  overflow: hidden;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--space-1);
 }
 
 /* El radio queda oculto pero enfocable: la etiqueta muestra la elección y el foco del teclado. */
@@ -135,6 +134,8 @@
   justify-content: center;
   min-height: var(--touch-target);
   padding: 0 var(--space-2);
+  border: var(--line-width) solid var(--color-espresso);
+  border-radius: var(--radius);
   font-size: var(--text-meta);
   font-weight: 600;
   text-align: center;
@@ -144,10 +145,6 @@
 .checkout__method input {
   position: absolute;
   opacity: 0;
-}
-
-.checkout__method + .checkout__method {
-  border-left: var(--line-width) solid var(--color-espresso);
 }
 
 .checkout__method:has(input:checked) {
@@ -161,9 +158,25 @@
 }
 
 .checkout__method.is-disabled {
+  border-color: var(--color-control-border);
   background: var(--color-sidebar);
   color: var(--color-floor-closed);
   cursor: not-allowed;
+}
+
+.checkout__split {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checkout__part {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--space-2);
 }
 
 .checkout__group {
@@ -230,4 +243,26 @@
   align-items: center;
   gap: var(--space-2);
   min-height: var(--touch-target);
+}
+
+.change-client > summary {
+  list-style: none;
+  width: fit-content;
+}
+
+.change-client > summary::-webkit-details-marker {
+  display: none;
+}
+
+.change-client__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+}
+
+.change-client__results {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
 }

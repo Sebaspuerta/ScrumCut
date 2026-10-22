@@ -16,8 +16,9 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from apps.audit.models import record
+from apps.cash.choices import PaymentMethod
 from apps.cash.models import INCOME_KINDS, OUTFLOW_KINDS, CashMovement, CashSession, Direction, MovementKind
-from apps.cash.selectors import expected_cash
+from apps.cash.selectors import expected_cash, is_from_previous_day
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import BarbershopSettings, Branch, Membership
 from apps.tenancy.permissions import ensure_permission
@@ -26,6 +27,7 @@ _CENTS = Decimal("0.01")
 
 ALREADY_OPEN = "Ya hay una caja abierta en esta sede. Ciérrala antes de abrir otra."
 NOTE_REQUIRED = "Explica la diferencia del arqueo antes de cerrar la caja."
+STALE_SESSION = "La caja viene de otro día: ciérrala y abre la de hoy."
 MANUAL_KINDS = (MovementKind.MANUAL_INCOME, MovementKind.EXPENSE, MovementKind.WITHDRAWAL, MovementKind.ADJUSTMENT)
 
 
@@ -91,10 +93,14 @@ def record_money(
 
     Bloquea la sesión para que un cierre simultáneo no deje fuera este movimiento. No valida
     permisos ni sede: lo hace la operación que la llama, que ya resolvió la sesión por su alcance.
+    Una caja de otro día no recibe ni entrega efectivo (cobros, abonos, gastos, retiros ni
+    devoluciones): se cierra con su arqueo. Los demás medios no pasan por la caja física y siguen.
     """
     with transaction.atomic():
         locked = _locked_open_session(CashSession.objects, session.public_id)
         _check_method_enabled(method)
+        if method == PaymentMethod.CASH and is_from_previous_day(locked):
+            raise ValidationError(STALE_SESSION, code="stale_session")
         movement = _movement(locked, kind, direction=direction, method=method, amount=amount, actor=actor)
         movement.description = (description or "").strip()
         movement.full_clean()

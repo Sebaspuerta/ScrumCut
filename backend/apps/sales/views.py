@@ -11,6 +11,8 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
+from apps.cash.board import stale_session
+from apps.cash.selectors import payment_methods
 from apps.clients.selectors import list_clients
 from apps.sales.board import CLOSED_TODAY, TABS, board_orders, board_row, closed_today_summary, tab_counts
 from apps.sales.forms import BoardFilterForm
@@ -51,6 +53,7 @@ def _board(request: HttpRequest) -> dict:
         "barbers": barbers_in_scope(membership, scope).filter(deleted_at__isnull=True).order_by("display_name"),
         "today": local_today(membership),
         "can": _can(membership),
+        "stale_cash": stale_session(membership, scope=scope),
     }
 
 
@@ -67,7 +70,16 @@ def detail(request: HttpRequest, public_id: UUID) -> HttpResponse:
         selected = order_page(request.membership, public_id, scope=request.branch_scope)
     except Order.DoesNotExist as exc:
         raise Http404 from exc
-    return render(request, BOARD, {**_board(request), "selected": selected})
+    search = _client_search(request) if request.GET.get("buscar_cliente") is not None else None
+    context = {**_board(request), "selected": selected, "client_search": search, "methods": payment_methods()}
+    return render(request, BOARD, context)
+
+
+def _client_search(request: HttpRequest) -> dict:
+    """Buscador de "Cambiar cliente": clientes de la barbería por nombre, celular o documento, por GET."""
+    term = request.GET.get("buscar_cliente", "")[:60].strip()
+    results = list(list_clients(request.membership, term)[:CLIENT_RESULTS]) if term else []
+    return {"term": term, "results": results}
 
 
 @require_GET
@@ -86,4 +98,5 @@ def quick_charge(request: HttpRequest) -> HttpResponse:
     scope = request.branch_scope
     if scope.branch is None:
         return render(request, QUICK_CHARGE, {"needs_branch": True})
-    return render(request, QUICK_CHARGE, catalog_for_branch(request.membership, scope=scope, branch=scope.branch))
+    catalog = catalog_for_branch(request.membership, scope=scope, branch=scope.branch)
+    return render(request, QUICK_CHARGE, {**catalog, "methods": payment_methods()})

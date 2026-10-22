@@ -72,6 +72,13 @@ def test_cada_sede_tiene_su_stock_con_un_traslado_y_un_stock_bajo_solo_en_norte(
         assert set(low.values_list("branch__name", flat=True)) == {"Norte"}
 
 
+def test_la_demo_no_deja_cajas_de_dias_anteriores_abiertas():
+    shop = _demo_at(12)
+    with tenant_context(shop.pk):
+        open_days = {timezone.localtime(s.opened_at, BOGOTA).date() for s in CashSession.objects.filter(closed_at=None)}
+    assert open_days == {date(2026, 10, 14)}  # solo las de hoy, una por sede
+
+
 def test_antes_de_la_apertura_no_hay_caja_ni_ventas_de_hoy():
     shop = _demo_at(7)
     with tenant_context(shop.pk):
