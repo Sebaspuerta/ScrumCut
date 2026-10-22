@@ -6,7 +6,7 @@
   justify-content: center;
   gap: var(--space-2);
   min-height: var(--control-height);
-  padding: 0 var(--space-3-5);
+  padding: 0 var(--space-4);
   background: transparent;
   border: var(--line-width) solid transparent;
   border-radius: var(--radius);
@@ -48,4 +48,42 @@
   width: var(--touch-target);
   padding: 0;
   font-size: var(--text-brand);
+}
+
+/* Botón suave sobre un fondo claro (agregar una línea) y botón grande de cobro o cierre. */
+.button--soft {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  background: var(--color-espresso-200);
+  font-weight: 600;
+  color: var(--color-espresso);
+}
+
+.button--large {
+  min-height: var(--size-48);
+  padding: 0 var(--space-6);
+  font-size: var(--text-brand);
+  font-weight: 600;
+}
+
+/* Acción secundaria en forma de enlace (aplicar descuento, anular): subrayada, en café. */
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  font-size: var(--text-meta);
+  font-weight: 500;
+  color: var(--color-espresso-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.link-button::-webkit-details-marker {
+  display: none;
+}
+
+.icon-button--muted {
+  color: var(--color-text-muted);
 }

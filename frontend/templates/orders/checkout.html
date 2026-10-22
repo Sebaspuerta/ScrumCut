@@ -1,0 +1,47 @@
+{% load formatting %}
+{# Cobro: efectivo con lo recibido (las vueltas las calcula el servidor; change-preview.js solo muestra una #}
+{# vista previa), transferencia con referencia opcional o fiado, que exige un cliente registrado. #}
+<form class="checkout" method="post" action="{% url 'orders_checkout' order.public_id %}" data-checkout data-total="{{ order.total|floatformat:0 }}">
+  {% csrf_token %}
+  <fieldset class="checkout__methods">
+    <legend class="label">Forma de pago</legend>
+    <div class="checkout__segments">
+      <label class="checkout__method"><input type="radio" name="metodo" value="efectivo" checked> Efectivo</label>
+      <label class="checkout__method"><input type="radio" name="metodo" value="transferencia"> Transferencia</label>
+      <label class="checkout__method{% if not order.client %} is-disabled{% endif %}"><input type="radio" name="metodo" value="fiado"{% if not order.client %} disabled{% endif %}> Fiado</label>
+    </div>
+  </fieldset>
+  <div class="checkout__group num" data-method="efectivo">
+    <label class="field-label">Recibido<input class="field field--figure" type="number" name="recibido" min="0" step="1" inputmode="numeric" data-received></label>
+    <p class="field-label">Vueltas <output class="checkout__change" data-change aria-live="polite">—</output></p>
+  </div>
+  <div class="checkout__group" data-method="transferencia">
+    <label class="field-label">Referencia de la transferencia (opcional)<input class="field" type="text" name="referencia" maxlength="80" placeholder="Ej.: Nequi 4821"></label>
+    <p class="muted checkout__note">No entra a la caja física: queda en "otros medios" del cierre.</p>
+  </div>
+  {% if page.credit %}
+  <div class="checkout__group" data-method="fiado">
+    <dl class="checkout__credit num">
+      {% if page.credit.available is not None %}<div class="order-totals__row"><dt>Cupo disponible en {{ order.branch.name }}</dt><dd class="strong">{{ page.credit.available|cop }}</dd></div>{% endif %}
+      <div class="order-totals__row"><dt>Debe hoy en {{ order.branch.name }}</dt><dd>{{ page.credit.debt|cop }}</dd></div>
+    </dl>
+    <p class="muted checkout__note">El fiado se paga solo en la sede {{ order.branch.name }}.</p>
+    <label class="field-label">Fecha acordada de pago<input class="field" type="date" name="vence"></label>
+  </div>
+  {% endif %}
+  <button type="submit" class="button button--primary button--large num">Cobrar {{ order.total|cop }}</button>
+</form>
+
+{% partialdef cancel %}
+{% if order.status == "cerrada" and can.cancel_closed or page.editable and can.edit %}
+<details class="order-cancel">
+  <summary class="link-button">Anular comanda</summary>
+  <form class="inline-form" method="post" action="{% url 'orders_cancel' order.public_id %}">
+    {% csrf_token %}
+    <label class="field-label">Motivo de la anulación<textarea class="field" name="motivo" rows="2" maxlength="300" required></textarea></label>
+    <label class="checkbox"><input type="checkbox" name="confirmar" required> Confirmo que quiero anular la comanda #{{ order.number }}{% if order.status == "cerrada" %} y devolver su dinero{% endif %}</label>
+    <button type="submit" class="button button--outline">Anular comanda</button>
+  </form>
+</details>
+{% endif %}
+{% endpartialdef %}

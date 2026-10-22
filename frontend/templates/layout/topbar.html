@@ -4,6 +4,7 @@
   <div class="topbar__main">
     {% if shell.branches %}{% include "layout/topbar/branch_menu.html" %}{% else %}<span></span>{% endif %}
     <div class="topbar__end">
+      {% if shell.new_actions %}{% include "layout/topbar/new_menu.html" %}{% endif %}
       {% if shell.unread_alerts is not None %}{% include "layout/topbar/bell.html" %}{% endif %}
       {% if shell.admin %}{% include "layout/topbar/admin_menu.html" %}{% endif %}
       <span class="topbar__divider" aria-hidden="true"></span>

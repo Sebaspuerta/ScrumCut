@@ -149,35 +149,32 @@
   --icon-lg: 20px;
   --marker-width: 3px;
   --badge-size: 18px;
-  --badge-padding: 7px;
   --opacity-disabled: 0.5;
   --shadow-floating: 0 12px 32px rgba(46, 33, 26, 0.16);
 
-  /* Espaciado (los medios pasos son los que usan las maquetas) */
-  --space-0-5: 2px;
+  /* Espacios: la única escala para margin, padding y gap (docs/diseno.md, "Espacios").
+     Ningún espacio fuera de ella: lo revisa tests/frontend/test_spacing_scale.py. */
   --space-1: 4px;
-  --space-1-5: 6px;
   --space-2: 8px;
-  --space-2-5: 10px;
   --space-3: 12px;
-  --space-3-5: 14px;
   --space-4: 16px;
-  --space-4-5: 18px;
-  --space-5: 20px;
   --space-6: 24px;
-  --space-7: 28px;
   --space-8: 32px;
-  --space-9: 36px;
   --space-10: 40px;
-  --space-12: 48px;
   --space-14: 56px;
-  --space-16: 64px;
+  --space-18: 72px;
 
-  /* Densidad: lo que se compacta en pantallas de portátil (ver al final) */
+  /* Medidas que no son espacios (alto de una barra, tamaño del monograma, posición de una etiqueta) */
+  --size-6: 6px;
+  --size-28: 28px;
+  --size-36: 36px;
+  --size-48: 48px;
+
+  /* Contenido: 40 px de margen en escritorio (16 en el celular, layout-mobile.css) y 56 px entre secciones */
   --gap-section: var(--space-14);
   --content-padding: var(--space-10);
-  --content-padding-bottom: var(--space-16);
-  --kpi-padding: var(--space-4-5) var(--space-6);
+  --content-padding-bottom: var(--space-18);
+  --kpi-padding: var(--space-4) var(--space-6);
   --kpi-min-width: 190px;
   --text-readout: 26px;
 
@@ -194,17 +191,13 @@
   --content-max-width: 1600px;
   --account-text-max-width: 160px; /* 10 × --space-4 */
   --menu-width: 280px;
-  --tooltip-offset: 14px;
 }
 
-/* Portátiles: menos ancho útil que la maqueta (1440 px); los espacios y las cifras grandes se reducen
-   en la misma proporción para conservar el aire. Por debajo sigue compacto: lo móvil aún no está diseñado. */
+/* Portátiles: menos ancho útil que la maqueta (1440 px). Los márgenes y el espacio entre secciones no
+   cambian; solo se compactan los indicadores y las cifras grandes. */
 @media (max-width: 1400px) {
   :root {
-    --gap-section: var(--space-10);
-    --content-padding: var(--space-8);
-    --content-padding-bottom: var(--space-12);
-    --kpi-padding: var(--space-3-5) var(--space-4-5);
+    --kpi-padding: var(--space-4) var(--space-4);
     --kpi-min-width: 170px;
     --text-h1: 34px;
     --text-figure: 26px;

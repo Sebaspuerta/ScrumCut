@@ -145,7 +145,9 @@ def test_la_cascada_de_caja_cuadra_con_el_arqueo(world):
 def test_al_cerrar_la_caja_aparece_el_contado_y_la_diferencia(world):
     w = world
     sell(w, w.ana, service=w.corte)
-    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("74000"), scope=scope_of(w.cashier))
+    cash.close_session(
+        w.cashier, w.session.public_id, counted_amount=D("74000"), scope=scope_of(w.cashier), notes="Faltó cambio"
+    )
 
     flow = _dashboard(w)["cash"]["flow"]
 

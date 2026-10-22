@@ -64,11 +64,22 @@ def _day(world, norte) -> None:
         quantity=2,
         reason="Reparto",
     )
-    cash.close_session(world.cashier, world.session.public_id, scope=scope_of(world.cashier), counted_amount=D("89000"))
+    _close_centro(world)
     orders.quick_register(
         world.owner, in_norte, barber=world.beto.public_id, method="efectivo", service=world.corte.public_id
     )
     _credit_in_norte(world, in_norte)
+
+
+def _close_centro(world) -> None:
+    """Cuenta 89 000 frente a 90 000 esperados: con diferencia, la nota es obligatoria."""
+    cash.close_session(
+        world.cashier,
+        world.session.public_id,
+        scope=scope_of(world.cashier),
+        counted_amount=D("89000"),
+        notes="Vueltas mal entregadas",
+    )
 
 
 def _credit_in_norte(world, in_norte) -> None:

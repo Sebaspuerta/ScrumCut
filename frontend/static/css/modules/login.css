@@ -7,7 +7,7 @@
   --entrance-form-basis: 380px;
   --entrance-pitch-width: 440px;
   --entrance-panel-width: 380px;
-  --entrance-panel-gap: 30px;
+  --entrance-panel-gap: var(--space-8);
 
   min-height: 100vh;
   display: flex;
@@ -37,9 +37,9 @@
 
 .entrance__pitch {
   position: absolute;
-  top: var(--space-12);
-  left: var(--space-12);
-  right: var(--space-12);
+  top: var(--size-48);
+  left: var(--size-48);
+  right: var(--size-48);
   max-width: var(--entrance-pitch-width);
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
 
 .entrance__credit {
   position: absolute;
-  left: var(--space-12);
+  left: var(--size-48);
   bottom: var(--space-6);
   font-size: var(--text-label);
   color: var(--color-login-light);
@@ -78,8 +78,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-9);
-  padding: var(--space-14) var(--space-16) var(--space-9);
+  gap: var(--space-10);
+  padding: var(--space-14) var(--space-18) var(--space-10);
 }
 
 .entrance__panel {
@@ -120,7 +120,7 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
 }
 
 /* Campos en todo el panel: los códigos de recuperación de allauth no van dentro de un formulario. */
@@ -152,7 +152,7 @@
 .entrance__panel input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 .entrance__panel textarea {
   min-height: var(--control-height-login);
-  padding: 0 var(--space-3-5);
+  padding: 0 var(--space-4);
   background: var(--color-login-field);
   border: var(--line-width) solid var(--color-espresso-400);
   border-radius: var(--radius);
@@ -171,7 +171,7 @@
 }
 
 .entrance__panel textarea {
-  padding: var(--space-2-5) var(--space-3-5);
+  padding: var(--space-3) var(--space-4);
   font-variant-numeric: var(--font-numeric);
   resize: vertical;
 }
@@ -231,7 +231,7 @@
 }
 
 .entrance__panel .entrance__switch {
-  padding-top: var(--space-5);
+  padding-top: var(--space-6);
   border-top: var(--line-width) solid var(--color-login-line);
   font-size: var(--text-meta);
 }
@@ -246,14 +246,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2-5);
+  gap: var(--space-3);
 }
 
 .entrance__brand {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-0-5);
+  gap: var(--space-1);
 }
 
 .entrance__by {

@@ -1,0 +1,98 @@
+{% load formatting %}
+{# Detalle de la comanda elegida. Cada acción es un POST con CSRF; el precio nunca viaja en el formulario. #}
+<section class="section orders__detail" aria-labelledby="t-detalle">
+  <div class="order-head">
+    <span class="label num">Comanda #{{ order.number }} · {% if page.editable %}abierta hace {{ order.created_at|timesince }}{% else %}{{ order.get_status_display|lower }}{% endif %}</span>
+    <h2 id="t-detalle" class="order-head__client">{% if order.client %}{{ order.client.full_name }}{% else %}Cliente de mostrador{% endif %}</h2>
+    <span class="muted">{% include "orders/detail.html#client_note" %}</span>
+  </div>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <caption class="visually-hidden">Líneas de la comanda</caption>
+      <thead><tr><th scope="col">Ítem</th><th scope="col" class="data-table__text">Barbero</th><th scope="col">Cant.</th><th scope="col">Precio</th><th scope="col">Total</th>{% if page.editable and can.edit %}<th scope="col"><span class="visually-hidden">Quitar</span></th>{% endif %}</tr></thead>
+      <tbody>
+        {% for line in order.items.all %}
+        <tr>
+          <td><span class="strong">{{ line.name }}</span><br><span class="data-table__kind">{{ line.get_item_type_display }}</span></td>
+          <td class="data-table__text">{{ line.barber.display_name|default:"Sin barbero" }}</td>
+          <td>{{ line.quantity }}</td>
+          <td>{{ line.unit_price|cop }}</td>
+          <td class="strong">{{ line.line_total|cop }}</td>
+          {% if page.editable and can.edit %}
+          <td>
+            <form method="post" action="{% url 'orders_remove_line' order.public_id line.public_id %}">
+              {% csrf_token %}
+              <button type="submit" class="icon-button icon-button--muted" aria-label="Quitar {{ line.name }}">
+                <span class="icon" aria-hidden="true">{% include "icons/x.svg" %}</span>
+              </button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">Todavía no tiene líneas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.editable and can.edit %}{% include "orders/detail.html#add_line" %}{% endif %}
+
+  <div class="order-pay">
+    {% include "orders/detail.html#totals" %}
+    {% if page.editable and can.close %}{% include "orders/checkout.html" %}{% endif %}
+  </div>
+  {% include "orders/checkout.html#cancel" %}
+</section>
+
+{% partialdef client_note %}
+{% if page.client %}Cliente {{ page.client.status|lower }} en {{ order.branch.name }} · {{ page.client.visits }} visita{{ page.client.visits|pluralize }}{% with phone=order.client.phone|mask_phone %}{% if phone %} · cel. {{ phone }}{% endif %}{% endwith %}
+{% else %}Sin cliente registrado · no puede quedar como fiado{% endif %}
+{% endpartialdef %}
+
+{% partialdef add_line %}
+<form class="add-line" method="post" action="{% url 'orders_add_line' order.public_id %}">
+  {% csrf_token %}
+  <label for="agregar-item" class="visually-hidden">Servicio o producto</label>
+  <select id="agregar-item" class="field add-line__item" name="item" required>
+    <option value="">Agregar servicio o producto</option>
+    <optgroup label="Servicios">
+      {% for service in page.services %}<option value="servicio:{{ service.public_id }}">{{ service.name }} · {{ service.price_now|cop }}</option>{% endfor %}
+    </optgroup>
+    <optgroup label="Productos">
+      {% for product in page.products %}<option value="producto:{{ product.public_id }}">{{ product.name }} · {{ product.price_now|cop }}</option>{% endfor %}
+    </optgroup>
+  </select>
+  <label for="agregar-barbero" class="visually-hidden">Barbero de la línea</label>
+  <select id="agregar-barbero" class="field" name="barbero">
+    <option value="">{% if order.barber %}{{ order.barber.display_name }} (de la comanda){% else %}Sin barbero (producto){% endif %}</option>
+    {% for barber in page.barbers %}<option value="{{ barber.public_id }}">{{ barber.display_name }}</option>{% endfor %}
+  </select>
+  <label for="agregar-cantidad" class="visually-hidden">Cantidad</label>
+  <input id="agregar-cantidad" class="field add-line__quantity" type="number" name="cantidad" value="1" min="1" max="99" required>
+  <button type="submit" class="button button--soft">Agregar</button>
+</form>
+{% endpartialdef %}
+
+{% partialdef totals %}
+<dl class="order-totals num">
+  <div class="order-totals__row"><dt class="muted">Subtotal</dt><dd>{{ order.subtotal|cop }}</dd></div>
+  <div class="order-totals__row">
+    <dt class="muted">Descuento{% if order.discount_reason %} · {{ order.discount_reason }}{% endif %}</dt>
+    <dd>{{ order.discount|cop }}</dd>
+  </div>
+  {% if page.editable and can.discount %}
+  <details class="order-totals__discount">
+    <summary class="link-button">Aplicar descuento</summary>
+    <form class="inline-form" method="post" action="{% url 'orders_discount' order.public_id %}">
+      {% csrf_token %}
+      <label class="field-label">Monto<input class="field" type="number" name="monto" min="0" step="1" value="{{ order.discount|floatformat:0 }}" required></label>
+      <label class="field-label">Motivo<input class="field" type="text" name="motivo" maxlength="200" value="{{ order.discount_reason }}"></label>
+      <button type="submit" class="button button--outline">Aplicar</button>
+    </form>
+  </details>
+  {% endif %}
+  <div class="order-totals__row order-totals__row--total"><dt class="strong">Total</dt><dd class="order-totals__total">{{ order.total|cop }}</dd></div>
+</dl>
+{% endpartialdef %}

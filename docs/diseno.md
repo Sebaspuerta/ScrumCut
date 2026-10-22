@@ -74,7 +74,8 @@ Lucide, trazo 1.5, en línea (SVG dentro del HTML) con `currentColor`. Los archi
 - Alertas (`bell`) con su contador sobre el acento, por alcance de sede.
 - Administración (`settings`, texto y `chevron-down`): un panel ancho bajo la barra, del borde de la barra lateral a la derecha, con seis grupos en rejilla: Barbería, Equipo, Catálogo y precios, Clientes y fiados, Seguridad y datos, Cuenta y plan. Cada ítem aparece solo con su permiso; lo que aún no tiene pantalla va apagado con la etiqueta "Próximamente" y nunca es enlace. A la derecha, un resumen sobre café: sedes activas frente al límite del plan con su barra, usuarios activos y el último cambio de la auditoría. Si el rol no ve ningún ítem, el botón no aparece.
 - Cuenta (iniciales en círculo, nombre y rol): cabecera con nombre, rol, barbería y sede; verificación en dos pasos; "Cerrar sesión en todos los dispositivos" y "Cerrar sesión" (`log-out`, en el color de texto normal), ambos por POST.
-- El buscador global, la Ayuda y el botón "+ Nuevo" de la maqueta esperan a que exista su backend.
+- "+ Nuevo" (`plus`, claro sobre la barra: fondo `#F2EDE7`, texto `#2E211A`) con las acciones que ya tienen pantalla y que el rol puede usar: nueva comanda, cobro rápido y registrar gasto.
+- El buscador global y la Ayuda de la maqueta esperan a que exista su backend.
 - Exportar no va en la barra: va en el encabezado de cada página que exporta.
 
 **Barra lateral de trabajo diario**, contraíble (248px abierta, 72px cerrada; solo íconos al cerrarse, con `title` y `aria-label`), sobre `#F3F0EB` con línea a la derecha. Grupos en versalitas que se ocultan al cerrarla:
@@ -90,11 +91,22 @@ Lucide, trazo 1.5, en línea (SVG dentro del HTML) con `currentColor`. Los archi
 
 **Menús**: son `<details>` nativos y abren sin JavaScript. Un JavaScript propio, sin frameworks, deja uno solo abierto, los cierra con Esc o con un clic fuera, mantiene `aria-expanded` y devuelve el foco al botón. Nada se guarda en el navegador: la barra lateral abre por defecto en escritorio y cerrada en el celular.
 
-**Contenido:** máximo 1600px de ancho (centrado por encima de ese ancho), 40px de margen, 56px entre secciones. Cada sección lleva su h2 con una descripción corta en texto secundario. Pie con "ScrumCut · por ScrumTech Solutions" y los enlaces a Términos, Privacidad y Cookies.
+**Contenido:** máximo 1600px de ancho (centrado por encima de ese ancho), 40px de margen, 56px entre secciones. Cada sección empieza con una línea café de 1px y su h2 con una descripción corta en texto secundario. Pie con "ScrumCut · por ScrumTech Solutions" y los enlaces a Términos, Privacidad y Cookies.
 
 **Tablero "Resumen ejecutivo":** ruta "Inicio / Tablero", h1, "Sede … · actualizado …", el selector de mes (`?mes=AAAA-MM`) y "Exportar a Excel" (`download`). Debajo, la franja de indicadores, las ventas por día, el cuadre de caja de hoy (en "todas" pide elegir una sede), el rendimiento por barbero con la mezcla de ingresos, las alertas sin leer, los productos más vendidos y los últimos cierres.
 
 Todo control mide al menos 44px de alto.
+
+**Comandas** (`Comandas.dc.html`): ruta, h1 y "Sede … · fecha · precios de la sede …", con "Cobro rápido" (borde café) y "Nueva comanda" (café). A la izquierda, la lista: pestañas Abiertas, Cerradas hoy y Anuladas con su conteo (enlaces con `aria-current`), búsqueda por cliente o número y filtro por barbero; cada fila con cliente, total, número, barberos, tiempo o forma de pago e ítems, y la elegida sobre `#E4DAD0` con la marca en el acento. A la derecha, la comanda: cliente con su historial en la sede y el celular enmascarado, las líneas (ítem, barbero, cantidad, precio, total y quitar), "Agregar servicio o producto" con su barbero, subtotal, descuento y total, y el cobro (Efectivo con "Recibido" y vueltas, Transferencia con referencia, Fiado con lo que debe en la sede y su cupo). "Anular comanda" pide motivo y confirmación.
+
+**Caja** (`Caja.dc.html`): siempre de una sede. Estado "Abierta" con quién y desde qué hora; botones "Registrar gasto", "Registrar retiro" y "Hacer arqueo y cerrar". Franja café con base, ventas en efectivo, abonos, gastos, retiros y esperado. Movimientos de hoy (hora, tipo, concepto, quién y monto con signo, sin rojos) con filtro por tipo y, debajo, "Otros medios" que no entran a la caja física. Arqueo por denominación (billetes de $100.000 a $1.000 y monedas en total), esperado, contado y diferencia con signo y flecha; con diferencia, la nota es obligatoria. Al final, los últimos 5 cierres de la sede.
+
+## Espacios
+
+- Escala única para margin, padding y gap: 4, 8, 12, 16, 24, 32, 40, 56 y 72px (`--space-*` en `tokens.css`). Ningún espacio fuera de ella; lo revisa `tests/frontend/test_spacing_scale.py`.
+- Contenido: 40px de margen en escritorio y 16px en el celular, todo alineado al mismo borde izquierdo.
+- Secciones: 56px entre ellas. Una sección abierta (sin caja) empieza con una línea café de 1px y 16px de aire arriba, con 16px entre el título y el contenido.
+- Tablas: filas de 44px, cifras a la derecha con `tabular-nums` y encabezados de 11px en mayúsculas.
 
 ## Reglas
 

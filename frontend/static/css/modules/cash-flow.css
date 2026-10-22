@@ -3,17 +3,18 @@
 /* Cuadre de caja (cascada) ---------------------------------------------------- */
 
 .cascade {
+  padding-top: var(--space-6); /* aire para los montos que van encima de cada barra */
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
-  gap: var(--space-2-5);
+  gap: var(--space-3);
   align-items: end;
 }
 
 .cascade__step {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2-5);
+  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -50,9 +51,9 @@
 
 .cascade__amount {
   position: absolute;
-  left: calc(-1 * var(--space-1-5));
-  right: calc(-1 * var(--space-1-5));
-  bottom: calc(100% + var(--space-1-5));
+  left: calc(-1 * var(--size-6));
+  right: calc(-1 * var(--size-6));
+  bottom: calc(100% + var(--size-6));
   font-size: var(--text-label);
   font-weight: 600;
   text-align: center;
@@ -72,7 +73,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-3-5) var(--space-4-5);
+  padding: var(--space-4) var(--space-4);
   background: var(--color-espresso-200);
   border-radius: var(--radius);
 }

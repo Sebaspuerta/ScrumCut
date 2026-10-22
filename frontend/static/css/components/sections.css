@@ -1,0 +1,91 @@
+/* Sección abierta (docs/diseno.md, "Espacios"): sin caja, una línea café de 1 px arriba con 16 px de
+   aire y 16 px entre el título y el contenido. Las secciones se separan 56 px (--gap-section). */
+
+.section {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--line-width) solid var(--color-espresso);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.section-head__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.section-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Sin pantalla todavía: texto apagado, nunca enlace. */
+.section-head__link {
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.page-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.breadcrumb ol {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.breadcrumb li + li::before {
+  content: "/";
+  margin-right: var(--space-2);
+}
+
+.breadcrumb a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.accent {
+  color: var(--color-accent);
+}
+
+.label {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}

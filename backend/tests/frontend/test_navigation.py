@@ -18,6 +18,7 @@ from tests.frontend.html_support import elements, forms
 pytestmark = pytest.mark.django_db
 
 ADMIN_GROUPS = ["Barbería", "Equipo", "Catálogo y precios", "Clientes y fiados", "Seguridad y datos", "Cuenta y plan"]
+WITH_SCREEN = {"Tablero", "Comandas", "Caja"}
 ALL_SIDEBAR = {
     "Operación": ["Tablero", "Agenda", "Comandas", "Caja"],
     "Clientes": ["Clientes", "Fiados", "Reseñas"],
@@ -91,11 +92,16 @@ def test_lo_que_no_tiene_pantalla_no_es_un_enlace(world):
         item
         for group in page.context["shell"]["sidebar"] + page.context["shell"]["admin"]["groups"]
         for item in group["items"]
-        if item["label"] != "Tablero"
+        if item["label"] not in WITH_SCREEN
     ]
     assert all(item["url"] is None for item in soon)
     assert hrefs <= {
         reverse("home"),
+        reverse("orders_board"),
+        reverse("orders_new"),
+        reverse("orders_quick"),
+        reverse("cash_register"),
+        reverse("cash_register") + "#gasto",
         reverse("mfa_index"),
         reverse("reports_export") + f"?mes={local_today(world.owner):%Y-%m}",
         *(reverse("legal_document", args=[slug]) for slug in ("terminos", "privacidad", "cookies")),
@@ -166,3 +172,29 @@ def test_la_campana_cuenta_las_alertas_sin_leer_del_alcance(client, make_shop, m
     assert expected == 2
     assert response.context["shell"]["unread_alerts"] == expected
     assert f'aria-label="Alertas: {expected} sin leer"' in response.content.decode()
+
+
+def test_comandas_y_caja_son_enlaces_y_nuevo_solo_trae_lo_permitido(world):
+    owner, cashier, barber = _page(world, "owner"), _page(world, "cashier"), _page(world, "barber")
+
+    links = {item["label"]: item["url"] for group in owner.context["shell"]["sidebar"] for item in group["items"]}
+    assert (links["Comandas"], links["Caja"]) == (reverse("orders_board"), reverse("cash_register"))
+    assert [a["label"] for a in owner.context["shell"]["new_actions"]] == [
+        "Nueva comanda",
+        "Cobro rápido",
+        "Registrar gasto",
+    ]
+    assert [a["label"] for a in cashier.context["shell"]["new_actions"]] == [
+        "Nueva comanda",
+        "Cobro rápido",
+        "Registrar gasto",
+    ]
+    assert [a["label"] for a in barber.context["shell"]["new_actions"]] == ["Nueva comanda", "Cobro rápido"]
+
+
+def test_el_detalle_de_una_comanda_deja_activo_comandas(world):
+    client = Client()
+    client.force_login(world.cashier.user)
+    page = client.get(reverse("orders_new"))
+    active = [item["label"] for group in page.context["shell"]["sidebar"] for item in group["items"] if item["active"]]
+    assert active == ["Comandas"]

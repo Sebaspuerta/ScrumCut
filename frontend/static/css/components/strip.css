@@ -1,0 +1,40 @@
+/* Franja oscura de cifras (docs/diseno.md): sobre café, separadas por líneas #4A382D. */
+
+.dark-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  background: var(--color-espresso);
+  border-radius: var(--radius);
+  color: var(--color-on-dark);
+}
+
+.dark-strip__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-6);
+  border-left: var(--line-width) solid var(--color-espresso-700);
+}
+
+.dark-strip__cell:first-child {
+  border-left: 0;
+}
+
+.dark-strip__label {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-on-dark-muted);
+}
+
+.dark-strip__value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-readout);
+  line-height: 1.1;
+}
+
+.dark-strip__note {
+  font-size: var(--text-small);
+  color: var(--color-on-dark-muted);
+}

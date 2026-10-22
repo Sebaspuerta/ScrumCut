@@ -1,0 +1,14 @@
+{# "+ Nuevo": solo las acciones con pantalla que el rol puede usar (apps/core/navigation.NEW_ACTIONS). #}
+<details class="menu new-menu" data-menu>
+  <summary class="menu__button new-menu__button" aria-controls="menu-nuevo" aria-expanded="false">
+    <span class="icon" aria-hidden="true">{% include "icons/plus.svg" %}</span>
+    <span class="new-menu__label">Nuevo</span>
+  </summary>
+  <div class="menu__panel menu__panel--end" id="menu-nuevo">
+    {% for action in shell.new_actions %}
+    <a class="menu__item" href="{{ action.url }}">
+      <span class="icon" aria-hidden="true">{% include action.icon %}</span>{{ action.label }}
+    </a>
+    {% endfor %}
+  </div>
+</details>

@@ -1,0 +1,144 @@
+{% load formatting %}
+
+{% partialdef open %}
+<section class="section" aria-labelledby="t-abrir">
+  <div class="section-head__text">
+    <h2 id="t-abrir">Abrir caja</h2>
+    <p class="muted">La base es el efectivo con el que empieza el día.</p>
+  </div>
+  {% if can.open %}
+  <form class="inline-form" method="post" action="{% url 'cash_open' %}">
+    {% csrf_token %}
+    <label class="field-label">Base de apertura<input class="field field--figure" type="number" name="base" min="0" step="1" inputmode="numeric" required></label>
+    <button type="submit" class="button button--primary">Abrir caja</button>
+  </form>
+  {% else %}
+  <p class="muted">No hay caja abierta en esta sede.</p>
+  {% endif %}
+</section>
+{% endpartialdef %}
+
+{% partialdef strip %}
+<div class="dark-strip num" role="group" aria-label="Resumen de la caja">
+  <div class="dark-strip__cell"><span class="dark-strip__label">Base de apertura</span><span class="dark-strip__value">{{ session.opening_amount|cop }}</span><span class="dark-strip__note">{{ session.opened_at|time:"g:i a" }}</span></div>
+  {% with row=by_kind.venta %}<div class="dark-strip__cell"><span class="dark-strip__label">Ventas en efectivo</span><span class="dark-strip__value">{% if row.total %}+{% endif %}{{ row.total|cop }}</span><span class="dark-strip__note">{{ row.count }} comanda{{ row.count|pluralize }}</span></div>{% endwith %}
+  {% with row=by_kind.abono_fiado %}<div class="dark-strip__cell"><span class="dark-strip__label">Abonos de fiados</span><span class="dark-strip__value">{% if row.total %}+{% endif %}{{ row.total|cop }}</span><span class="dark-strip__note">{{ row.count }} abono{{ row.count|pluralize }}</span></div>{% endwith %}
+  {% with row=by_kind.gasto %}<div class="dark-strip__cell"><span class="dark-strip__label">Gastos</span><span class="dark-strip__value">{% if row.total %}−{% endif %}{{ row.total|cop }}</span><span class="dark-strip__note">{{ row.count }} gasto{{ row.count|pluralize }}</span></div>{% endwith %}
+  {% with row=by_kind.retiro %}<div class="dark-strip__cell"><span class="dark-strip__label">Retiros</span><span class="dark-strip__value">{% if row.total %}−{% endif %}{{ row.total|cop }}</span><span class="dark-strip__note">{{ row.count }} retiro{{ row.count|pluralize }}</span></div>{% endwith %}
+  <div class="dark-strip__cell"><span class="dark-strip__label">Esperado en caja</span><span class="dark-strip__value">{{ expected|cop }}</span><span class="dark-strip__note">Lo que debe haber</span></div>
+</div>
+{% endpartialdef %}
+
+{% partialdef movements %}
+<section class="section cash-columns__main" aria-labelledby="t-mov">
+  <div class="section-head">
+    <div class="section-head__text">
+      <h2 id="t-mov">Movimientos de hoy</h2>
+      <p class="muted">Todo lo que entra o sale de la caja física, en orden.</p>
+    </div>
+    <form class="inline-form" method="get" action="{% url 'cash_register' %}">
+      <label class="field-label field-label--inline">Tipo
+        <select class="field" name="tipo">
+          {% for value, label in kinds %}<option value="{{ value }}"{% if value == kind %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="button button--outline">Filtrar</button>
+    </form>
+  </div>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th scope="col">Hora</th><th scope="col" class="data-table__text">Tipo</th><th scope="col" class="data-table__text">Concepto</th><th scope="col" class="data-table__text">Registró</th><th scope="col">Monto</th></tr></thead>
+      <tbody>
+        {% for movement in movements %}
+        <tr>
+          <td class="muted">{{ movement.created_at|time:"g:i a" }}</td>
+          <td class="data-table__text"><span class="data-table__kind">{{ movement.get_kind_display }}</span></td>
+          <td class="data-table__text">{{ movement.description }}</td>
+          <td class="data-table__text muted">{{ movement.created_by.full_name|default:movement.created_by.email }}</td>
+          <td class="strong{% if movement.direction == 'out' %} is-out{% endif %}">{% if movement.direction == "out" %}−{% else %}+{% endif %}{{ movement.amount|cop }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="muted">Sin movimientos{% if kind %} de este tipo{% endif %} todavía.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="other-media">
+    <span class="label">Otros medios · no entran a la caja física</span>
+    <p class="num"><strong>{{ other_media.transfers.total|cop }}</strong> en transferencias y otros medios · {{ other_media.transfers.count }} pago{{ other_media.transfers.count|pluralize }}
+      &nbsp;·&nbsp; <strong>{{ other_media.credit.total|cop }}</strong> en fiados nuevos · {{ other_media.credit.count }} comanda{{ other_media.credit.count|pluralize }}</p>
+  </div>
+</section>
+{% endpartialdef %}
+
+{% partialdef count %}
+<section id="arqueo" class="section cash-columns__side" aria-labelledby="t-arqueo">
+  <div class="section-head__text">
+    <h2 id="t-arqueo">Arqueo y cierre</h2>
+    <p class="muted">Cuenta el efectivo por denominación. El sistema suma solo.</p>
+  </div>
+  <form class="cash-count" method="post" action="{% url 'cash_close' session.public_id %}" data-cash-count data-expected="{{ expected|floatformat:0 }}">
+    {% csrf_token %}
+    {% for bill in bills %}
+    <div class="cash-count__row num">
+      <label for="{{ bill.field }}">Billetes de {{ bill.value|cop }}</label>
+      <input id="{{ bill.field }}" class="field" type="number" name="{{ bill.field }}" value="0" min="0" step="1" inputmode="numeric" data-bill="{{ bill.value }}">
+    </div>
+    {% endfor %}
+    <div class="cash-count__row num">
+      <label for="monedas">Monedas (total en pesos)</label>
+      <input id="monedas" class="field" type="number" name="monedas" value="0" min="0" step="1" inputmode="numeric" data-coins>
+    </div>
+    <dl class="order-totals num">
+      <div class="order-totals__row"><dt class="muted">Esperado en caja</dt><dd>{{ expected|cop }}</dd></div>
+      <div class="order-totals__row"><dt class="muted">Contado</dt><dd class="strong"><output data-counted>—</output></dd></div>
+      <div class="order-totals__row cash-count__difference"><dt>Diferencia</dt><dd class="strong"><output data-difference>—</output></dd></div>
+    </dl>
+    <label class="field-label">Explica la diferencia (obligatorio si la hay)<textarea class="field" name="nota" rows="2" maxlength="500" placeholder="Ej.: vueltas mal entregadas en la comanda #0131"></textarea></label>
+    <button type="submit" class="button button--primary button--large">Cerrar caja</button>
+    <p class="muted checkout__note">Al cerrar, la caja queda bloqueada y el cierre queda en la auditoría con quién lo hizo.</p>
+  </form>
+</section>
+{% endpartialdef %}
+
+{% partialdef manual %}
+<section class="section" aria-labelledby="t-manual">
+  <h2 id="t-manual">Gastos y retiros</h2>
+  <div class="cash-manual">
+    {% for kind, title in manual_kinds %}
+    <form id="{{ kind }}" class="stack-form" method="post" action="{% url 'cash_movement' session.public_id kind %}">
+      {% csrf_token %}
+      <h3 class="label">{{ title }}</h3>
+      <label class="field-label">Monto<input class="field field--figure" type="number" name="monto" min="1" step="1" inputmode="numeric" required></label>
+      <label class="field-label">Concepto<input class="field" type="text" name="concepto" maxlength="200" required></label>
+      <button type="submit" class="button button--outline">{{ title }}</button>
+    </form>
+    {% endfor %}
+  </div>
+</section>
+{% endpartialdef %}
+
+{% partialdef closings %}
+<section class="section" aria-labelledby="t-cierres">
+  <h2 id="t-cierres">Últimos cierres de la sede</h2>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th scope="col">Fecha</th><th scope="col" class="data-table__text">Cerró</th><th scope="col">Esperado</th><th scope="col">Contado</th><th scope="col">Diferencia</th><th scope="col" class="data-table__text">Nota</th></tr></thead>
+      <tbody>
+        {% for closing in closings %}
+        <tr>
+          <td>{{ closing.closed_at|date:"D j M, g:i a" }}</td>
+          <td class="data-table__text muted">{{ closing.closed_by.full_name|default:closing.closed_by.email }}</td>
+          <td>{{ closing.expected_amount|cop }}</td>
+          <td>{{ closing.counted_amount|cop }}</td>
+          <td class="data-table__difference{% if closing.difference > 0 %} is-up{% elif closing.difference < 0 %} is-down{% endif %}">{{ closing.difference|difference }}</td>
+          <td class="data-table__text muted">{{ closing.notes|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">Todavía no hay cierres en esta sede.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endpartialdef %}

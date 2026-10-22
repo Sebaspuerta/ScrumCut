@@ -27,7 +27,9 @@ def test_cierres_con_esperado_contado_y_diferencia_guardados(world):
         description="Aseo",
         scope=scope_of(w.cashier),
     )
-    cash.close_session(w.cashier, w.session.public_id, counted_amount=D("69000"), scope=scope_of(w.cashier))
+    cash.close_session(
+        w.cashier, w.session.public_id, counted_amount=D("69000"), scope=scope_of(w.cashier), notes="Faltó cambio"
+    )
 
     [closing] = cash_closings(w.owner, scope=scope_of(w.owner))
 

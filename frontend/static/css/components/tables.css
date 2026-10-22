@@ -1,0 +1,61 @@
+/* Tablas de datos (docs/diseno.md, "Espacios"): filas de 44 px, cifras a la derecha con tabular-nums
+   y encabezados de 11 px en mayúsculas. La primera columna y las marcadas con --text van a la izquierda. */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-meta);
+  font-variant-numeric: var(--font-numeric);
+}
+
+.data-table th {
+  padding: 0 0 var(--space-3);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.data-table td {
+  height: var(--touch-target);
+  padding: var(--space-3) 0;
+  text-align: right;
+  vertical-align: middle;
+  border-top: var(--line-width) solid var(--color-line);
+}
+
+.data-table th:first-child,
+.data-table td:first-child,
+.data-table .data-table__text {
+  text-align: left;
+}
+
+.data-table td + td,
+.data-table th + th {
+  padding-left: var(--space-4);
+}
+
+.data-table__difference {
+  font-weight: 600;
+}
+
+.data-table__difference.is-up {
+  color: var(--color-accent);
+}
+
+.data-table__difference.is-down {
+  color: var(--color-espresso-600);
+}
+
+.data-table__kind {
+  font-size: var(--text-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-espresso-600);
+}

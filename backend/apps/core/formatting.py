@@ -4,6 +4,7 @@ from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
 MINUS = "−"  # signo menos tipográfico, como en las maquetas
+MASK_MIN_DIGITS = 7  # con menos dígitos, mostrar inicio y final dejaría el número a la vista
 MONTHS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
 MONTH_NAMES = (
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -39,6 +40,14 @@ def format_difference(value: Decimal | None) -> str:
     if not value:
         return "Cuadrada"
     return f"▴ +{format_cop(value)}" if value > 0 else f"▾ {format_cop(value)}"
+
+
+def mask_phone(phone: str | None) -> str:
+    """Celular enmascarado para la pantalla: 300 *** 4512. Sin número, vacío."""
+    digits = "".join(character for character in phone or "" if character.isdigit())
+    if len(digits) < MASK_MIN_DIGITS:
+        return ""
+    return f"{digits[:3]} *** {digits[-4:]}"
 
 
 def short_date(day: date) -> str:

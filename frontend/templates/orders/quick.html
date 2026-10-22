@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static formatting %}
+{# Cobro rápido (regla 17): un servicio o un producto cobrado completo en una sola transacción. #}
+{% block head_title %}Cobro rápido · ScrumCut{% endblock %}
+{% block styles %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/modules/orders.css' %}">{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li><a href="{% url 'orders_board' %}">Comandas</a></li><li aria-current="page">Cobro rápido</li></ol>
+    </nav>
+    <h1>Cobro rápido</h1>
+    <p class="muted">Sede {{ shell.branches.current }}</p>
+  </div>
+</section>
+<section class="section form-section" aria-labelledby="t-cobro">
+  <h2 id="t-cobro">Qué se cobra</h2>
+  {% if needs_branch %}
+  <p class="muted">Elige una sede en la barra superior para cobrar.</p>
+  {% else %}
+  <form class="stack-form" method="post" action="{% url 'orders_quick_charge' %}">
+    {% csrf_token %}
+    <label class="field-label">Servicio o producto
+      <select class="field" name="item" required>
+        <option value="">Elige uno</option>
+        <optgroup label="Servicios">{% for service in services %}<option value="servicio:{{ service.public_id }}">{{ service.name }} · {{ service.price_now|cop }}</option>{% endfor %}</optgroup>
+        <optgroup label="Productos">{% for product in products %}<option value="producto:{{ product.public_id }}">{{ product.name }} · {{ product.price_now|cop }}</option>{% endfor %}</optgroup>
+      </select>
+    </label>
+    <label class="field-label">Barbero
+      <select class="field" name="barbero" required>
+        {% for barber in barbers %}<option value="{{ barber.public_id }}">{{ barber.display_name }}</option>{% endfor %}
+      </select>
+    </label>
+    <fieldset class="checkout__methods">
+      <legend class="label">Forma de pago</legend>
+      <div class="checkout__segments">
+        <label class="checkout__method"><input type="radio" name="metodo" value="efectivo" checked> Efectivo</label>
+        <label class="checkout__method"><input type="radio" name="metodo" value="transferencia"> Transferencia</label>
+      </div>
+    </fieldset>
+    <label class="field-label">Referencia de la transferencia (opcional)<input class="field" type="text" name="referencia" maxlength="80"></label>
+    <button type="submit" class="button button--primary button--large">Cobrar</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

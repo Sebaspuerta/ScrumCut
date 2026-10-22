@@ -1,5 +1,5 @@
 {# Encabezado del tablero: ruta, título, sede del alcance, el mes (?mes=AAAA-MM) y la exportación. #}
-<section class="dashboard-header">
+<section class="page-head">
   <div class="page-header">
     <nav class="breadcrumb" aria-label="Ruta">
       <ol>
@@ -10,7 +10,7 @@
     <h1>Resumen ejecutivo</h1>
     <p class="muted">Sede {{ dashboard.scope_label }} · actualizado {% now "g:i a" %}</p>
   </div>
-  <div class="dashboard-header__actions">
+  <div class="page-head__actions">
     {# Sin JavaScript se aplica con el botón; month-filter.js lo aplica al elegir el mes. #}
     <form class="filters" method="get" data-month-filter>
       <label class="filters__field">Mes

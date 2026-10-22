@@ -1,0 +1,233 @@
+/* Comandas (Comandas.dc.html): lista a la izquierda y la comanda elegida a la derecha. */
+
+.orders {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.orders__list {
+  flex: 1 1 380px;
+}
+
+.orders__detail {
+  flex: 2 1 560px;
+  gap: var(--space-6);
+}
+
+.orders__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.orders__filters input[type="search"] {
+  flex: 1 1 160px;
+}
+
+.order-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-bottom: var(--line-width) solid var(--color-line);
+}
+
+.order-row[aria-current="true"] {
+  background: var(--color-espresso-200);
+  box-shadow: inset var(--marker-width) 0 0 var(--color-accent);
+}
+
+.order-row__line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.order-row__meta {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.order-row__items {
+  font-size: var(--text-small);
+  color: var(--color-nav-text);
+}
+
+.order-rows__empty {
+  padding: var(--space-4) var(--space-3);
+}
+
+.order-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.order-head__client {
+  font-size: var(--text-figure);
+}
+
+.add-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-sidebar);
+  border: var(--line-width) solid var(--color-surface-line);
+  border-radius: var(--radius);
+}
+
+.add-line__item {
+  flex: 2 1 220px;
+}
+
+.add-line__quantity {
+  width: var(--sidebar-width-collapsed);
+}
+
+.order-pay {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+/* En fila: los totales y el cobro, uno al lado del otro mientras quepan. */
+.order-pay > .order-totals {
+  flex: 1 1 220px;
+}
+
+.checkout {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.checkout__methods {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checkout__segments {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  border: var(--line-width) solid var(--color-espresso);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* El radio queda oculto pero enfocable: la etiqueta muestra la elección y el foco del teclado. */
+.checkout__method {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
+  font-size: var(--text-meta);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.checkout__method input {
+  position: absolute;
+  opacity: 0;
+}
+
+.checkout__method + .checkout__method {
+  border-left: var(--line-width) solid var(--color-espresso);
+}
+
+.checkout__method:has(input:checked) {
+  background: var(--color-espresso);
+  color: var(--color-on-dark);
+}
+
+.checkout__method:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -4px;
+}
+
+.checkout__method.is-disabled {
+  background: var(--color-sidebar);
+  color: var(--color-floor-closed);
+  cursor: not-allowed;
+}
+
+.checkout__group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.checkout__change {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.checkout__credit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-sidebar);
+  border: var(--line-width) solid var(--color-surface-line);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+}
+
+.checkout__note {
+  font-size: var(--text-small);
+}
+
+.order-cancel {
+  padding-top: var(--space-4);
+  border-top: var(--line-width) solid var(--color-line);
+}
+
+.order-cancel .inline-form,
+.order-totals__discount .inline-form {
+  padding-top: var(--space-2);
+}
+
+.notice-line {
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.form-section {
+  max-width: 720px;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: 0;
+}
+
+.choice-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+}

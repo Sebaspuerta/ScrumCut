@@ -40,6 +40,8 @@ CENTRO, NORTE = 0, 1
 # Comandas por día de la semana (lunes a sábado) en Centro; el domingo no se abre. Norte vende la mitad.
 DAILY_ORDERS = (6, 7, 7, 8, 12, 13)
 BRANCH_TRAFFIC = {"Centro": 1.0, "Norte": 0.5}
+# Nota del cierre según la diferencia: falta (False) o sobra (True).
+DIFFERENCE_NOTES = {False: "Vueltas mal entregadas en una comanda", True: "Propina dejada en la caja"}
 OPENING_HOUR = 8
 FIRST_SALE_HOUR = 9
 LAST_SALE_HOUR = 19
@@ -262,8 +264,10 @@ def _close_day(world: SimpleNamespace, session: CashSession, day: date, rng: ran
             payment_method="efectivo",
             description="Aseo",
         )
-        counted = expected_cash(session) + D(rng.choice((0, 0, 0, -2000, 5000)))
-        cash.close_session(world.owner, session.public_id, scope=scope, counted_amount=counted)
+        difference = D(rng.choice((0, 0, 0, -2000, 5000)))
+        note = DIFFERENCE_NOTES[difference > 0] if difference else ""  # con diferencia, la nota es obligatoria
+        counted = expected_cash(session) + difference
+        cash.close_session(world.owner, session.public_id, scope=scope, counted_amount=counted, notes=note)
 
 
 def _pay_debt(world: SimpleNamespace, day: date) -> None:

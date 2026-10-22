@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+{# Comandas (Comandas.dc.html): la lista por pestañas a la izquierda y la comanda elegida a la derecha. #}
+{% block head_title %}Comandas{% if shell.shop %} · {{ shell.shop.name }}{% endif %} · ScrumCut{% endblock %}
+{% block styles %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/modules/orders.css' %}">
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  {% if selected %}<script type="module" src="{% static 'js/modules/change-preview.js' %}"></script>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li aria-current="page">Comandas</li></ol>
+    </nav>
+    <h1>Comandas</h1>
+    <p class="muted">Sede {{ shell.branches.current }} · {{ today|date:"l j \d\e F"|lower }}{% if request.branch_scope.branch %} · precios de la sede {{ request.branch_scope.branch.name }}{% endif %}</p>
+  </div>
+  <div class="page-head__actions">
+    {% if can.quick %}
+    <a class="button button--outline" href="{% url 'orders_quick' %}">
+      <span class="icon" aria-hidden="true">{% include "icons/zap.svg" %}</span>Cobro rápido
+    </a>
+    {% endif %}
+    {% if can.create %}
+    <a class="button button--primary" href="{% url 'orders_new' %}">
+      <span class="icon" aria-hidden="true">{% include "icons/plus.svg" %}</span>Nueva comanda
+    </a>
+    {% endif %}
+  </div>
+</section>
+{% if not request.branch_scope.branch %}
+<p class="notice-line">Estás viendo todas las sedes: para crear o cobrar una comanda, elige una sede en la barra superior.</p>
+{% endif %}
+<div class="orders">
+  {% include "orders/list.html" %}
+  {% if selected %}
+    {% include "orders/detail.html" with page=selected order=selected.order %}
+  {% elif summary %}
+    {% include "orders/list.html#closed_summary" %}
+  {% else %}
+    <section class="section orders__detail" aria-label="Detalle de la comanda">
+      <p class="muted">Elige una comanda de la lista para ver su detalle y cobrarla.</p>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

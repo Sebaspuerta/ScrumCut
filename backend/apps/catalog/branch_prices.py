@@ -9,6 +9,8 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import DecimalField, F, OuterRef, QuerySet, Subquery
+from django.db.models.functions import Coalesce
 
 from apps.audit.models import record
 from apps.catalog.models import Service, ServiceBranchPrice
@@ -27,11 +29,19 @@ _PRICES = {
 }
 
 
+def with_current_price(items: QuerySet, branch: Branch) -> QuerySet:
+    """Anota `price_now` en cada servicio o producto: el de la sede o, si no fijó uno, el del catálogo.
+
+    Una sola consulta para toda la lista (la pantalla de comandas muestra el catálogo con su precio).
+    """
+    model, field, _, catalog_field = _PRICES[items.model]
+    own = model.objects.filter(branch=branch, **{field: OuterRef("pk")}).values("price")[:1]
+    return items.annotate(price_now=Coalesce(Subquery(own), F(catalog_field), output_field=DecimalField()))
+
+
 def current_price(item: Service | Product, branch: Branch) -> Decimal:
-    """El precio vigente del ítem en la sede: el de la sede o, si no fijó uno, el del catálogo."""
-    model, field, _, catalog_field = _PRICES[type(item)]
-    own = model.objects.filter(branch=branch, **{field: item}).values_list("price", flat=True).first()
-    return getattr(item, catalog_field) if own is None else own
+    """El precio vigente del ítem en la sede. La única regla: la misma anotación de `with_current_price`."""
+    return with_current_price(type(item).objects.filter(pk=item.pk), branch).values_list("price_now", flat=True).get()
 
 
 def _snapshot(price) -> dict:

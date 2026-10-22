@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{# Nueva comanda: el cliente es opcional; sin él, la comanda no podrá quedar como fiado. #}
+{% block head_title %}Nueva comanda · ScrumCut{% endblock %}
+{% block styles %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/modules/orders.css' %}">{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li><a href="{% url 'orders_board' %}">Comandas</a></li><li aria-current="page">Nueva</li></ol>
+    </nav>
+    <h1>Nueva comanda</h1>
+    <p class="muted">Sede {{ shell.branches.current }}</p>
+  </div>
+</section>
+<section class="section form-section" aria-labelledby="t-cliente">
+  <div class="section-head__text">
+    <h2 id="t-cliente">Cliente</h2>
+    <p class="muted">Busca por nombre, celular o documento. Puedes abrirla sin cliente.</p>
+  </div>
+  <form class="inline-form" method="get" action="{% url 'orders_new' %}">
+    <label for="buscar-cliente" class="visually-hidden">Buscar cliente</label>
+    <input id="buscar-cliente" class="field" type="search" name="cliente" value="{{ term }}" placeholder="Nombre, celular o documento">
+    <button type="submit" class="button button--outline">Buscar</button>
+  </form>
+  <form method="post" action="{% url 'orders_create' %}">
+    {% csrf_token %}
+    {% if term %}
+    <fieldset class="choice-list">
+      <legend class="label">Resultados</legend>
+      {% for client in clients %}
+      <label class="choice-list__item"><input type="radio" name="cliente" value="{{ client.public_id }}"{% if forloop.first %} checked{% endif %}> {{ client.full_name }}</label>
+      {% empty %}
+      <p class="muted">Ningún cliente coincide con "{{ term }}".</p>
+      {% endfor %}
+      <label class="choice-list__item"><input type="radio" name="cliente" value=""{% if not clients %} checked{% endif %}> Sin cliente (de mostrador)</label>
+    </fieldset>
+    {% endif %}
+    <button type="submit" class="button button--primary">Abrir comanda{% if not term %} sin cliente{% endif %}</button>
+  </form>
+</section>
+{% endblock %}

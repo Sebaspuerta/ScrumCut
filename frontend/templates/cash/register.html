@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static formatting %}
+{# Caja (Caja.dc.html), siempre de una sede: en "todas" no se mezclan cajas. #}
+{% block head_title %}Caja{% if shell.shop %} · {{ shell.shop.name }}{% endif %} · ScrumCut{% endblock %}
+{% block styles %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/modules/cash.css' %}">
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  {% if session %}<script type="module" src="{% static 'js/modules/cash-count.js' %}"></script>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li aria-current="page">Caja</li></ol>
+    </nav>
+    <h1>Caja</h1>
+    <p class="muted cash-status">
+      {% if session %}<span class="status-tag">Abierta</span> Sede {{ session.branch.name }} · desde las {{ session.opened_at|time:"g:i a" }} · abrió {{ session.opened_by.full_name|default:session.opened_by.email }}
+      {% elif needs_branch %}Todas las sedes
+      {% else %}Sede {{ shell.branches.current }} · sin caja abierta{% endif %}
+    </p>
+  </div>
+  {% if session %}
+  <div class="page-head__actions">
+    {% if can.movement %}
+    <a class="button button--outline" href="#gasto">Registrar gasto</a>
+    <a class="button button--outline" href="#retiro">Registrar retiro</a>
+    {% endif %}
+    {% if can.close %}<a class="button button--primary" href="#arqueo">Hacer arqueo y cerrar</a>{% endif %}
+  </div>
+  {% endif %}
+</section>
+
+{% if needs_branch %}
+<section class="section"><p class="muted">Elige una sede para ver su caja.</p></section>
+{% elif not session %}
+{% include "cash/parts.html#open" %}
+{% else %}
+{% include "cash/parts.html#strip" %}
+<div class="cash-columns">
+  {% include "cash/parts.html#movements" %}
+  {% if can.close %}{% include "cash/parts.html#count" %}{% endif %}
+</div>
+{% if can.movement %}{% include "cash/parts.html#manual" %}{% endif %}
+{% endif %}
+{% if not needs_branch %}{% include "cash/parts.html#closings" %}{% endif %}
+{% endblock %}

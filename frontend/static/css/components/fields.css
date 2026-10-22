@@ -17,3 +17,62 @@ input:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
+
+/* Controles de formulario de las pantallas (Comandas y Caja): 44 px de alto, borde de control. */
+.field {
+  min-height: var(--touch-target);
+  min-width: 0;
+  padding: 0 var(--space-3);
+  background: var(--color-field);
+  border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  color: var(--color-text);
+}
+
+textarea.field {
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+}
+
+.field--figure {
+  font-size: var(--text-brand);
+  font-weight: 600;
+  font-variant-numeric: var(--font-numeric);
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.field-label--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  font-size: var(--text-meta);
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 480px;
+}

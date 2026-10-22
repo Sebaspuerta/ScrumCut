@@ -10,7 +10,7 @@
   align-items: center;
   gap: var(--space-2);
   min-height: var(--touch-target);
-  padding: 0 var(--space-2-5);
+  padding: 0 var(--space-3);
   border-radius: var(--radius);
   color: var(--color-on-dark);
   list-style: none;
@@ -38,7 +38,7 @@
   left: 0;
   z-index: 30;
   min-width: var(--menu-width);
-  padding: var(--space-1-5);
+  padding: var(--space-2);
   background: var(--color-surface);
   border: var(--line-width) solid var(--color-control-border);
   border-radius: var(--radius);
@@ -54,7 +54,7 @@
 .menu__item {
   display: flex;
   align-items: center;
-  gap: var(--space-2-5);
+  gap: var(--space-3);
   width: 100%;
   min-height: var(--touch-target);
   padding: 0 var(--space-3);
@@ -90,7 +90,7 @@
 
 .menu__separator {
   height: var(--line-width);
-  margin: var(--space-1-5) 0;
+  margin: var(--space-2) 0;
   background: var(--color-surface-line);
 }
 
@@ -136,7 +136,7 @@
 
 .bell__count {
   position: absolute;
-  top: var(--space-1-5);
+  top: var(--size-6);
   right: var(--space-1);
   display: flex;
   align-items: center;
@@ -197,8 +197,8 @@
 .account__head {
   display: flex;
   flex-direction: column;
-  gap: var(--space-0-5);
-  padding: var(--space-2-5) var(--space-3);
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3);
 }
 
 /* Administración: panel ancho bajo la barra, del borde de la barra lateral a la derecha ---------- */
@@ -225,7 +225,7 @@
 }
 
 .admin-menu__title {
-  padding: 0 var(--space-3) var(--space-1-5);
+  padding: 0 var(--space-3) var(--space-2);
   font-size: var(--text-label);
   font-variant-caps: all-small-caps;
   letter-spacing: var(--tracking-group);
@@ -255,7 +255,7 @@
 }
 
 .admin-summary__track {
-  height: var(--space-1-5);
+  height: var(--size-6);
   background: var(--color-espresso-700);
   border-radius: var(--radius-chart);
 }
@@ -281,7 +281,22 @@
     min-width: min(var(--menu-width), calc(100vw - var(--space-8)));
   }
 
-  .admin-menu__label {
+  .admin-menu__label,
+  .account__text {
+    display: none;
+  }
+}
+
+/* "+ Nuevo": claro sobre la barra café, como en la maqueta. */
+.new-menu > .new-menu__button,
+.new-menu[open] > .new-menu__button {
+  background: var(--color-on-dark);
+  color: var(--color-espresso);
+  font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .new-menu__label {
     display: none;
   }
 }

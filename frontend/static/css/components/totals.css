@@ -1,0 +1,25 @@
+/* Lista de totales (subtotal, descuento y total de una comanda; esperado, contado y diferencia del arqueo). */
+
+.order-totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.order-totals__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.order-totals__row--total {
+  padding-top: var(--space-3);
+  border-top: var(--line-width) solid var(--color-espresso);
+}
+
+.order-totals__total {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-figure);
+}

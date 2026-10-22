@@ -25,6 +25,7 @@ from apps.tenancy.permissions import ensure_permission
 _CENTS = Decimal("0.01")
 
 ALREADY_OPEN = "Ya hay una caja abierta en esta sede. Ciérrala antes de abrir otra."
+NOTE_REQUIRED = "Explica la diferencia del arqueo antes de cerrar la caja."
 MANUAL_KINDS = (MovementKind.MANUAL_INCOME, MovementKind.EXPENSE, MovementKind.WITHDRAWAL, MovementKind.ADJUSTMENT)
 
 
@@ -155,8 +156,8 @@ def close_session(
 ) -> CashSession:
     """Arqueo (regla 24): esperado = base + entradas en efectivo − salidas en efectivo.
 
-    Sale solo del libro de movimientos y se guarda con el contado y la diferencia. Solo una caja
-    de la sede del alcance; la de otra sede no se encuentra.
+    Sale solo del libro de movimientos y se guarda con el contado y la diferencia. Con diferencia, la
+    nota que la explica es obligatoria. Solo una caja de la sede del alcance; la de otra no se encuentra.
     """
     ensure_permission(membership, "caja.cerrar")
     with transaction.atomic():
@@ -166,6 +167,8 @@ def close_session(
         target.counted_amount = CashSession._meta.get_field("counted_amount").clean(counted_amount, target)
         target.expected_amount = expected_cash(target)
         target.difference = target.counted_amount - target.expected_amount
+        if target.difference and not (notes or "").strip():
+            raise ValidationError({"notes": NOTE_REQUIRED}, code="note_required")
         target.closed_by = membership.user
         target.closed_at = timezone.now()
         if notes:

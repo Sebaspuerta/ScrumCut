@@ -21,6 +21,7 @@ class NavItem:
     permission: str | None  # None: lo ve toda membresía activa
     url_name: str | None = None  # None: aún sin pantalla ("Próximamente")
     icon: str | None = None
+    fragment: str = ""  # una parte de la página, como el formulario de gasto de la caja
 
 
 @dataclass(frozen=True)
@@ -35,8 +36,8 @@ SIDEBAR = (
         (
             NavItem("Tablero", None, "home", "layout-dashboard"),
             NavItem("Agenda", "agenda.ver", icon="calendar"),
-            NavItem("Comandas", "comandas.ver", icon="receipt"),
-            NavItem("Caja", "caja.ver", icon="banknote"),
+            NavItem("Comandas", "comandas.ver", "orders_board", "receipt"),
+            NavItem("Caja", "caja.ver", "cash_register", "banknote"),
         ),
     ),
     NavGroup(
@@ -119,6 +120,19 @@ ADMINISTRATION = (
 )
 
 
+# "+ Nuevo": solo las acciones que ya tienen pantalla, cada una con su permiso.
+NEW_ACTIONS = (
+    NavItem("Nueva comanda", "comandas.crear", "orders_new", "receipt"),
+    NavItem("Cobro rápido", "comandas.cerrar", "orders_quick", "banknote"),
+    NavItem("Registrar gasto", "caja.movimiento", "cash_register", "notebook-pen", fragment="gasto"),
+)
+
+
+def _module(url_name: str | None) -> str | None:
+    """Las pantallas de un módulo comparten el prefijo del nombre: orders_board y orders_detail."""
+    return url_name.split("_")[0] if url_name else None
+
+
 def _visible(item: NavItem, role: str) -> bool:
     return item.permission is None or role_has_permission(role, item.permission)
 
@@ -127,8 +141,8 @@ def _item(item: NavItem, current_url_name: str | None) -> dict:
     return {
         "label": item.label,
         "icon": f"icons/{item.icon}.svg" if item.icon else None,
-        "url": reverse(item.url_name) if item.url_name else None,
-        "active": item.url_name is not None and item.url_name == current_url_name,
+        "url": (reverse(item.url_name) + (f"#{item.fragment}" if item.fragment else "")) if item.url_name else None,
+        "active": item.url_name is not None and _module(item.url_name) == _module(current_url_name),
     }
 
 
@@ -150,6 +164,7 @@ def _membership_shell(request: HttpRequest, membership, current_url_name: str | 
         "branches": branch_menu(membership, scope),
         "admin": admin_panel(membership, visible_groups(ADMINISTRATION, membership.role)),
         "sidebar": visible_groups(SIDEBAR, membership.role, current_url_name),
+        "new_actions": [_item(item, None) for item in NEW_ACTIONS if _visible(item, membership.role)],
         # Las de la sede activa, o las de todas en "todas" (fase S4b de docs/sedes.md).
         "unread_alerts": unread_alerts(membership, scope),
     }

@@ -13,9 +13,15 @@
   }
 
   .brand-cell .shop-name,
+  .brand-cell .shop-mark,
   .topbar__label,
-  .account__text {
+  .topbar__divider,
+  .menu__chevron {
     display: none;
+  }
+
+  .branch-menu__current {
+    max-width: 96px;
   }
 
   .topbar__main {
@@ -46,8 +52,7 @@
     left: 0;
     z-index: 15;
     width: min(var(--sidebar-width), 85vw);
-    translate: -100% 0;
-    transition: translate 160ms ease;
+    translate: -100% 0; /* sin transición: al cargar no debe verse cómo se esconde */
   }
 
   .js .shell.is-mobile-open .sidebar {
@@ -62,7 +67,7 @@
 
   .is-collapsed .module-link {
     justify-content: flex-start;
-    padding: 0 var(--space-3-5);
+    padding: 0 var(--space-4);
   }
 
   .is-collapsed .sidebar__title,
@@ -76,6 +81,6 @@
   }
 
   .content__inner {
-    padding: var(--space-5) var(--space-4) var(--space-10);
+    padding: var(--space-6) var(--space-4) var(--space-10);
   }
 }
