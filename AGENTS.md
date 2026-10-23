@@ -21,15 +21,42 @@ Arquitectura completa: ver `docs/arquitectura.md`.
 
 ## Diseño de interfaz
 
-- El diseño aprobado está en docs/diseno.md y sus maquetas en docs/diseno/maquetas/. Es la única referencia visual.
+- La identidad aprobada para la app de React y la entrada es la de la fase R1: docs/diseno/identidad-r1.md, a partir de docs/diseno/figma-make/ (se copia en fidelidad, no su estructura de código). Las pantallas que siguen en plantillas usan docs/diseno.md y sus maquetas en docs/diseno/maquetas/ hasta que pasen a React.
 - Ningún diseño se inventa. Pantallas, colores, tipografía, espaciado, íconos y componentes visuales solo se implementan cuando Sebastián los aprueba. Si falta una definición, se pregunta antes de escribir HTML o CSS; no se rellena con valores supuestos.
 - Prohibido: fuente Inter (y Geist, Space Grotesk), degradados violeta, glassmorphism, tarjetas dentro de tarjetas, emojis como íconos, el rojo-azul-blanco del poste de barbería y cualquier diseño genérico de IA.
-- Fuentes aprobadas: Bricolage Grotesque y Hanken Grotesk, alojadas en frontend/static/fonts/.
+- Fuentes aprobadas: Libre Baskerville y Manrope (identidad R1: app de React y entrada) y Bricolage Grotesque y Hanken Grotesk (pantallas en plantillas hasta su migración). Alojadas: @fontsource en frontend/app y frontend/static/fonts/ en Django; nunca desde Google.
 - Toda pantalla contempla sus estados vacío, cargando y error; su aspecto también requiere aprobación.
 - La identidad de cada barbería (nombre, logo, color) es dato de tenancy.Barbershop, nunca fija en el código.
 - El asistente se muestra sin funcionalidad hasta que el backend esté completo.
 
 ## Frontend
+
+La parte interna migra a React + TypeScript (`frontend/app/`, servida en `/app/`) módulo por módulo; login, registro, recuperación y 2FA siguen en Django. Decisión y motivos: `docs/decisiones/frontend-react.md`.
+
+### Reglas de la app de React (no se negocian)
+
+- Toda regla de negocio, permiso y alcance de sede vive en el backend; el frontend solo muestra lo que la API le da.
+- La sesión sigue en la cookie HttpOnly del mismo dominio: nada de tokens, ni JWT, ni datos en localStorage o sessionStorage.
+- CSRF en toda escritura: la API usa solo `SessionAuthentication`; el token se pide a `/api/v1/csrf/` y vive solo en memoria.
+- La CSP estricta se mantiene en producción. Cualquier relajación, solo con DEBUG=True y documentada.
+- Migración por módulos: las pantallas en plantillas siguen funcionando hasta que su versión en React las reemplace.
+- Los tipos de TypeScript se generan del esquema OpenAPI (`npm run gen:types`), nunca se escriben a mano.
+- API en `apps/api`: vistas DRF delgadas, permiso `HasRolePermission` (reutiliza `role_has_permission`), alcance de sede de `request.branch_scope`, errores genéricos. Toda vista nueva declara `required_permission` o tiene su motivo en `tests/security/url_inventory.py`.
+- Un solo cliente HTTP (`src/api/client.ts`); el formato COP y de fechas solo en `src/lib/format.ts`, con los casos compartidos con el backend en `format-cases.json`.
+- Dependencias con versión exacta, `package-lock.json` versionado e instalación con `npm ci`.
+
+### Estándar del frontend en React
+
+- Componentes funcionales de 150 líneas o menos y funciones de 30 líneas o menos.
+- Un componente por archivo.
+- Hooks para los datos (`useMe`, `useNavigation`…), con TanStack Query.
+- Sin lógica de negocio ni permisos decididos en el cliente.
+- Sin estilos en línea: CSS por módulo con los tokens. Un valor que depende de los datos (el alto de una torre 3D) va como variable de CSS por el CSSOM desde un ref, nunca en el atributo style.
+- Íconos: lucide-react. Tema claro/oscuro por tokens (`data-theme` y `prefers-color-scheme`), guardado en el servidor.
+- Accesible: roles y aria correctos, foco visible y objetivos de 44 px.
+- TypeScript strict, sin `any` ni `ts-ignore`. ESLint y Prettier sin errores.
+
+### Pantallas en plantillas (hasta que React las reemplace)
 
 - Django genera las vistas; todo lo visual vive en frontend/. Nada de HTML, CSS o JS dentro de backend/.
 - HTML: plantillas de Django con partials ({% partialdef %}), una subcarpeta por módulo en frontend/templates/.
@@ -93,7 +120,12 @@ pre-commit run --all-files
 cd backend
 pytest
 DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py check --deploy --fail-level WARNING
+cd ../frontend/app
+npm ci
+npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build
 ```
+
+Si cambia la API: regenerar `frontend/app/openapi.json` (`manage.py spectacular`) y `npm run gen:types` (ver `tests/api/test_openapi_schema.py`).
 
 Pruebas:
 - Nunca correr dos procesos de pytest a la vez contra la misma base de pruebas. Si una corrida pasa a segundo plano, esperar a que termine antes de lanzar otra.

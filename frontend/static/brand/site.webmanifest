@@ -2,7 +2,7 @@
   "name": "ScrumCut",
   "short_name": "ScrumCut",
   "icons": [{ "src": "icon.svg", "type": "image/svg+xml", "sizes": "any" }],
-  "theme_color": "#141210",
-  "background_color": "#F4F1EA",
+  "theme_color": "#fcfbf8",
+  "background_color": "#f5f3ee",
   "display": "standalone"
 }

@@ -1,0 +1,1353 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "ScrumCut API",
+        "version": "1"
+    },
+    "paths": {
+        "/api/v1/branch/": {
+            "post": {
+                "operationId": "branch_create",
+                "description": "Cambia la sede activa; una sede no permitida responde 403, como `switch_branch`.",
+                "tags": [
+                    "branch"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BranchChoiceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BranchState"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/csrf/": {
+            "get": {
+                "operationId": "csrf_retrieve",
+                "description": "La cookie CSRF es HttpOnly: la app de React pide aquí el token y lo guarda solo en memoria.",
+                "tags": [
+                    "csrf"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Csrf"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/": {
+            "get": {
+                "operationId": "dashboard_retrieve",
+                "description": "El tablero ejecutivo del mes (?mes=AAAA-MM) en el alcance de la sesión.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "mes",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "AAAA-MM; si no vale, el mes actual."
+                    }
+                ],
+                "tags": [
+                    "dashboard"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dashboard"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/me/": {
+            "get": {
+                "operationId": "me_retrieve",
+                "description": "Solo sesión: quien aún no tiene barbería activa también debe saber quién es.",
+                "tags": [
+                    "me"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Me"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/me/preferences/": {
+            "patch": {
+                "operationId": "me_preferences_partial_update",
+                "description": "Preferencias de la propia persona; hoy, el tema. Se guardan en el servidor, nunca en el navegador.",
+                "tags": [
+                    "me"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedPreferencesRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Preferences"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/navigation/": {
+            "get": {
+                "operationId": "navigation_retrieve",
+                "description": "Cada ítem ya viene filtrado por el permiso del rol en `navigation.py`.",
+                "tags": [
+                    "navigation"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Navigation"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/": {
+            "get": {
+                "operationId": "notifications_retrieve",
+                "description": "Solo lectura: las alertas sin resolver de la sede activa (o de todas en «todas»).",
+                "tags": [
+                    "notifications"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Notifications"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AdministrationSummary": {
+                "type": "object",
+                "properties": {
+                    "branches": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PlanUsage"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Con sedes.ver."
+                    },
+                    "members": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Con usuarios.ver."
+                    },
+                    "can_see_audit": {
+                        "type": "boolean",
+                        "description": "Con auditoria.ver."
+                    },
+                    "last_change": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/LastChange"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "branches",
+                    "can_see_audit",
+                    "last_change",
+                    "members"
+                ]
+            },
+            "AlertGroup": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlertItem"
+                        }
+                    }
+                },
+                "required": [
+                    "items",
+                    "title"
+                ]
+            },
+            "AlertItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/AlertItemKindEnum"
+                    },
+                    "kind_label": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "branch": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "unread": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "branch",
+                    "created_at",
+                    "id",
+                    "kind",
+                    "kind_label",
+                    "message",
+                    "unread"
+                ]
+            },
+            "AlertItemKindEnum": {
+                "enum": [
+                    "agotado",
+                    "stock_bajo",
+                    "por_vencer",
+                    "fiado_vencido"
+                ],
+                "type": "string",
+                "description": "* `agotado` - Agotado\n* `stock_bajo` - Stock bajo\n* `por_vencer` - Por vencer\n* `fiado_vencido` - Fiado vencido"
+            },
+            "BarberRow": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "orders": {
+                        "type": "integer"
+                    },
+                    "services": {
+                        "type": "integer"
+                    },
+                    "sales": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "commission": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "commission",
+                    "name",
+                    "orders",
+                    "sales",
+                    "services"
+                ]
+            },
+            "Barbershop": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "initials": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string",
+                        "description": "Zona horaria de la barbería: «hoy» y las horas se leen en ella."
+                    }
+                },
+                "required": [
+                    "initials",
+                    "name",
+                    "timezone"
+                ]
+            },
+            "BranchChoiceRequest": {
+                "type": "object",
+                "description": "Solo el formato: qué sede se puede elegir lo decide `tenancy.services.choose_branch`.",
+                "properties": {
+                    "sede": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "El token de una opción o «todas».",
+                        "maxLength": 40
+                    }
+                },
+                "required": [
+                    "sede"
+                ]
+            },
+            "BranchModeEnum": {
+                "enum": [
+                    "una",
+                    "todas"
+                ],
+                "type": "string",
+                "description": "* `una` - una\n* `todas` - todas"
+            },
+            "BranchOption": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "El public_id de la sede: lo que se envía para elegirla."
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "current": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "current",
+                    "label",
+                    "token"
+                ]
+            },
+            "BranchState": {
+                "type": "object",
+                "properties": {
+                    "mode": {
+                        "$ref": "#/components/schemas/BranchModeEnum"
+                    },
+                    "current_label": {
+                        "type": "string",
+                        "description": "La sede actual o «Todas las sedes»."
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BranchOption"
+                        },
+                        "description": "Las sedes activas que la membresía puede elegir."
+                    },
+                    "can_view_all": {
+                        "type": "boolean",
+                        "description": "Con sedes.ver puede elegir «todas»."
+                    },
+                    "can_manage": {
+                        "type": "boolean",
+                        "description": "Con sedes.gestionar."
+                    }
+                },
+                "required": [
+                    "can_manage",
+                    "can_view_all",
+                    "current_label",
+                    "mode",
+                    "options"
+                ]
+            },
+            "Calendar": {
+                "type": "object",
+                "properties": {
+                    "weeks": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CalendarWeek"
+                        }
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "selling_days": {
+                        "type": "integer"
+                    },
+                    "daily_average": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true
+                    },
+                    "best": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/DayTotal"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "last_sale": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/DayTotal"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "best",
+                    "daily_average",
+                    "last_sale",
+                    "selling_days",
+                    "total",
+                    "weeks"
+                ]
+            },
+            "CalendarDay": {
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "day": {
+                        "type": "integer"
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "level": {
+                        "type": "integer",
+                        "description": "0 a 4, frente al mejor día del mes."
+                    },
+                    "ratio": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Proporción frente al mejor día: alto de la torre, no dinero."
+                    },
+                    "today": {
+                        "type": "boolean"
+                    },
+                    "future": {
+                        "type": "boolean"
+                    },
+                    "has_sales": {
+                        "type": "boolean"
+                    },
+                    "orders": {
+                        "type": "integer"
+                    },
+                    "ticket": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "date",
+                    "day",
+                    "future",
+                    "has_sales",
+                    "level",
+                    "orders",
+                    "ratio",
+                    "ticket",
+                    "today",
+                    "total"
+                ]
+            },
+            "CalendarWeek": {
+                "type": "object",
+                "properties": {
+                    "days": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CalendarDay"
+                        },
+                        "description": "Los días del mes en esa semana, de lunes a domingo."
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "days",
+                    "total"
+                ]
+            },
+            "CashFlow": {
+                "type": "object",
+                "properties": {
+                    "is_open": {
+                        "type": "boolean"
+                    },
+                    "opened_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "expected": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "difference": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true
+                    },
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CashStep"
+                        }
+                    }
+                },
+                "required": [
+                    "difference",
+                    "expected",
+                    "is_open",
+                    "opened_at",
+                    "steps"
+                ]
+            },
+            "CashKpi": {
+                "type": "object",
+                "properties": {
+                    "expected": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "opened_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "expected",
+                    "opened_at"
+                ]
+            },
+            "CashStep": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/CashStepKindEnum"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "amount",
+                    "kind",
+                    "label"
+                ]
+            },
+            "CashStepKindEnum": {
+                "enum": [
+                    "total",
+                    "up",
+                    "down",
+                    "counted"
+                ],
+                "type": "string",
+                "description": "* `total` - total\n* `up` - up\n* `down` - down\n* `counted` - counted"
+            },
+            "ClosingRow": {
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "expected": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "counted": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "difference": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "counted",
+                    "date",
+                    "difference",
+                    "expected"
+                ]
+            },
+            "Csrf": {
+                "type": "object",
+                "properties": {
+                    "csrf_token": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "csrf_token"
+                ]
+            },
+            "Dashboard": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string",
+                        "description": "AAAA-MM."
+                    },
+                    "month_label": {
+                        "type": "string"
+                    },
+                    "previous_month": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "next_month": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "today": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    },
+                    "scope_label": {
+                        "type": "string"
+                    },
+                    "stale_cash": {
+                        "type": "boolean",
+                        "description": "La caja de la sede viene de otro día."
+                    },
+                    "kpis": {
+                        "$ref": "#/components/schemas/Kpis"
+                    },
+                    "trend": {
+                        "$ref": "#/components/schemas/Trend"
+                    },
+                    "calendar": {
+                        "$ref": "#/components/schemas/Calendar"
+                    },
+                    "cash": {
+                        "$ref": "#/components/schemas/DashboardCash"
+                    },
+                    "unread_alerts": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "barbers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BarberRow"
+                        }
+                    },
+                    "products": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductRow"
+                        }
+                    },
+                    "closings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClosingRow"
+                        }
+                    },
+                    "alerts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlertItem"
+                        }
+                    }
+                },
+                "required": [
+                    "alerts",
+                    "barbers",
+                    "calendar",
+                    "cash",
+                    "closings",
+                    "kpis",
+                    "month",
+                    "month_label",
+                    "next_month",
+                    "previous_month",
+                    "products",
+                    "scope_label",
+                    "stale_cash",
+                    "timezone",
+                    "today",
+                    "trend",
+                    "unread_alerts"
+                ]
+            },
+            "DashboardCash": {
+                "type": "object",
+                "properties": {
+                    "needs_branch": {
+                        "type": "boolean",
+                        "description": "En «todas» no se mezclan cajas: hay que elegir una sede."
+                    },
+                    "flow": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CashFlow"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "flow",
+                    "needs_branch"
+                ]
+            },
+            "DayTotal": {
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "date",
+                    "total"
+                ]
+            },
+            "DirectionEnum": {
+                "enum": [
+                    "up",
+                    "down"
+                ],
+                "type": "string",
+                "description": "* `up` - up\n* `down` - down"
+            },
+            "IncomeKpi": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "variation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Variation"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "value",
+                    "variation"
+                ]
+            },
+            "Kpis": {
+                "type": "object",
+                "properties": {
+                    "comparison": {
+                        "type": "string",
+                        "description": "Contra qué se comparan los de hoy."
+                    },
+                    "income": {
+                        "$ref": "#/components/schemas/IncomeKpi"
+                    },
+                    "orders": {
+                        "$ref": "#/components/schemas/OrdersKpi"
+                    },
+                    "ticket": {
+                        "$ref": "#/components/schemas/TicketKpi"
+                    },
+                    "cash": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CashKpi"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Sin cajas abiertas en el alcance, null."
+                    },
+                    "receivables": {
+                        "$ref": "#/components/schemas/ReceivablesKpi"
+                    }
+                },
+                "required": [
+                    "cash",
+                    "comparison",
+                    "income",
+                    "orders",
+                    "receivables",
+                    "ticket"
+                ]
+            },
+            "LastChange": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string"
+                    },
+                    "entity": {
+                        "type": "string"
+                    },
+                    "actor": {
+                        "type": "string"
+                    },
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "action",
+                    "actor",
+                    "at",
+                    "entity"
+                ]
+            },
+            "Me": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "barbershop": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Barbershop"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "branch": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/BranchState"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "barbershop",
+                    "branch",
+                    "permissions",
+                    "role",
+                    "user"
+                ]
+            },
+            "NavGroup": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NavItem"
+                        }
+                    }
+                },
+                "required": [
+                    "items",
+                    "title"
+                ]
+            },
+            "NavItem": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Nombre del ícono de Lucide."
+                    },
+                    "url": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "La pantalla en plantillas; solo con el estado «enlace»."
+                    },
+                    "app_path": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "La ruta en la app de React, si ya existe allí."
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/NavStatusEnum"
+                    }
+                },
+                "required": [
+                    "app_path",
+                    "icon",
+                    "label",
+                    "status",
+                    "url"
+                ]
+            },
+            "NavStatusEnum": {
+                "enum": [
+                    "enlace",
+                    "pronto",
+                    "proximamente"
+                ],
+                "type": "string",
+                "description": "* `enlace` - enlace\n* `pronto` - pronto\n* `proximamente` - proximamente"
+            },
+            "Navigation": {
+                "type": "object",
+                "properties": {
+                    "sidebar": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NavGroup"
+                        }
+                    },
+                    "administration": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NavGroup"
+                        }
+                    },
+                    "administration_summary": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AdministrationSummary"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Sin ítems, null."
+                    },
+                    "new_actions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NavItem"
+                        }
+                    },
+                    "unread_alerts": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Sin alertas.ver, null."
+                    }
+                },
+                "required": [
+                    "administration",
+                    "administration_summary",
+                    "new_actions",
+                    "sidebar",
+                    "unread_alerts"
+                ]
+            },
+            "Notifications": {
+                "type": "object",
+                "properties": {
+                    "unread": {
+                        "type": "integer"
+                    },
+                    "groups": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlertGroup"
+                        },
+                        "description": "«Hoy» y «Anteriores», solo los que tienen alertas."
+                    }
+                },
+                "required": [
+                    "groups",
+                    "unread"
+                ]
+            },
+            "OrdersKpi": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "integer"
+                    },
+                    "open": {
+                        "type": "integer"
+                    },
+                    "variation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Variation"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "open",
+                    "value",
+                    "variation"
+                ]
+            },
+            "PatchedPreferencesRequest": {
+                "type": "object",
+                "properties": {
+                    "theme": {
+                        "$ref": "#/components/schemas/ThemeEnum"
+                    }
+                }
+            },
+            "PlanUsage": {
+                "type": "object",
+                "properties": {
+                    "active": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "active",
+                    "limit"
+                ]
+            },
+            "Preferences": {
+                "type": "object",
+                "properties": {
+                    "theme": {
+                        "$ref": "#/components/schemas/ThemeEnum"
+                    }
+                },
+                "required": [
+                    "theme"
+                ]
+            },
+            "ProductRow": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "units": {
+                        "type": "integer"
+                    },
+                    "sales": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "margin": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,6}(?:\\.\\d{0,0})?$",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "margin",
+                    "name",
+                    "sales",
+                    "units"
+                ]
+            },
+            "ReceivablesKpi": {
+                "type": "object",
+                "properties": {
+                    "pending_count": {
+                        "type": "integer"
+                    },
+                    "pending_balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "overdue_count": {
+                        "type": "integer"
+                    },
+                    "overdue_balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "clients": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "clients",
+                    "overdue_balance",
+                    "overdue_count",
+                    "pending_balance",
+                    "pending_count"
+                ]
+            },
+            "Role": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "$ref": "#/components/schemas/RoleCodeEnum"
+                    },
+                    "label": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "label"
+                ]
+            },
+            "RoleCodeEnum": {
+                "enum": [
+                    "owner",
+                    "admin",
+                    "cashier",
+                    "barber",
+                    "viewer"
+                ],
+                "type": "string",
+                "description": "* `owner` - Dueño\n* `admin` - Administrador\n* `cashier` - Cajero\n* `barber` - Barbero\n* `viewer` - Consultor"
+            },
+            "ThemeEnum": {
+                "enum": [
+                    "system",
+                    "light",
+                    "dark"
+                ],
+                "type": "string",
+                "description": "* `system` - Sistema\n* `light` - Claro\n* `dark` - Oscuro"
+            },
+            "TicketKpi": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true
+                    },
+                    "variation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Variation"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "value",
+                    "variation"
+                ]
+            },
+            "Trend": {
+                "type": "object",
+                "properties": {
+                    "income": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "decimal",
+                            "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                        }
+                    },
+                    "orders": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "ticket": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "decimal",
+                            "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                        }
+                    }
+                },
+                "required": [
+                    "income",
+                    "orders",
+                    "ticket"
+                ]
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "initials": {
+                        "type": "string"
+                    },
+                    "theme": {
+                        "$ref": "#/components/schemas/ThemeEnum"
+                    }
+                },
+                "required": [
+                    "email",
+                    "initials",
+                    "name",
+                    "theme"
+                ]
+            },
+            "Variation": {
+                "type": "object",
+                "properties": {
+                    "percent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,7}(?:\\.\\d{0,1})?$"
+                    },
+                    "direction": {
+                        "$ref": "#/components/schemas/DirectionEnum"
+                    }
+                },
+                "required": [
+                    "direction",
+                    "percent"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "sessionid"
+            }
+        }
+    }
+}

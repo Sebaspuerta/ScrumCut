@@ -1,0 +1,16 @@
+.status {
+  display: grid;
+  gap: var(--space-12);
+  justify-items: start;
+  padding: var(--space-24);
+  color: var(--color-muted);
+}
+
+.retry {
+  min-height: var(--target-min);
+  padding: 0 var(--space-16);
+  border: var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  font-weight: 700;
+}

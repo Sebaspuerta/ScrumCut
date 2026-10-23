@@ -1,32 +1,57 @@
 """Formato colombiano de la interfaz: una sola implementación para plantillas y datos del JS."""
 
-from datetime import date
+import json
+from datetime import date, datetime
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 import pytest
+from django.conf import settings
 from django.template import Context, Template
 
-from apps.core.formatting import day_label, format_cop, format_difference, format_variation, mask_phone, short_date
+from apps.core.formatting import (
+    clock,
+    day_label,
+    format_cop,
+    format_difference,
+    format_variation,
+    mask_phone,
+    month_label,
+    short_date,
+)
 
 D = Decimal
+# Los mismos casos prueba la app de React (frontend/app/src/lib/format.test.ts): un solo formato en los dos lados.
+SHARED = json.loads((settings.FRONTEND_DIR / "app" / "src" / "lib" / "format-cases.json").read_text(encoding="utf-8"))
 
 
-@pytest.mark.parametrize(
-    ("value", "expected"),
-    [
-        (D("1250000"), "$1.250.000"),
-        (D("65300.50"), "$65.301"),  # sin decimales, redondeo comercial
-        (D("0"), "$0"),
-        (950, "$950"),
-        (D("3440000"), "$3.440.000"),
-        (D("-8000"), "−$8.000"),
-        (D("-3440000.40"), "−$3.440.000"),
-        (845, "$845"),
-        (None, "—"),
-    ],
-)
+def _cop_input(value: str | int | None) -> Decimal | int | None:
+    return D(value) if isinstance(value, str) else value
+
+
+@pytest.mark.parametrize(("value", "expected"), SHARED["cop"])
 def test_pesos_colombianos(value, expected):
-    assert format_cop(value) == expected
+    assert format_cop(_cop_input(value)) == expected
+
+
+@pytest.mark.parametrize(("value", "expected"), SHARED["short_date"])
+def test_fecha_corta_igual_que_en_la_app_de_react(value, expected):
+    assert short_date(date.fromisoformat(value)) == expected
+
+
+@pytest.mark.parametrize(("value", "expected"), SHARED["day_label"])
+def test_dia_igual_que_en_la_app_de_react(value, expected):
+    assert day_label(date.fromisoformat(value)) == expected
+
+
+@pytest.mark.parametrize(("value", "expected"), SHARED["month_label"])
+def test_mes_igual_que_en_la_app_de_react(value, expected):
+    assert month_label(date.fromisoformat(value)) == expected
+
+
+@pytest.mark.parametrize(("value", "zone", "expected"), SHARED["clock"])
+def test_hora_igual_que_en_la_app_de_react(value, zone, expected):
+    assert clock(datetime.fromisoformat(value).astimezone(ZoneInfo(zone))) == expected
 
 
 def test_el_filtro_de_plantilla_usa_el_mismo_formato():
@@ -44,11 +69,6 @@ def test_diferencia_del_arqueo_sin_rojos():
     assert format_difference(D("0")) == "Cuadrada"
     assert format_difference(D("5000")) == "▴ +$5.000"
     assert format_difference(D("-8000")) == "▾ −$8.000"
-
-
-def test_fechas_cortas_en_espanol():
-    assert short_date(date(2026, 10, 3)) == "3 oct"
-    assert day_label(date(2026, 10, 9)) == "Vie 9 oct"
 
 
 @pytest.mark.parametrize(

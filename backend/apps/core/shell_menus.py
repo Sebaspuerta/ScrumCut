@@ -55,7 +55,8 @@ def _audit_summary(membership: Membership) -> dict:
     return {"event": {"action": event.action, "entity": event.entity, "actor": actor, "at": event.created_at}}
 
 
-def _summary(membership: Membership) -> dict:
+def admin_summary(membership: Membership) -> dict:
+    """Lo que muestra el panel de Administración a la derecha, cada dato solo con su permiso."""
     role = membership.role
     summary = {}
     if role_has_permission(role, "sedes.ver"):
@@ -71,7 +72,7 @@ def admin_panel(membership: Membership, groups: list[dict]) -> dict | None:
     """None si el rol no ve nada del panel: entonces el botón de Administración no aparece."""
     if not groups:
         return None
-    return {"groups": groups, "summary": _summary(membership)}
+    return {"groups": groups, "summary": admin_summary(membership)}
 
 
 def account_menu(user, membership: Membership | None, scope: BranchScope | None) -> dict:

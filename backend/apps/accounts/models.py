@@ -26,6 +26,14 @@ class UserManager(BaseUserManager):
         return self._create(email, password, **extra)
 
 
+class Theme(models.TextChoices):
+    """Tema de la interfaz. "system" sigue la preferencia del sistema operativo (prefers-color-scheme)."""
+
+    SYSTEM = "system", "Sistema"
+    LIGHT = "light", "Claro"
+    DARK = "dark", "Oscuro"
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """Una persona. Su rol no vive aquí sino en cada membresía con una barbería."""
 
@@ -37,12 +45,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_platform_staff = models.BooleanField(default=False, help_text="Equipo ScrumTech (superadmin).")
     date_joined = models.DateTimeField(default=timezone.now)
     session_version = models.PositiveIntegerField(default=0, editable=False)
+    # Se guarda en el servidor y no en el navegador: la página llega ya con el tema, sin parpadeo.
+    theme = models.CharField("tema", max_length=6, choices=Theme.choices, default=Theme.SYSTEM)
 
     objects = UserManager()
 
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(theme__in=Theme.values), name="ck_user_theme_valid")]
 
     def __str__(self) -> str:
         return self.email

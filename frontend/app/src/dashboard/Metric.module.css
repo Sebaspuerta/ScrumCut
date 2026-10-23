@@ -1,0 +1,46 @@
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-16);
+  border-right: var(--line);
+  min-width: 0;
+}
+
+.metric:last-child {
+  border-right: 0;
+}
+
+.label {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.value {
+  font: 400 24px var(--font-brand);
+  margin: var(--space-8) 0 var(--space-4);
+}
+
+.delta {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--color-soft);
+  color: var(--color-text);
+  font-size: var(--text-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .metric {
+    min-width: 190px;
+  }
+}

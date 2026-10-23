@@ -1,0 +1,29 @@
+.entry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  min-height: var(--target-min);
+  padding: 0 var(--space-12);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+a.entry:hover {
+  background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.active {
+  background: var(--color-raised);
+  box-shadow: inset 2px 0 var(--color-accent);
+  font-weight: 700;
+}
+
+.soon {
+  color: var(--color-muted);
+}
+
+.tag {
+  margin-left: auto;
+}

@@ -1,6 +1,8 @@
 # Diseño aprobado
 
-Única referencia visual de ScrumCut. Lo extraído aquí sale de las maquetas aprobadas por Sebastián:
+> La app de React y la entrada (login, registro, recuperación y 2FA) usan desde la fase R1 la identidad nueva: [diseno/identidad-r1.md](diseno/identidad-r1.md). Este documento sigue siendo la referencia de las pantallas que aún están en plantillas.
+
+Referencia visual de las pantallas en plantillas. Lo extraído aquí sale de las maquetas aprobadas por Sebastián:
 
 - `docs/diseno/maquetas/Main.dc.html`: tablero (resumen ejecutivo).
 - `docs/diseno/maquetas/Login.dc.html`: inicio de sesión.
@@ -131,6 +133,8 @@ Todo control mide al menos 44px de alto.
 - **Barra de mezcla de ingresos.** Una barra de 12px dividida en servicios (café) y productos (acento), con porcentaje y monto de cada parte.
 
 ## Inicio de sesión
+
+> Desde R1 la entrada usa la identidad nueva ([diseno/identidad-r1.md](diseno/identidad-r1.md)): el logo SVG reemplaza al 3D de texto. Lo de abajo queda como historia de la maqueta anterior.
 
 - Foto en tonos café (escala de grises con sepia) a la izquierda, que se desvanece hacia el fondo; sobre ella, la etiqueta "Gestión ejecutiva para barberías" y la frase "Cada corte, cada venta y cada cierre de caja, en un solo lugar."
 - Formulario sobre crema: título "Iniciar sesión", correo, contraseña con "¿Olvidaste tu contraseña?", botón café "Entrar", la nota sobre el código de verificación en dos pasos para dueños y administradores, y "Crear cuenta".

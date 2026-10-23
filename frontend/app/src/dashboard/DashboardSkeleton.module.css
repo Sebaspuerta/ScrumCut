@@ -1,0 +1,42 @@
+.block {
+  height: 96px;
+  background: linear-gradient(90deg, var(--color-bg), var(--color-line), var(--color-bg));
+  background-size: 200%;
+  animation: pulse 1.8s infinite;
+}
+
+.title {
+  width: 40%;
+  height: 72px;
+  margin-bottom: var(--space-24);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-8);
+  margin-bottom: var(--space-24);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-24);
+}
+
+.panel {
+  height: 420px;
+}
+
+@keyframes pulse {
+  to {
+    background-position: -200%;
+  }
+}
+
+@media (max-width: 900px) {
+  .metrics,
+  .panels {
+    grid-template-columns: 1fr;
+  }
+}

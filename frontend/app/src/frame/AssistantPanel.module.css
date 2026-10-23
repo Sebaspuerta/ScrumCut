@@ -1,0 +1,79 @@
+.assistant {
+  position: fixed;
+  z-index: 60;
+  right: var(--space-24);
+  bottom: var(--space-24);
+  width: 380px;
+  height: 620px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-raised);
+  border: var(--line);
+  box-shadow: var(--shadow-menu);
+}
+
+.head {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-24);
+  border-bottom: var(--line);
+}
+
+.head h2 {
+  font: 400 20px var(--font-brand);
+}
+
+.head p {
+  font-size: var(--text-small);
+  color: var(--color-muted);
+}
+
+.close {
+  width: var(--target-min);
+  height: var(--target-min);
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+}
+
+.chat {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-24);
+}
+
+.bot {
+  max-width: 85%;
+  margin: var(--space-12) 0;
+  padding: var(--space-12);
+  line-height: 1.5;
+  background: var(--color-bg);
+  border: var(--line);
+}
+
+.composer {
+  border-top: var(--line);
+  padding: var(--space-12) var(--space-16);
+}
+
+.composer input {
+  width: 100%;
+  min-height: var(--target-min);
+  padding: 0 var(--space-12);
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+@media (max-width: 900px) {
+  .assistant {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+}

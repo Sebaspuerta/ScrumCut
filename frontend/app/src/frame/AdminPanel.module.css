@@ -1,0 +1,129 @@
+.admin {
+  width: min(1100px, 95vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--color-raised);
+  border: var(--line);
+}
+
+.top {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-24);
+  border-bottom: var(--line);
+}
+
+.top h2 {
+  font: 400 20px var(--font-brand);
+}
+
+.close {
+  width: var(--target-min);
+  height: var(--target-min);
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-32) var(--space-24);
+  padding: var(--space-24);
+}
+
+.groupTitle {
+  font: 400 14px var(--font-brand);
+  padding-bottom: var(--space-8);
+  margin-bottom: var(--space-8);
+  border-bottom: var(--line);
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.items li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  min-height: 36px;
+}
+
+.items a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.soon {
+  color: var(--color-muted);
+}
+
+.soon small {
+  color: var(--color-disabled);
+  font-size: var(--text-label);
+}
+
+.aside {
+  border-left: var(--line);
+  padding: var(--space-24);
+  background: var(--color-bg);
+}
+
+.aside small {
+  display: block;
+  color: var(--color-muted);
+  margin-top: var(--space-4);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.13em;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.facts {
+  margin: var(--space-16) 0 var(--space-24);
+  border-block: var(--line);
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-12) 0;
+}
+
+.facts dt {
+  color: var(--color-muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .body,
+  .groups {
+    grid-template-columns: 1fr;
+  }
+
+  .aside {
+    border-left: 0;
+    border-top: var(--line);
+  }
+}

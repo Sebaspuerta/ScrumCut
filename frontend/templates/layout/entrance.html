@@ -1,7 +1,9 @@
 {% extends "layout/document.html" %}
 {% load static %}
-{% block styles %}<link rel="stylesheet" href="{% static 'css/modules/login.css' %}">{% endblock %}
-{% block scripts %}<script type="module" src="{% static 'js/modules/login-logo.js' %}"></script>{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/identity-fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modules/login.css' %}">
+{% endblock %}
 {% block body %}
 <div class="entrance">
   <div class="entrance__visual">
@@ -14,17 +16,13 @@
     <p class="entrance__credit">Foto: Tim Collins Photography</p>
   </div>
   <main class="entrance__main">
+    {% include "brand/logo.html" %}
     <div class="entrance__panel">
       {% include "layout/messages.html" %}
       {% block content %}{% endblock %}
     </div>
     <footer class="entrance__footer">
-      <div class="entrance__brand">
-        <div class="logo3d" data-logo3d role="img" aria-label="Logotipo de ScrumCut en 3D; arrástralo para girarlo">
-          <div class="logo3d__body" data-logo3d-body><span class="logo3d__layer">ScrumCut</span></div>
-        </div>
-        <span class="entrance__by">por ScrumTech Solutions</span>
-      </div>
+      <span class="entrance__by">ScrumCut · por ScrumTech Solutions</span>
       <nav class="entrance__legal" aria-label="Documentos legales">{% include "layout/legal_links.html" %}</nav>
     </footer>
   </main>

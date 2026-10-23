@@ -1,0 +1,14 @@
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: var(--line);
+  background: var(--color-surface);
+  margin-bottom: var(--space-24);
+}
+
+@media (max-width: 900px) {
+  .metrics {
+    display: flex;
+    overflow-x: auto;
+  }
+}

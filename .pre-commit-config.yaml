@@ -27,3 +27,24 @@ repos:
         exclude: ^frontend/static/(vendor|fonts)/
       - id: trailing-whitespace
         exclude: ^frontend/static/(vendor|fonts)/
+  # App de React (frontend/app): usan las versiones fijadas en su package-lock.json (npm ci antes).
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint (frontend/app)
+        entry: npm --prefix frontend/app run lint
+        language: system
+        files: ^frontend/app/
+        pass_filenames: false
+      - id: prettier
+        name: Prettier (frontend/app)
+        entry: npm --prefix frontend/app run format:check
+        language: system
+        files: ^frontend/app/
+        pass_filenames: false
+      - id: tsc
+        name: tsc --noEmit (frontend/app)
+        entry: npm --prefix frontend/app run typecheck
+        language: system
+        files: ^frontend/app/
+        pass_filenames: false

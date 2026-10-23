@@ -1,0 +1,10 @@
+.toggle {
+  flex: 0 0 var(--target-min);
+  width: var(--target-min);
+  height: var(--target-min);
+  display: grid;
+  place-items: center;
+  border: var(--line);
+  background: transparent;
+  border-radius: var(--radius);
+}

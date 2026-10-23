@@ -1,0 +1,101 @@
+/*
+ * Identidad de ScrumCut (fase R1): valores exactos de la referencia aprobada (docs/diseno/figma-make).
+ * Modo claro por defecto; el oscuro llega por prefers-color-scheme o por la elección guardada en el servidor,
+ * que Django pone en <html data-theme="light|dark">. Sin rojos: lo negativo va con signo y flecha.
+ */
+:root {
+  color-scheme: light;
+
+  --color-bg: #f5f3ee;
+  --color-surface: #fcfbf8;
+  --color-raised: #fff;
+  --color-side: #edeae2;
+  --color-top: #fcfbf8;
+  --color-line: #d7d3c8;
+  --color-text: #1b201c;
+  --color-muted: #62685f;
+  --color-accent: #876b32;
+  --color-soft: #e8dfc8;
+  --color-positive: #386248;
+  --color-attention: #8a5b28;
+  --color-disabled: #a8aaa5;
+  /* Texto sobre el acento: blanco en claro, casi negro en oscuro (contraste AA en los dos). */
+  --color-on-accent: #fff;
+  --color-scrim: #0008;
+
+  --shadow-menu: 0 18px 50px #0004;
+  --shadow-palette: 0 24px 70px #0005;
+  --shadow-tip: 0 8px 24px #0003;
+
+  --font-brand: "Libre Baskerville", Georgia, serif;
+  --font-ui: Manrope, system-ui, sans-serif;
+
+  --text-body: 14px;
+  --text-small: 12px;
+  --text-label: 11px;
+  --text-eyebrow: 10px;
+  --text-micro: 9px;
+  --tracking-label: 0.14em;
+  --tracking-brand: 0.18em;
+
+  /* Escala única de espacios del proyecto (docs/diseno.md, "Espacios"). */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-56: 56px;
+  --space-72: 72px;
+
+  --radius: 4px;
+  --radius-pill: 20px;
+  --line: 1px solid var(--color-line);
+  --target-min: 44px;
+  --topbar-height: 72px;
+  --sidebar-width: 224px;
+  --sidebar-mobile-width: 260px;
+  --content-max: 1600px;
+  --transition: 150ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-bg: #111311;
+    --color-surface: #181b18;
+    --color-raised: #20231f;
+    --color-side: #0c0e0c;
+    --color-top: #181b18;
+    --color-line: #343832;
+    --color-text: #f2f0e9;
+    --color-muted: #a8afa4;
+    --color-accent: #c7a85f;
+    --color-soft: #332c1d;
+    --color-positive: #79a889;
+    --color-attention: #d6a363;
+    --color-disabled: #666b64;
+    --color-on-accent: #111;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #111311;
+  --color-surface: #181b18;
+  --color-raised: #20231f;
+  --color-side: #0c0e0c;
+  --color-top: #181b18;
+  --color-line: #343832;
+  --color-text: #f2f0e9;
+  --color-muted: #a8afa4;
+  --color-accent: #c7a85f;
+  --color-soft: #332c1d;
+  --color-positive: #79a889;
+  --color-attention: #d6a363;
+  --color-disabled: #666b64;
+  --color-on-accent: #111;
+}

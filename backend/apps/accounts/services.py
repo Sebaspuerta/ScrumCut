@@ -1,10 +1,11 @@
 """Escrituras sobre la cuenta de una persona."""
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F
 from django.http import HttpRequest
 
-from apps.accounts.models import User
+from apps.accounts.models import Theme, User
 from apps.audit.models import record
 from apps.core.tenant_context import tenant_context
 
@@ -22,3 +23,12 @@ def logout_all_devices(user: User, request: HttpRequest | None = None) -> None:
                 actor=user,
                 request=request,
             )
+
+
+def set_theme(user: User, theme: str) -> User:
+    """Guarda el tema de la interfaz de la persona. Un valor fuera de `Theme` es un ValidationError."""
+    if theme not in Theme.values:
+        raise ValidationError({"theme": "El tema debe ser system, light o dark."})
+    user.theme = theme
+    user.save(update_fields=["theme"])
+    return user

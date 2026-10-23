@@ -1,0 +1,36 @@
+.gridMain,
+.gridLower {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-24);
+  margin-bottom: var(--space-24);
+  align-items: stretch;
+}
+
+.gridMain > :first-child {
+  grid-column: span 8;
+}
+
+.gridMain > :last-child {
+  grid-column: span 4;
+}
+
+.gridLower > :first-child {
+  grid-column: span 7;
+}
+
+.gridLower > :last-child {
+  grid-column: span 5;
+}
+
+@media (max-width: 900px) {
+  .gridMain,
+  .gridLower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gridMain > *,
+  .gridLower > * {
+    grid-column: 1 !important;
+  }
+}

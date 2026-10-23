@@ -1,0 +1,58 @@
+.panel {
+  min-width: 0;
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.month {
+  font-weight: 600;
+  min-width: 120px;
+  text-align: center;
+}
+
+.arrow,
+.arrowOff {
+  width: var(--target-min);
+  height: var(--target-min);
+  display: grid;
+  place-items: center;
+  border: var(--line);
+  border-radius: var(--radius);
+  color: var(--color-text);
+}
+
+.arrow:hover {
+  background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.arrowOff {
+  color: var(--color-disabled);
+}
+
+.seg {
+  display: flex;
+  border: var(--line);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+}
+
+.seg a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 0 var(--space-12);
+  border-radius: 2px;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.seg a[aria-current="true"] {
+  background: var(--color-soft);
+  color: var(--color-text);
+  font-weight: 700;
+}

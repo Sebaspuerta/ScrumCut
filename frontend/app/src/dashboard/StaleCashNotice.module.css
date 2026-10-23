@@ -1,0 +1,10 @@
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-bottom: var(--space-16);
+  padding: var(--space-8) var(--space-16);
+  border: 1px solid color-mix(in srgb, var(--color-attention) 50%, var(--color-line));
+  background: color-mix(in srgb, var(--color-attention) 8%, var(--color-surface));
+}

@@ -1,0 +1,41 @@
+/* Fuentes de la identidad R1, alojadas en frontend/static/fonts (Fontsource 5.3.0, OFL). Sin pedir nada a Google. */
+
+@font-face {
+  font-family: "Libre Baskerville";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/libre-baskerville-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Libre Baskerville";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/libre-baskerville-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/manrope-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/manrope-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/manrope-latin-700-normal.woff2") format("woff2");
+}

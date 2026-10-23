@@ -1,18 +1,58 @@
-/* Inicio de sesión y demás pantallas de cuenta (Login.dc.html): foto a la izquierda, formulario sobre crema. */
+/*
+ * Entrada (login, registro, recuperar contraseña y 2FA) con la identidad de la fase R1
+ * (docs/diseno/figma-make): los mismos colores, fuentes y logo que la app de React.
+ * Todo vive aquí y con clases propias (entrance*, auth-*): las pantallas internas en plantillas no cambian.
+ * Sin elección guardada (nadie ha iniciado sesión), el tema sigue prefers-color-scheme.
+ * Las fuentes llegan aparte, en css/identity-fonts.css.
+ */
 
 .entrance {
-  /* Medidas propias de esta pantalla, tomadas de la maqueta. */
+  /* Colores de la identidad (claro). */
+  --auth-bg: #f5f3ee;
+  --auth-surface: #fcfbf8;
+  --auth-line: #d7d3c8;
+  --auth-text: #1b201c;
+  --auth-muted: #62685f;
+  --auth-accent: #876b32;
+  --auth-soft: #e8dfc8;
+  --auth-on-accent: #fff;
+  /* La foto siempre va oscura: su texto es claro en los dos modos. */
+  --auth-photo-bg: #111311;
+  --auth-photo-text: #fcfbf8;
+  --auth-photo-accent: #c7a85f;
+  --auth-font-brand: "Libre Baskerville", Georgia, serif;
+  --auth-font-ui: Manrope, system-ui, sans-serif;
+  /* Medidas de esta pantalla. */
   --entrance-visual-basis: 420px;
   --entrance-visual-min-height: 360px;
-  --entrance-form-basis: 380px;
+  --entrance-form-basis: 400px;
   --entrance-pitch-width: 440px;
   --entrance-panel-width: 380px;
-  --entrance-panel-gap: var(--space-8);
+  --entrance-control-height: 44px;
+  --entrance-mark-size: 42px;
 
+  color-scheme: light;
   min-height: 100vh;
   display: flex;
   flex-wrap: wrap;
-  background: var(--gradient-login);
+  background: var(--auth-bg);
+  color: var(--auth-text);
+  font-family: var(--auth-font-ui);
+}
+
+@media (prefers-color-scheme: dark) {
+  .entrance {
+    --auth-bg: #111311;
+    --auth-surface: #181b18;
+    --auth-line: #343832;
+    --auth-text: #f2f0e9;
+    --auth-muted: #a8afa4;
+    --auth-accent: #c7a85f;
+    --auth-soft: #332c1d;
+    --auth-on-accent: #111;
+
+    color-scheme: dark;
+  }
 }
 
 /* Foto ---------------------------------------------------------------------- */
@@ -22,6 +62,7 @@
   flex: 7 1 var(--entrance-visual-basis);
   min-height: var(--entrance-visual-min-height);
   overflow: hidden;
+  background: var(--auth-photo-bg);
 }
 
 .entrance__photo {
@@ -31,44 +72,43 @@
   height: 100%;
   object-fit: cover;
   object-position: 50% 30%;
-  filter: grayscale(1) sepia(0.45) brightness(0.86) contrast(1.02);
-  mask-image: linear-gradient(90deg, #000 0%, #000 48%, rgba(0, 0, 0, 0.55) 72%, transparent 100%);
+  filter: grayscale(1) sepia(0.35) brightness(0.62) contrast(1.05);
 }
 
 .entrance__pitch {
   position: absolute;
-  top: var(--size-48);
-  left: var(--size-48);
-  right: var(--size-48);
+  top: var(--space-14);
+  left: var(--space-10);
+  right: var(--space-10);
   max-width: var(--entrance-pitch-width);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  color: var(--color-login-light);
+  gap: var(--space-3);
+  color: var(--auth-photo-text);
 }
 
 .entrance__eyebrow {
-  font-size: var(--text-label);
-  letter-spacing: var(--tracking-group);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--color-login-cream);
+  color: var(--auth-photo-accent);
 }
 
 .entrance__claim {
-  font-family: var(--font-display);
-  font-weight: 500;
+  font-family: var(--auth-font-brand);
+  font-weight: 400;
   font-size: var(--text-login-pitch);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  text-shadow: var(--shadow-login-claim);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 .entrance__credit {
   position: absolute;
-  left: var(--size-48);
-  bottom: var(--space-6);
+  left: var(--space-10);
+  bottom: var(--space-4);
   font-size: var(--text-label);
-  color: var(--color-login-light);
+  color: var(--auth-photo-text);
 }
 
 /* Formulario -------------------------------------------------------------- */
@@ -79,13 +119,41 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-10);
-  padding: var(--space-14) var(--space-18) var(--space-10);
+  padding: var(--space-10) var(--space-10) var(--space-6);
+  background: var(--auth-surface);
+  border-left: var(--line-width) solid var(--auth-line);
+}
+
+.entrance__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--auth-text);
+}
+
+.entrance__mark {
+  width: var(--entrance-mark-size);
+  height: var(--entrance-mark-size);
+  flex: 0 0 var(--entrance-mark-size);
+}
+
+.entrance__wordmark {
+  display: block;
+  font: 700 14px var(--auth-font-brand);
+  letter-spacing: var(--tracking-group);
+}
+
+.entrance__tagline {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-micro);
+  color: var(--auth-muted);
 }
 
 .entrance__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--entrance-panel-gap);
+  gap: var(--space-6);
   width: 100%;
   max-width: var(--entrance-panel-width);
   margin: auto;
@@ -98,29 +166,41 @@
 }
 
 .entrance__panel h1 {
+  font-family: var(--auth-font-brand);
+  font-weight: 400;
   font-size: var(--text-login-title);
-  line-height: 1.1;
-  color: var(--color-espresso);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--auth-text);
 }
 
 .entrance__panel p {
-  color: var(--color-espresso-700);
+  color: var(--auth-muted);
 }
 
 .entrance__panel a[href] {
-  color: var(--color-espresso);
+  color: var(--auth-accent);
+  font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .entrance__panel a[href]:hover {
-  color: var(--color-espresso-600);
+  text-decoration-thickness: 2px;
+}
+
+.entrance a:focus-visible,
+.entrance button:focus-visible,
+.entrance input:focus-visible,
+.entrance textarea:focus-visible {
+  outline: 2px solid var(--auth-accent);
+  outline-offset: 2px;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 /* Campos en todo el panel: los códigos de recuperación de allauth no van dentro de un formulario. */
@@ -138,41 +218,41 @@
 }
 
 .auth-form .auth-field__row a {
-  font-size: var(--text-meta);
+  font-size: var(--text-small);
 }
 
 .entrance__panel .auth-field label {
-  font-size: var(--text-small);
-  font-weight: 500;
-  letter-spacing: var(--tracking-field);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--color-espresso-700);
+  color: var(--auth-muted);
 }
 
 .entrance__panel input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 .entrance__panel textarea {
-  min-height: var(--control-height-login);
-  padding: 0 var(--space-4);
-  background: var(--color-login-field);
-  border: var(--line-width) solid var(--color-espresso-400);
+  min-height: var(--entrance-control-height);
+  padding: 0 var(--space-3);
+  background: var(--auth-bg);
+  border: var(--line-width) solid var(--auth-line);
   border-radius: var(--radius);
+  font: inherit;
   font-size: var(--text-input);
-  color: var(--color-text);
+  color: var(--auth-text);
 }
 
-/* Chrome pinta de azul lo autocompletado y no deja cambiar ese fondo: una sombra interna
-   opaca lo tapa con el color que el campo crema tiene sobre el degradado. */
+/* Chrome pinta de azul lo autocompletado y no deja cambiar ese fondo: una sombra interna lo tapa. */
 .entrance__panel input:-webkit-autofill,
 .entrance__panel input:-webkit-autofill:hover,
 .entrance__panel input:-webkit-autofill:focus {
-  box-shadow: inset 0 0 0 1000px var(--color-login-field-autofill);
-  -webkit-text-fill-color: var(--color-text);
-  caret-color: var(--color-text);
+  box-shadow: inset 0 0 0 1000px var(--auth-soft);
+  -webkit-text-fill-color: var(--auth-text);
+  caret-color: var(--auth-text);
 }
 
 .entrance__panel textarea {
-  padding: var(--space-3) var(--space-4);
-  font-variant-numeric: var(--font-numeric);
+  padding: var(--space-3);
+  font-variant-numeric: tabular-nums lining-nums;
   resize: vertical;
 }
 
@@ -193,11 +273,12 @@
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
+  color: var(--auth-text);
 }
 
 .entrance__panel .auth-field__help {
   font-size: var(--text-small);
-  color: var(--color-espresso-700);
+  color: var(--auth-muted);
 }
 
 /* Botón principal de estas pantallas: el "Entrar" del login y los enlaces con forma de botón. */
@@ -206,20 +287,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--control-height-login);
+  min-height: var(--entrance-control-height);
   margin-top: var(--space-1);
-  background: var(--color-espresso);
-  border: 0;
+  background: var(--auth-accent);
+  border: var(--line-width) solid var(--auth-accent);
   border-radius: var(--radius);
+  font: inherit;
   font-size: var(--text-input);
-  font-weight: 600;
-  color: var(--color-login-light);
+  font-weight: 700;
+  color: var(--auth-on-accent);
   text-decoration: none;
   cursor: pointer;
 }
 
+.auth-form button:hover,
 .entrance__panel a.button--primary:hover {
-  color: var(--color-login-light);
+  background: color-mix(in srgb, var(--auth-accent) 88%, var(--auth-text));
+  color: var(--auth-on-accent);
 }
 
 .entrance__panel .notices {
@@ -232,90 +316,41 @@
 
 .entrance__panel .entrance__switch {
   padding-top: var(--space-6);
-  border-top: var(--line-width) solid var(--color-login-line);
+  border-top: var(--line-width) solid var(--auth-line);
   font-size: var(--text-meta);
 }
 
-.entrance__switch a[href] {
-  font-weight: 600;
-}
-
-/* Pie: logo 3D, firma y documentos legales -------------------------------- */
+/* Pie: firma y documentos legales -------------------------------------------- */
 
 .entrance__footer {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
-}
-
-.entrance__brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.entrance__by {
-  font-size: var(--text-label);
-  color: var(--color-espresso-700);
+  font-size: var(--text-small);
+  color: var(--auth-muted);
 }
 
 .entrance__legal {
   display: flex;
   gap: var(--space-4);
-  font-size: var(--text-small);
-  color: var(--color-espresso-700);
 }
 
-/* Mide lo mismo que sus capas: más alto dejaría un hueco entre el logo y la firma. */
-.logo3d {
-  width: 220px;
-  height: 56px;
-  display: flex;
+.entrance__legal a {
+  min-height: var(--entrance-control-height);
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  perspective: 520px;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
+  color: var(--auth-muted);
 }
 
-.logo3d__body {
-  position: relative;
-  width: 200px;
-  height: 56px;
-  transform-style: preserve-3d;
-  transform: rotateX(10deg) rotateY(-22deg);
-}
+@media (max-width: 900px) {
+  .entrance__visual {
+    display: none;
+  }
 
-/* login-logo.js clona la capa 11 veces y fija --layer en cada copia. */
-.logo3d__layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-login-pitch);
-  letter-spacing: -0.01em;
-  color: var(--color-logo-1);
-  transform: translateZ(calc(var(--layer, 0) * -1.1px));
-}
-
-.logo3d__layer:nth-child(2) { color: var(--color-logo-2); }
-.logo3d__layer:nth-child(3) { color: var(--color-logo-3); }
-.logo3d__layer:nth-child(4) { color: var(--color-logo-4); }
-.logo3d__layer:nth-child(5) { color: var(--color-logo-5); }
-.logo3d__layer:nth-child(6) { color: var(--color-logo-6); }
-.logo3d__layer:nth-child(7) { color: var(--color-logo-7); }
-.logo3d__layer:nth-child(8) { color: var(--color-logo-8); }
-.logo3d__layer:nth-child(9) { color: var(--color-logo-9); }
-.logo3d__layer:nth-child(10) { color: var(--color-logo-10); }
-.logo3d__layer:nth-child(11) { color: var(--color-logo-11); }
-
-.logo3d__layer:nth-child(12) {
-  color: var(--color-logo-12);
-  text-shadow: var(--shadow-login-logo);
+  .entrance__main {
+    border-left: 0;
+    padding: var(--space-6) var(--space-4);
+  }
 }

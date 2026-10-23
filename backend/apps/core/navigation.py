@@ -22,6 +22,8 @@ class NavItem:
     url_name: str | None = None  # None: aún sin pantalla ("Próximamente")
     icon: str | None = None
     fragment: str = ""  # una parte de la página, como el formulario de gasto de la caja
+    # Ruta dentro de la app de React (/app/...) cuando la pantalla ya existe allí (docs/decisiones/frontend-react.md).
+    app_path: str | None = None
 
 
 @dataclass(frozen=True)
@@ -34,7 +36,7 @@ SIDEBAR = (
     NavGroup(
         "Operación",
         (
-            NavItem("Tablero", None, "home", "layout-dashboard"),
+            NavItem("Tablero", None, "home", "layout-dashboard", app_path="/"),
             NavItem("Agenda", "agenda.ver", icon="calendar"),
             NavItem("Comandas", "comandas.ver", "orders_board", "receipt"),
             NavItem("Caja", "caja.ver", "cash_register", "banknote"),
@@ -139,23 +141,43 @@ def _visible(item: NavItem, role: str) -> bool:
     return item.permission is None or role_has_permission(role, item.permission)
 
 
+def item_url(item: NavItem) -> str | None:
+    """La dirección de la pantalla del ítem, con su fragmento; None si aún no tiene pantalla."""
+    if item.url_name is None:
+        return None
+    return reverse(item.url_name) + (f"#{item.fragment}" if item.fragment else "")
+
+
 def _item(item: NavItem, current_url_name: str | None) -> dict:
     return {
         "label": item.label,
         "icon": f"icons/{item.icon}.svg" if item.icon else None,
-        "url": (reverse(item.url_name) + (f"#{item.fragment}" if item.fragment else "")) if item.url_name else None,
+        "url": item_url(item),
         "active": item.url_name is not None and _module(item.url_name) == _module(current_url_name),
     }
 
 
-def visible_groups(groups: tuple[NavGroup, ...], role: str, current_url_name: str | None = None) -> list[dict]:
-    """Los grupos con al menos un ítem que el rol puede ver, y solo esos ítems."""
+def visible_items(groups: tuple[NavGroup, ...], role: str) -> list[tuple[NavGroup, list[NavItem]]]:
+    """Los grupos con al menos un ítem que el rol puede ver, y solo esos ítems (plantillas y API)."""
     built = []
     for group in groups:
-        items = [_item(item, current_url_name) for item in group.items if _visible(item, role)]
+        items = [item for item in group.items if _visible(item, role)]
         if items:
-            built.append({"title": group.title, "items": items})
+            built.append((group, items))
     return built
+
+
+def visible_actions(role: str) -> list[NavItem]:
+    """Las acciones de "+ Nuevo" que el rol puede usar."""
+    return [item for item in NEW_ACTIONS if _visible(item, role)]
+
+
+def visible_groups(groups: tuple[NavGroup, ...], role: str, current_url_name: str | None = None) -> list[dict]:
+    """Los grupos con al menos un ítem que el rol puede ver, y solo esos ítems."""
+    return [
+        {"title": group.title, "items": [_item(item, current_url_name) for item in items]}
+        for group, items in visible_items(groups, role)
+    ]
 
 
 def _membership_shell(request: HttpRequest, membership, current_url_name: str | None) -> dict:
@@ -166,7 +188,7 @@ def _membership_shell(request: HttpRequest, membership, current_url_name: str | 
         "branches": branch_menu(membership, scope),
         "admin": admin_panel(membership, visible_groups(ADMINISTRATION, membership.role)),
         "sidebar": visible_groups(SIDEBAR, membership.role, current_url_name),
-        "new_actions": [_item(item, None) for item in NEW_ACTIONS if _visible(item, membership.role)],
+        "new_actions": [_item(item, None) for item in visible_actions(membership.role)],
         # Las de la sede activa, o las de todas en "todas" (fase S4b de docs/sedes.md).
         "unread_alerts": unread_alerts(membership, scope),
     }

@@ -1,0 +1,15 @@
+.page {
+  display: grid;
+  gap: var(--space-16);
+  justify-items: start;
+}
+
+.page h1 {
+  font: 400 40px var(--font-brand);
+}
+
+.page a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+}

@@ -1,0 +1,16 @@
+{% load static %}<!doctype html>
+<html lang="es"{% if theme %} data-theme="{{ theme }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ScrumCut</title>
+  <link rel="icon" href="{% static 'brand/icon.svg' %}" type="image/svg+xml">
+  {% for style in entry.styles %}<link rel="stylesheet" href="{{ style }}">
+  {% endfor %}<script type="module" src="{{ entry.script }}"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <noscript>La nueva interfaz necesita JavaScript. <a href="{% url 'home' %}">Ir al tablero actual</a>.</noscript>
+</body>
+</html>

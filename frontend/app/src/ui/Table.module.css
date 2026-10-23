@@ -1,0 +1,51 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-size: var(--text-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  height: 32px;
+  border-bottom: var(--line);
+  background: var(--color-surface);
+}
+
+.table td {
+  height: 46px;
+  border-bottom: var(--line);
+}
+
+.table tbody tr {
+  transition: background-color var(--transition);
+}
+
+.table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  margin-right: var(--space-8);
+  border-radius: 50%;
+  background: var(--color-soft);
+  color: var(--color-accent);
+  display: inline-grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: var(--text-small);
+}
+
+.empty {
+  color: var(--color-muted);
+  padding: var(--space-16) 0;
+}

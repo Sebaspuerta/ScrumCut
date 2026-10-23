@@ -1,0 +1,173 @@
+.towers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-8);
+}
+
+.stage {
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+  perspective: 1200px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.scene {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  translate: -50% -50%;
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  grid-auto-rows: 40px;
+  gap: var(--space-16);
+  transform-style: preserve-3d;
+}
+
+.cell {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.floor {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: var(--space-4);
+  font-size: var(--text-micro);
+  color: var(--color-muted);
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+}
+
+.future {
+  border-style: dashed;
+}
+
+.outside {
+  border-color: transparent;
+}
+
+.axis {
+  font-size: var(--text-label);
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.tower {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.face {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.north,
+.south {
+  width: 40px;
+  height: var(--height);
+  transform-origin: top;
+  transform: rotateX(90deg);
+}
+
+.south {
+  top: 40px;
+}
+
+.west,
+.east {
+  width: var(--height);
+  height: 40px;
+  transform-origin: left;
+  transform: rotateY(-90deg);
+}
+
+.east {
+  left: 40px;
+}
+
+.top {
+  width: 40px;
+  height: 40px;
+  transform: translateZ(var(--height));
+}
+
+/* Cinco tonos del acento, del menor al mayor nivel; las caras laterales, más oscuras. */
+.level0 {
+  --tone: color-mix(in srgb, var(--color-accent) 20%, var(--color-surface));
+}
+
+.level1 {
+  --tone: color-mix(in srgb, var(--color-accent) 35%, var(--color-surface));
+}
+
+.level2 {
+  --tone: color-mix(in srgb, var(--color-accent) 52%, var(--color-surface));
+}
+
+.level3 {
+  --tone: color-mix(in srgb, var(--color-accent) 70%, var(--color-surface));
+}
+
+.level4 {
+  --tone: color-mix(in srgb, var(--color-accent) 88%, var(--color-surface));
+}
+
+.top {
+  background: var(--tone);
+}
+
+.west,
+.south {
+  background: color-mix(in srgb, var(--tone) 82%, var(--color-text));
+}
+
+.north,
+.east {
+  background: color-mix(in srgb, var(--tone) 68%, var(--color-text));
+}
+
+.today .top,
+.tower:hover .top {
+  background: var(--color-accent);
+  outline: 2px solid var(--color-text);
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-12);
+  background: var(--color-raised);
+  border: var(--line);
+  box-shadow: var(--shadow-tip);
+  font-size: var(--text-small);
+  pointer-events: none;
+}
+
+.tooltip[hidden] {
+  display: none;
+}
+
+.tooltip strong {
+  font: 400 18px var(--font-brand);
+}

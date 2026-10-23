@@ -9,6 +9,7 @@
 - Correo verificado obligatorio; 2FA obligatorio para Dueño, Administrador y equipo de plataforma.
 - Bloqueo por usuario + IP (axes) y límites de allauth en login, registro y recuperación.
 - La app no arranca si falta un secreto.
+- La parte interna migra a React + TypeScript en `/app/` sobre una API DRF en `/api/v1/` (solo sesión y CSRF); login, registro, recuperación y 2FA siguen en Django. Ver [decisiones/frontend-react.md](decisiones/frontend-react.md) y "Frontend en React".
 
 ## Hallazgos de seguridad de MAGNUS v1
 
@@ -48,6 +49,22 @@ Especificación, diagnóstico y conflictos por decidir en [sedes.md](sedes.md). 
 - S4a. Caja, comandas, gastos y precios por sede — hecho (backend).
 - S4b. Inventario por sede y traslados — hecho (backend).
 - S5. Consolidado y comparativo — hecho (backend: comparativo y Excel por sede); falta su pantalla.
+
+## Frontend en React
+
+Decisión, razones, costos y reglas en [decisiones/frontend-react.md](decisiones/frontend-react.md). El estándar de código está en `AGENTS.md`.
+
+| Pieza | Dónde |
+|---|---|
+| API (DRF + drf-spectacular) | `backend/apps/api`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`) y `csrf`, en `/api/v1/`. Solo `SessionAuthentication`, permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
+| Esquema y tipos | `frontend/app/openapi.json` (de `manage.py spectacular`) y `frontend/app/src/api/schema.d.ts` (de `npm run gen:types`). `tests/api/test_openapi_schema.py` y `src/api/schema.test.ts` fallan si alguno quedó desactualizado. |
+| App | `frontend/app/`: Vite, React Router (base `/app`), TanStack Query. Compila en `frontend/static/app/`. |
+| Página | `apps.core.views.react_app` (`login_required`) en `/app/` y subrutas; lee el manifest de Vite con `apps/core/vite_manifest.py` y pinta `frontend/templates/app/index.html`, sin nada en línea. |
+| Tokens | `frontend/app/src/styles/tokens.css`, provisionales hasta R1. |
+
+| Tablero y marco (R1) | `apps/api`: `dashboard` (sobre `executive_dashboard`, `reportes.ver`, consultas constantes), `notifications` (alertas, solo lectura, `alertas.ver`) y `me/preferences` (tema, PATCH con CSRF). `User.theme` (migración `accounts` 0003). En React: marco, paleta de comandos, notificaciones, Administración, tema y tablero en `/app/`. |
+
+Fases: R0 (base técnica) — hecha. R1 (identidad nueva, marco y tablero en React; entrada de Django con la identidad nueva) — hecha. Identidad: [diseno/identidad-r1.md](diseno/identidad-r1.md).
 
 ## Pendientes de seguridad
 

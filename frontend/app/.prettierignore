@@ -1,0 +1,4 @@
+# Generados: los tipos salen de openapi.json y openapi.json de drf-spectacular.
+src/api/schema.d.ts
+openapi.json
+package-lock.json

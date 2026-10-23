@@ -1,0 +1,20 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--space-32);
+  background: var(--color-scrim);
+}
+
+.top {
+  align-items: start;
+  padding-top: 12vh;
+}
+
+@media (max-width: 900px) {
+  .scrim {
+    padding: var(--space-8);
+  }
+}

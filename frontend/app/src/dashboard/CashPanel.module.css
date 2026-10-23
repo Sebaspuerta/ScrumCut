@@ -1,0 +1,41 @@
+.cash {
+  display: flex;
+  flex-direction: column;
+}
+
+.rows {
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 40px;
+  border-bottom: var(--line);
+}
+
+.row dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.total {
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-text);
+  border-bottom: 0;
+}
+
+.total dd {
+  font: 400 18px var(--font-brand);
+}
+
+.empty {
+  color: var(--color-muted);
+  padding: var(--space-16) 0;
+}
+
+.go {
+  margin-top: var(--space-16);
+}

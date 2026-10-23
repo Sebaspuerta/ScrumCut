@@ -18,7 +18,16 @@ LOGIN_ONLY_VIEWS = {
     "home": "Tablero: con reportes.ver muestra todo; sin ese permiso, solo los cortes propios del barbero.",
     "logout_everywhere": "Actúa sobre la propia cuenta, no sobre datos de una barbería.",
     "switch_branch": "Cambia el alcance propio; la sede se valida contra las permitidas del rol (403 si no).",
+    "react_app": "Solo el HTML de la app de React; los datos y sus permisos llegan por la API.",
+    "react_app_route": "Igual que react_app, en las subrutas del enrutador del navegador.",
+    "api_me": "La propia persona, su rol y sus permisos; sin barbería activa, solo la persona.",
+    "api_navigation": "Exige membresía; cada ítem ya viene filtrado por su permiso en navigation.py.",
+    "api_branch": "Cambia el alcance propio; choose_branch valida la sede contra las permitidas (403 si no).",
+    "api_csrf": "El token CSRF de la propia sesión, para las escrituras de la app de React.",
+    "api_preferences": "Las preferencias de la propia cuenta (el tema); no toca datos de una barbería.",
 }
+
+API_PREFIX = "api/"  # vistas de DRF: sin sesión responden 401 o 403 en vez de redirigir al login
 
 _SAMPLES = {"int": "1", "uuid": "00000000-0000-0000-0000-000000000000"}
 

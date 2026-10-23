@@ -1,0 +1,22 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border: var(--line);
+  border-radius: var(--radius-pill);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-label);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.positive {
+  color: var(--color-positive);
+  border-color: color-mix(in srgb, var(--color-positive) 40%, var(--color-line));
+  background: color-mix(in srgb, var(--color-positive) 9%, transparent);
+}
+
+.attention {
+  color: var(--color-attention);
+  border-color: color-mix(in srgb, var(--color-attention) 40%, var(--color-line));
+}

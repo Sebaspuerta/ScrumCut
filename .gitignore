@@ -9,6 +9,9 @@ __pycache__/
 *.sql
 *.dump
 staticfiles/
+# App de React: dependencias y compilación (vite build) se generan en cada máquina.
+frontend/app/node_modules/
+frontend/static/app/
 media/
 .pytest_cache/
 .ruff_cache/

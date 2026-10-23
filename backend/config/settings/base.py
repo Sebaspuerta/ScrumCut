@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.mfa",
     "axes",
+    "rest_framework",
+    "drf_spectacular",
     "apps.core",
     "apps.accounts",
     "apps.tenancy",
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
     "apps.receivables",
     "apps.alerts",
     "apps.reports",
+    "apps.api",
 ]
 
 MIDDLEWARE = [
@@ -193,8 +196,41 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 STATICFILES_DIRS = [FRONTEND_DIR / "static"]
+# La app de React (frontend/app) se compila en frontend/static/app/ (docs/decisiones/frontend-react.md).
+REACT_APP_MANIFEST = FRONTEND_DIR / "static" / "app" / "manifest.json"
 
 ADMIN_URL = env.require("ADMIN_URL")
+
+# --- API (docs/decisiones/frontend-react.md) ------------------------------
+# Solo la sesión de Django: sin tokens ni basic auth. SessionAuthentication exige CSRF en las escrituras.
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    # Sin la API navegable: solo JSON.
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"anon": "30/min", "user": "300/min"},
+    "EXCEPTION_HANDLER": "apps.api.exceptions.generic_error_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+# El esquema se genera con `manage.py spectacular` y se guarda en frontend/app/openapi.json; no se publica.
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ScrumCut API",
+    "VERSION": "1",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "RoleCodeEnum": "apps.tenancy.roles.Role",
+        "BranchModeEnum": "apps.api.serializers.BRANCH_MODES",
+        "NavStatusEnum": "apps.api.serializers.NAV_STATUSES",
+    },
+}
 
 LOGGING = {
     "version": 1,
