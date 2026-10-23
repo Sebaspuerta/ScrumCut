@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static formatting %}
+{# Clientes (Clientes.dc.html): cifras de la sede, la lista con filtros y la ficha del cliente elegido. #}
+{% block head_title %}Clientes{% if shell.shop %} · {{ shell.shop.name }}{% endif %} · ScrumCut{% endblock %}
+{% block styles %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/modules/clients.css' %}">
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li aria-current="page">Clientes</li></ol>
+    </nav>
+    <h1>Clientes</h1>
+    <p class="muted">Sede {{ shell.branches.current }} · nivel e historial de cada cliente en esta sede</p>
+  </div>
+  {% if can.create %}
+  <div class="page-head__actions">
+    <a class="button button--primary" href="{% url 'clients_new' %}">
+      <span class="icon" aria-hidden="true">{% include "icons/plus.svg" %}</span>Nuevo cliente
+    </a>
+  </div>
+  {% endif %}
+</section>
+{% include "clients/board.html#figures" %}
+<div class="clients">
+  {% include "clients/list.html" %}
+  {% if card %}{% include "clients/card.html" %}{% endif %}
+</div>
+{% endblock %}
+
+{% partialdef figures %}
+<dl class="figures num">
+  <div class="figures__item">
+    <dt class="label">Activos 90 días</dt>
+    <dd class="figures__value">{{ stats.active }}</dd>
+    <dd class="figures__note">de {{ stats.with_visits }} con visitas</dd>
+  </div>
+  <div class="figures__item">
+    <dt class="label">Nuevos este mes</dt>
+    <dd class="figures__value">{{ stats.this_month }}</dd>
+    <dd class="figures__note">{% if stats.this_month > stats.last_month %}▴ {% elif stats.this_month < stats.last_month %}▾ {% endif %}{{ stats.last_month }} el mes anterior</dd>
+  </div>
+  <div class="figures__item">
+    <dt class="label">Vuelven en 30 días</dt>
+    <dd class="figures__value">{% if stats.return_rate is None %}—{% else %}{{ stats.return_rate }} %{% endif %}</dd>
+    <dd class="figures__note">después de su primera visita</dd>
+  </div>
+  <div class="figures__item">
+    <dt class="label">Con fiado</dt>
+    <dd class="figures__value">{{ stats.debtors.clients }}</dd>
+    <dd class="figures__note">{{ stats.debtors.total|cop }} por cobrar</dd>
+  </div>
+</dl>
+{% endpartialdef %}

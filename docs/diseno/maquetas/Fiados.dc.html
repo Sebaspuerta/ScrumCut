@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Fiados · Santo Varón · ScrumCut</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&amp;family=Hanken+Grotesk:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#EEEBE6}
+a{color:#1E1915;text-decoration:none}a:hover{color:#6B5444}
+.num{font-variant-numeric:tabular-nums lining-nums}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #EEEBE6; font-family: 'Hanken Grotesk', sans-serif; color: #1E1915; font-size: 14px; line-height: 1.5">
+
+<header style="background: #2E211A; color: #F2EDE7; display: flex; flex-wrap: wrap; align-items: stretch; min-height: 64px; border-bottom: 1px solid #1B130E">
+<div style="flex: 0 0 248px; width: 248px; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 12px; background: #241912; border-right: 1px solid #1B130E">
+<button type="button" aria-label="Ocultar menú de módulos" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 4px; color: #E4DAD0; cursor: pointer">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
+</button>
+<span style="width: 32px; height: 32px; border: 1px solid #6B5444; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px">SV</span>
+<span style="display: flex; flex-direction: column; line-height: 1.2">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 16px">Santo Varón</span>
+<span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #BFAE9F">Barbería</span>
+</span>
+</div>
+<div style="flex: 1 1 640px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 12px 24px">
+<button type="button" style="display: flex; align-items: center; gap: 12px; font: inherit; color: #F2EDE7; background: #3A2B22; border: 1px solid #4A382D; border-radius: 4px; padding: 0 12px; min-height: 44px; cursor: pointer">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #BFAE9F">Sede</span><span style="font-weight: 600">Centro</span></span>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+</button>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 8px">
+<a href="#" aria-label="Alertas: 4 sin leer" style="position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #E4DAD0">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<span class="num" style="position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; box-sizing: border-box; border: 2px solid #2E211A; border-radius: 9px; background: #5E7361; color: #FFFFFF; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0 4px">4</span>
+</a>
+<button type="button" style="display: flex; align-items: center; gap: 8px; font: inherit; font-size: 13px; font-weight: 500; color: #E4DAD0; background: transparent; border: 0; border-radius: 4px; padding: 0 12px; min-height: 44px; cursor: pointer">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+Administración</button>
+<span aria-hidden="true" style="width: 1px; height: 28px; background: #4A382D; margin: 0 4px"></span>
+<button type="button" aria-label="Cuenta de Andrés Mora, Dueño" style="display: flex; align-items: center; gap: 12px; font: inherit; color: #F2EDE7; background: transparent; border: 0; padding: 0 8px 0 4px; min-height: 44px; cursor: pointer">
+<span style="width: 32px; height: 32px; border-radius: 16px; background: #E4DAD0; color: #2E211A; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">AM</span>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25"><span style="font-weight: 500; font-size: 13px">Andrés Mora</span><span style="font-size: 11px; color: #BFAE9F">Dueño</span></span>
+</button>
+</div>
+</div>
+</header>
+
+<div style="flex: 1 1 auto; display: flex; flex-wrap: wrap; min-height: 0">
+
+<aside aria-label="Módulos" style="flex: 0 0 248px; width: 248px; box-sizing: border-box; background: #F3F0EB; border-right: 1px solid #D9D2C8; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding: 24px 12px">
+<nav style="display: flex; flex-direction: column; gap: 16px">
+<sc-for list="{{modGroups}}" as="mg" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6B5444; padding: 0 16px 4px">{{mg.name}}</span>
+<sc-for list="{{mg.items}}" as="m" hint-placeholder-count="3">
+<a href="#" aria-current="{{m.current}}" style="{{m.style}}">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="{{m.icon}}"></path></svg>
+<span>{{m.label}}</span>
+</a>
+</sc-for>
+</div>
+</sc-for>
+</nav>
+<div style="display: flex; flex-direction: column; padding: 12px 16px 0; border-top: 1px solid #D9D2C8; line-height: 1.3">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px; color: #2E211A">ScrumCut</span>
+<span style="font-size: 11px; color: #6E655D">por ScrumTech Solutions</span>
+</div>
+</aside>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px; padding: 32px 40px 56px; max-width: 1320px; box-sizing: border-box">
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<nav aria-label="Ruta" style="font-size: 12px; color: #6E655D"><a href="#" style="color: #6E655D">Inicio</a> <span aria-hidden="true">/</span> Fiados</nav>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 40px; line-height: 1.05; letter-spacing: -0.02em">Fiados</h1>
+<p style="margin: 0; color: #6E655D">Sede Centro · lo que deben los clientes en esta sede y sus abonos</p>
+</div>
+<a href="#abono" style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #F2EDE7; background: #2E211A; border-radius: 4px; padding: 0 16px 0 12px; min-height: 44px">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+Registrar abono</a>
+</div>
+
+<section aria-labelledby="t-cartera" style="display: flex; flex-direction: column; gap: 24px">
+<h2 id="t-cartera" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Resumen de la cartera</h2>
+<div class="num" style="background: #2E211A; color: #F2EDE7; border-radius: 4px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr))">
+<sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+<div style="{{k.style}}">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #BFAE9F">{{k.label}}</span>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 28px; line-height: 1.1">{{k.value}}</span>
+<span style="font-size: 12px; color: #BFAE9F">{{k.note}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">Antigüedad de la deuda</span>
+<span class="num" style="font-size: 12px; color: #6E655D">Total $845.000</span>
+</div>
+<div role="img" aria-label="Al día 385.000 (46 %), vencido de 1 a 15 días 320.000 (38 %), de 16 a 30 días 0, más de 30 días 140.000 (17 %)" style="display: flex; height: 16px; border-radius: 2px; overflow: hidden; background: #E4DAD0">
+<sc-for list="{{aging}}" as="a" hint-placeholder-count="4">
+<div style="{{a.barStyle}}"></div>
+</sc-for>
+</div>
+<div class="num" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px 24px">
+<sc-for list="{{aging}}" as="a" hint-placeholder-count="4">
+<div style="display: flex; gap: 8px; align-items: flex-start">
+<span aria-hidden="true" style="{{a.swatch}}"></span>
+<span style="display: flex; flex-direction: column; line-height: 1.35">
+<span style="font-size: 13px; color: #4A4039">{{a.label}}</span>
+<span style="font-weight: 600">{{a.amount}} <span style="font-weight: 400; color: #6E655D">· {{a.pct}}</span></span>
+</span>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+<section aria-labelledby="t-lista" style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<h2 id="t-lista" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Fiados</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 1px solid #D9D2C8">
+<div role="tablist" aria-label="Estado de los fiados" style="display: flex; gap: 4px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button type="button" role="tab" aria-selected="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}} <span class="num" style="font-weight: 400; color: #6E655D">{{t.count}}</span></button>
+</sc-for>
+</div>
+<label for="buscar-fiado" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar cliente</label>
+<input id="buscar-fiado" type="search" placeholder="Buscar cliente" style="flex: 0 1 220px; margin-bottom: 8px; font: inherit; font-size: 13px; color: #1E1915; background: #FBFAF8; border: 1px solid #CFC6BA; border-radius: 4px; padding: 0 12px; min-height: 40px">
+</div>
+
+<div style="overflow-x: auto">
+<table class="num" style="width: 100%; min-width: 680px; border-collapse: collapse; font-size: 13px">
+<caption style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Fiados de la sede Centro, los vencidos primero</caption>
+<thead>
+<tr style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6E655D; border-bottom: 1px solid #2E211A">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 0 12px 12px">Cliente</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 0 12px 12px">Fiado el</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 0 12px 12px">Vence</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 12px 12px">Total</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 12px 12px">Abonado</th>
+<th scope="col" style="text-align: right; font-weight: 500; padding: 0 12px 12px">Saldo</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 0 12px 12px">Estado</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+<tr style="{{r.rowStyle}}">
+<td style="padding: 0"><button type="button" onClick="{{r.pick}}" aria-current="{{r.current}}" style="{{r.cellBtn}}"><span style="display: block; font-weight: 600">{{r.client}}</span><span style="display: block; font-size: 12px; color: #6E655D">Comanda {{r.order}}</span></button></td>
+<td style="padding: 12px; color: #4A4039">{{r.date}}</td>
+<td style="padding: 12px; color: #4A4039">{{r.due}}</td>
+<td style="padding: 12px; text-align: right">{{r.total}}</td>
+<td style="padding: 12px; text-align: right; color: #6E655D">{{r.paid}}</td>
+<td style="padding: 12px; text-align: right; font-weight: 600">{{r.balance}}</td>
+<td style="{{r.statusStyle}}">{{r.status}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<p class="num" style="margin: 0; font-size: 12px; color: #6E655D">Ordenados por urgencia: primero los más vencidos. Un fiado solo se paga en la sede donde se hizo.</p>
+</section>
+
+<section id="abono" aria-labelledby="t-abono" style="flex: 2 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 24px; border-top: 1px solid #2E211A; padding-top: 16px">
+<sc-if value="{{hasSel}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="num" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">Registrar abono · comanda {{s.order}}</span>
+<h2 id="t-abono" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.15">{{s.client}}</h2>
+<span style="{{s.statusLine}}">{{s.status}}</span>
+</div>
+
+<dl class="num" style="margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #D9D2C8; border-bottom: 1px solid #D9D2C8">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 12px 0"><dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">Total</dt><dd style="margin: 0">{{s.total}}</dd></div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border-left: 1px solid #D9D2C8"><dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">Abonado</dt><dd style="margin: 0">{{s.paid}}</dd></div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border-left: 1px solid #D9D2C8"><dt style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D">Saldo</dt><dd style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 20px">{{s.balance}}</dd></div>
+</dl>
+
+<form style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="monto-abono" style="font-size: 12px; color: #6E655D">Monto del abono</label>
+<div style="display: flex; gap: 8px">
+<input id="monto-abono" type="text" inputmode="numeric" value="{{amountText}}" onInput="{{setAmount}}" class="num" style="flex: 1 1 auto; min-width: 0; font: inherit; font-size: 18px; font-weight: 600; color: #1E1915; background: #FFFFFF; border: 1px solid #CFC6BA; border-radius: 4px; padding: 0 12px; min-height: 48px">
+<button type="button" onClick="{{payAll}}" style="flex: 0 0 auto; font: inherit; font-size: 13px; font-weight: 600; color: #2E211A; background: #E4DAD0; border: 0; border-radius: 4px; padding: 0 16px; min-height: 48px; cursor: pointer">Pagar todo</button>
+</div>
+<span class="num" style="{{afterStyle}}">{{afterText}}</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span id="forma-abono" style="font-size: 12px; color: #6E655D">Forma de pago</span>
+<div role="radiogroup" aria-labelledby="forma-abono" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{methods}}" as="m" hint-placeholder-count="6">
+<button type="button" role="radio" aria-checked="{{m.checked}}" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button>
+</sc-for>
+</div>
+<span style="font-size: 12px; color: #6E655D">{{methodNote}}</span>
+</div>
+
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #6E655D">Nota (opcional)
+<input type="text" placeholder="Ej.: abonó al recoger a su hijo" style="font: inherit; font-size: 14px; color: #1E1915; background: #FFFFFF; border: 1px solid #CFC6BA; border-radius: 4px; padding: 0 12px; min-height: 44px">
+</label>
+
+<button type="button" disabled="{{invalid}}" class="num" style="{{submitStyle}}">{{submitLabel}}</button>
+</form>
+
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E655D; padding-bottom: 4px">Abonos anteriores</span>
+<sc-if value="{{s.hasHistory}}" hint-placeholder-val="{{true}}">
+<ul class="num" style="list-style: none; margin: 0; padding: 0">
+<sc-for list="{{s.history}}" as="h" hint-placeholder-count="1">
+<li style="display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid #E4DCD2; font-size: 13px">
+<span><span style="display: block">{{h.date}}</span><span style="font-size: 12px; color: #6E655D">{{h.method}} · recibió {{h.who}}</span></span>
+<span style="font-weight: 600">{{h.amount}}</span>
+</li>
+</sc-for>
+</ul>
+</sc-if>
+<sc-if value="{{s.noHistory}}" hint-placeholder-val="{{false}}">
+<p style="margin: 0; padding: 12px 0; border-top: 1px solid #E4DCD2; font-size: 13px; color: #6E655D">Todavía no ha abonado.</p>
+</sc-if>
+</div>
+</sc-if>
+</section>
+
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5E7361","options":["#5E7361","#2F4F5A","#8C6A3F"]},"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const accent = this.props.accent ?? '#5E7361';
+    const sep = (n) => String(Math.round(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const cop = (n) => (n < 0 ? '−$' : '$') + sep(n);
+
+    const item = 'display: flex; align-items: center; gap: 12px; min-height: 44px; border-radius: 4px; font-size: 14px; padding: 0 16px';
+    const navActive = item + '; color: #2E211A; font-weight: 600; background: #E4DAD0; box-shadow: inset 3px 0 0 ' + accent;
+    const P = {
+      tablero: 'M3 3h7v9H3z M14 3h7v5h-7z M14 12h7v9h-7z M3 16h7v5H3z',
+      comandas: 'M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z M8 8h8 M8 12h8 M8 16h5',
+      caja: 'M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4z',
+      clientes: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8z',
+      fiados: 'M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4 M2 6h4 M2 10h4 M2 14h4 M2 18h4',
+      servicios: 'M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z',
+      inventario: 'M11 21.7a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7z M12 22V12',
+      reportes: 'M3 3v16a2 2 0 0 0 2 2h16 M18 17V9 M13 17V5 M8 17v-3',
+    };
+    const mod = (label, icon, current) => ({ label, icon: P[icon], current: current ? 'page' : 'false', style: current ? navActive : item + '; color: #4A4039' });
+    const modGroups = [
+      { name: 'Operación', items: [mod('Tablero', 'tablero'), mod('Comandas', 'comandas'), mod('Caja', 'caja')] },
+      { name: 'Clientes', items: [mod('Clientes', 'clientes'), mod('Fiados', 'fiados', true)] },
+      { name: 'Catálogo', items: [mod('Servicios', 'servicios'), mod('Inventario', 'inventario')] },
+      { name: 'Análisis', items: [mod('Reportes', 'reportes')] },
+    ];
+
+    const cell = 'padding: 16px 24px; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid #4A382D';
+    const kpis = [
+      { label: 'Por cobrar', value: '$845.000', note: '9 fiados de 9 clientes' },
+      { label: 'Vencido', value: '$460.000', note: '4 clientes · 54 % de la cartera' },
+      { label: 'Vence en 7 días', value: '$215.000', note: '2 clientes' },
+      { label: 'Cobrado en octubre', value: '$410.000', note: '12 abonos' },
+    ].map((k, i) => ({ ...k, style: i === 0 ? cell.replace('border-left: 1px solid #4A382D', 'border-left: 0') : cell }));
+
+    const total = 845000;
+    const buckets = [
+      { label: 'Al día', amount: 385000, color: '#CBB8A6' },
+      { label: 'Vencido 1 a 15 días', amount: 320000, color: '#A68B76' },
+      { label: 'Vencido 16 a 30 días', amount: 0, color: '#6B5444' },
+      { label: 'Vencido más de 30 días', amount: 140000, color: '#2E211A' },
+    ];
+    const aging = buckets.map((b) => ({
+      label: b.label, amount: cop(b.amount), pct: Math.round((b.amount / total) * 100) + ' %',
+      barStyle: 'height: 16px; background: ' + b.color + '; width: ' + ((b.amount / total) * 100).toFixed(2) + '%',
+      swatch: 'flex: 0 0 auto; width: 12px; height: 12px; margin-top: 4px; border-radius: 2px; background: ' + b.color,
+    }));
+
+    const R = [
+      { id: 4, client: 'Ricardo Molina', order: '#0072', date: '2 sep', due: '17 sep', days: -35, total: 140000, paid: 0, history: [] },
+      { id: 9, client: 'Andrés Vargas', order: '#0089', date: '22 sep', due: '7 oct', days: -15, total: 100000, paid: 0, history: [] },
+      { id: 1, client: 'Carlos Pérez', order: '#0098', date: '26 sep', due: '10 oct', days: -12, total: 230000, paid: 50000, history: [{ date: 'Sáb 11 oct · 11:05 a. m.', method: 'Efectivo', who: 'Laura Pérez', amount: 50000 }] },
+      { id: 5, client: 'Esteban Rojas', order: '#0110', date: '4 oct', due: '19 oct', days: -3, total: 60000, paid: 20000, history: [{ date: 'Mié 15 oct · 4:40 p. m.', method: 'Nequi', who: 'Laura Pérez', amount: 20000 }] },
+      { id: 8, client: 'Óscar Pineda', order: '#0118', date: '9 oct', due: '24 oct', days: 2, total: 95000, paid: 0, history: [] },
+      { id: 2, client: 'Mauricio Herrera', order: '#0127', date: '13 oct', due: '28 oct', days: 6, total: 120000, paid: 0, history: [] },
+      { id: 6, client: 'Iván Castaño', order: '#0136', date: '18 oct', due: '2 nov', days: 11, total: 75000, paid: 0, history: [] },
+      { id: 7, client: 'Hernán Mejía', order: '#0140', date: '21 oct', due: '4 nov', days: 13, total: 50000, paid: 0, history: [] },
+      { id: 3, client: 'Jorge Díaz', order: '#0133', date: '16 oct', due: '5 nov', days: 14, total: 90000, paid: 45000, history: [{ date: 'Hoy · 3:20 p. m.', method: 'Efectivo', who: 'Laura Pérez', amount: 45000 }] },
+    ];
+    const statusOf = (d) => d < 0 ? '▾ Vencido hace ' + -d + (d === -1 ? ' día' : ' días') : d <= 7 ? 'Vence en ' + d + (d === 1 ? ' día' : ' días') : 'Al día';
+    const statusTone = (d) => d < 0 ? 'color: #6B5444; font-weight: 600' : d <= 7 ? 'color: #2E211A; font-weight: 500' : 'color: #6E655D';
+
+    const tab = st.tab ?? 'pendientes';
+    const tabBase = 'font: inherit; font-size: 14px; padding: 0 16px; min-height: 44px; background: transparent; border: 0; cursor: pointer; margin-bottom: -1px; ';
+    const tabs = [
+      { id: 'pendientes', label: 'Pendientes', count: '9' },
+      { id: 'vencidos', label: 'Vencidos', count: '4' },
+      { id: 'pagados', label: 'Pagados en octubre', count: '6' },
+    ].map((t) => ({
+      ...t, selected: t.id === tab ? 'true' : 'false', pick: () => this.setState({ tab: t.id }),
+      style: tabBase + (t.id === tab ? 'color: #2E211A; font-weight: 600; border-bottom: 2px solid #2E211A' : 'color: #6E655D; border-bottom: 2px solid transparent'),
+    }));
+
+    const paidList = [
+      { id: 101, client: 'Felipe Ramírez', order: '#0101', date: '1 oct', due: '16 oct', total: 40000 },
+      { id: 102, client: 'Daniel Torres', order: '#0094', date: '28 sep', due: '13 oct', total: 25000 },
+    ];
+    const selId = st.sel ?? 1;
+    const cellBtn = 'display: block; width: 100%; text-align: left; font: inherit; color: #1E1915; background: transparent; border: 0; padding: 12px; min-height: 48px; cursor: pointer';
+    let rows;
+    if (tab === 'pagados') {
+      rows = paidList.map((p) => ({
+        client: p.client, order: p.order, date: p.date, due: p.due, total: cop(p.total), paid: cop(p.total), balance: '$0',
+        status: 'Pagado', statusStyle: 'padding: 12px; color: #6E655D', current: 'false', pick: () => {}, cellBtn,
+        rowStyle: 'border-bottom: 1px solid #D9D2C8',
+      }));
+    } else {
+      rows = R.filter((r) => tab === 'pendientes' || r.days < 0).map((r) => {
+        const on = r.id === selId;
+        return {
+          client: r.client, order: r.order, date: r.date, due: r.due, total: cop(r.total), paid: r.paid ? cop(r.paid) : '—', balance: cop(r.total - r.paid),
+          status: statusOf(r.days), statusStyle: 'padding: 12px; white-space: nowrap; ' + statusTone(r.days),
+          current: on ? 'true' : 'false', pick: () => this.setState({ sel: r.id, amount: undefined }), cellBtn,
+          rowStyle: 'border-bottom: 1px solid #D9D2C8; ' + (on ? 'background: #E4DAD0; box-shadow: inset 3px 0 0 ' + accent : ''),
+        };
+      });
+    }
+
+    const r = R.find((x) => x.id === selId) || R[0];
+    const balance = r.total - r.paid;
+    const s = {
+      client: r.client, order: r.order, total: cop(r.total), paid: cop(r.paid), balance: cop(balance),
+      status: statusOf(r.days) + ' · venció o vence el ' + r.due,
+      statusLine: 'font-size: 13px; ' + statusTone(r.days),
+      history: r.history.map((h) => ({ ...h, amount: cop(h.amount) })),
+      hasHistory: r.history.length > 0, noHistory: r.history.length === 0,
+    };
+    if (r.days >= 0) s.status = statusOf(r.days) + ' · vence el ' + r.due;
+    else s.status = statusOf(r.days) + ' · venció el ' + r.due;
+
+    const amount = st.amount ?? 0;
+    const setAmount = (e) => { const v = parseInt(String(e.target.value).replace(/\D/g, ''), 10); this.setState({ amount: isNaN(v) ? 0 : v }); };
+    const payAll = () => this.setState({ amount: balance });
+    const over = amount > balance;
+    const invalid = amount <= 0 || over;
+    const after = balance - amount;
+    const afterText = amount <= 0 ? 'Escribe cuánto abona el cliente.' : over ? 'No puede pasar el saldo de ' + cop(balance) + '.' : after === 0 ? 'Con este abono el fiado queda pagado.' : 'Saldo después del abono: ' + cop(after);
+    const afterStyle = 'font-size: 13px; ' + (over ? 'color: #6B5444; font-weight: 600' : after === 0 && amount > 0 ? 'color: ' + accent + '; font-weight: 600' : 'color: #6E655D');
+
+    const method = st.method ?? 'Efectivo';
+    const methods = ['Efectivo', 'Nequi', 'Daviplata', 'Tarjeta', 'Transferencia', 'Bre-B'].map((m) => ({
+      label: m, checked: m === method ? 'true' : 'false', pick: () => this.setState({ method: m }),
+      style: 'font: inherit; font-size: 13px; font-weight: 600; border-radius: 4px; min-height: 44px; cursor: pointer; ' + (m === method ? 'background: #2E211A; color: #F2EDE7; border: 1px solid #2E211A' : 'background: transparent; color: #2E211A; border: 1px solid #CFC6BA'),
+    }));
+    const methodNote = method === 'Efectivo' ? 'Entra a la caja abierta de Centro.' : 'No entra a la caja física: queda en "otros medios" del cierre.';
+    const submitLabel = invalid ? 'Registrar abono' : 'Registrar abono de ' + cop(amount);
+    const submitStyle = 'font: inherit; font-size: 16px; font-weight: 600; border: 0; border-radius: 4px; min-height: 52px; ' + (invalid ? 'background: #CFC6BA; color: #4A4039; cursor: not-allowed' : 'background: #2E211A; color: #F2EDE7; cursor: pointer');
+
+    return { modGroups, kpis, aging, tabs, rows, hasSel: true, s, amountText: amount ? '$' + sep(amount) : '', setAmount, payAll, afterText, afterStyle, methods, methodNote, invalid, submitLabel, submitStyle };
+  }
+}
+</script>
+</body>
+</html>

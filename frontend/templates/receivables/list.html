@@ -1,0 +1,47 @@
+{% load formatting %}
+{# Fiados por pestaña y por urgencia (los más vencidos primero). El estado va en texto, sin rojos. #}
+<section class="section receivables__list" aria-labelledby="t-lista">
+  <h2 id="t-lista" class="visually-hidden">Fiados</h2>
+  <div class="receivables__filters">
+    <nav class="tabs" aria-label="Estado de los fiados">
+      {% for tab in tabs %}
+      <a class="tabs__tab" href="{% url 'receivables_board' %}?pestana={{ tab.value }}"{% if tab.value == filters.tab %} aria-current="page"{% endif %}>
+        {{ tab.label }} <span class="tabs__count num">{{ tab.count }}</span>
+      </a>
+      {% endfor %}
+    </nav>
+    <form class="inline-form" method="get" action="{% url 'receivables_board' %}">
+      <input type="hidden" name="pestana" value="{{ filters.tab }}">
+      <label for="buscar-fiado" class="visually-hidden">Buscar cliente</label>
+      <input id="buscar-fiado" class="field" type="search" name="q" value="{{ filters.search }}" placeholder="Buscar cliente">
+      <button type="submit" class="button button--outline">Buscar</button>
+    </form>
+  </div>
+  <div class="table-scroll">
+    <table class="data-table">
+      <caption class="visually-hidden">Fiados de la sede {{ shell.branches.current }}, los vencidos primero</caption>
+      <thead><tr><th scope="col">Cliente</th><th scope="col">Fiado el</th><th scope="col">Vence</th><th scope="col">Total</th><th scope="col">Abonado</th><th scope="col">Saldo</th><th scope="col" class="data-table__text">Estado</th></tr></thead>
+      <tbody>
+        {% for row in rows %}
+        {% with debt=row.receivable %}
+        <tr{% if selected and selected.receivable.pk == debt.pk %} class="is-current"{% endif %}>
+          <td>
+            <a class="cell-stack strong" href="{% url 'clients_detail' debt.client.public_id %}">{{ debt.client.full_name }}</a>
+            <a class="muted" href="{% url 'receivables_detail' debt.public_id %}?pestana={{ filters.tab }}"{% if selected and selected.receivable.pk == debt.pk %} aria-current="true"{% endif %}>{% if debt.order %}Comanda #{{ debt.order.number }}{% else %}Fiado manual{% endif %} · abonar</a>
+          </td>
+          <td>{{ debt.created_at|date:"j M" }}</td>
+          <td>{% if debt.due_date %}{{ debt.due_date|date:"j M" }}{% else %}—{% endif %}</td>
+          <td>{{ debt.total|cop }}</td>
+          <td>{{ row.paid|cop }}</td>
+          <td class="strong">{{ debt.balance|cop }}</td>
+          <td class="data-table__text due-status due-status--{{ row.status.tone }}">{{ row.status.text }}</td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr><td colspan="7" class="muted">No hay fiados en esta pestaña.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted checkout__note">Ordenados por urgencia: primero los más vencidos. Un fiado solo se abona en la sede donde se hizo.</p>
+</section>

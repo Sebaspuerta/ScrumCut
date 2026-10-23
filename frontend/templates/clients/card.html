@@ -1,0 +1,78 @@
+{% load formatting %}
+{# Ficha del cliente: su identidad es de la barbería; nivel, historial y deuda, de las sedes del alcance. #}
+{# El celular siempre va enmascarado: no hay un permiso para ver los datos completos. #}
+{% with client=card.client %}
+<section class="section clients__card" aria-labelledby="t-ficha">
+  <div class="client-head">
+    <span class="client-head__initials" aria-hidden="true">{{ client.full_name|initials }}</span>
+    <div class="client-head__text">
+      <h2 id="t-ficha">{{ client.full_name }}</h2>
+      <span class="muted num">{{ client.phone|mask_phone|default:"Sin celular" }} · cliente desde {{ client.created_at|date:"F Y"|lower }}</span>
+    </div>
+    {% if can.edit %}<a class="button button--outline" href="{% url 'clients_edit' client.public_id %}">Editar</a>{% endif %}
+  </div>
+
+  {% if not card.has_activity %}
+  <p class="muted">Sin historial en esta sede. El nivel, las visitas y los fiados son de cada sede.</p>
+  {% else %}
+
+  <div class="client-level">
+    <div class="client-level__head">
+      <span class="label">Nivel en {{ shell.branches.current }}</span>
+      <span class="level-tag level-tag--{{ card.status }}">{{ card.status|level_label }}</span>
+    </div>
+    <div class="client-level__track"><div class="client-level__bar" data-bar-width="{{ card.progress.percent }}"></div></div>
+    <span class="muted num">{{ card.visits }} visita{{ card.visits|pluralize }}{% if card.progress.next %} · {{ card.progress.missing }} más para {{ card.progress.next }}{% else %} · el nivel más alto por visitas{% endif %}</span>
+  </div>
+
+  <dl class="client-facts num">
+    <div><dt class="label">Ticket promedio</dt><dd>{{ card.ticket|cop }}</dd></div>
+    <div><dt class="label">Gasto total en la sede</dt><dd>{{ card.spent|cop }}</dd></div>
+    <div><dt class="label">Barbero habitual</dt><dd>{% if card.barber %}{{ card.barber.barber__display_name }} · {{ card.barber.visits }} de {{ card.visits }}{% else %}—{% endif %}</dd></div>
+    <div><dt class="label">Lo que más pide</dt><dd>{{ card.service.name|default:"—" }}</dd></div>
+  </dl>
+
+  <div class="client-debt num">
+    {% if card.balance %}
+    <span><strong>Debe {{ card.balance|cop }}</strong> en {{ shell.branches.current }}</span>
+    {% if card.open_debt %}<a class="link-button" href="{% url 'receivables_detail' card.open_debt.public_id %}">Ver fiado y abonar</a>{% endif %}
+    {% else %}
+    <span class="muted">No debe nada en {{ shell.branches.current }}</span>
+    {% endif %}
+  </div>
+
+  {% if client.notes %}
+  <div class="history">
+    <span class="label">Preferencias</span>
+    <p>{{ client.notes|linebreaksbr }}</p>
+  </div>
+  {% endif %}
+
+  <div class="history">
+    <span class="label">Últimas visitas en {{ shell.branches.current }}</span>
+    <ul class="num">
+      {% for visit in card.last_visits %}
+      <li class="history__item">
+        <span class="muted">{{ visit.closed_at|date:"j M" }}</span>
+        <span><span class="strong">{% for line in visit.items.all %}{{ line.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span><br>
+          <span class="muted">{% with line=visit.items.all.0 %}{{ line.barber.display_name|default:"Sin barbero" }}{% endwith %}{% for payment in visit.payments.all %} · {{ payment.get_method_display }}{% empty %} · Fiado{% endfor %}</span></span>
+        <span class="strong">{{ visit.total|cop }}</span>
+      </li>
+      {% empty %}
+      <li class="muted">Todavía no tiene visitas en esta sede.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% endif %}
+
+  {% if can.new_order and request.branch_scope.branch %}
+  <form method="post" action="{% url 'orders_create' %}">
+    {% csrf_token %}
+    <input type="hidden" name="cliente" value="{{ client.public_id }}">
+    <button type="submit" class="button button--primary">Nueva comanda para {{ client.full_name|first_word }}</button>
+  </form>
+  {% endif %}
+  <p class="muted checkout__note">El historial, el nivel y los fiados son de esta sede. Otras sedes solo comparten el nombre y el contacto.</p>
+</section>
+{% endwith %}

@@ -17,5 +17,7 @@ urlpatterns = [
     path("reportes/exportar/", report_views.export, name="reports_export"),
     path("comandas/", include("apps.sales.urls")),
     path("caja/", include("apps.cash.urls")),
+    path("clientes/", include("apps.clients.urls")),
+    path("fiados/", include("apps.receivables.urls")),
     path("", report_views.dashboard, name="home"),
 ]

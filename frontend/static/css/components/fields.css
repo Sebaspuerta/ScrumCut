@@ -76,3 +76,9 @@ textarea.field {
   gap: var(--space-3);
   max-width: 480px;
 }
+
+.field-error {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-espresso-600);
+}

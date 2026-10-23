@@ -101,12 +101,17 @@ Todo control mide al menos 44px de alto.
 
 **Caja** (`Caja.dc.html`): siempre de una sede. Estado "Abierta" con quién y desde cuándo ("desde las 8:00 a. m.", "desde ayer, 8:00 a. m." o "desde el lun 19 oct, 8:00 a. m."). Una caja que viene de otro día muestra el aviso "Esta caja viene de otro día. Ciérrala con su arqueo y abre la de hoy.", no recibe efectivo y su única acción es el arqueo; el tablero y Comandas muestran un aviso corto con enlace a Caja. botones "Registrar gasto", "Registrar retiro" y "Hacer arqueo y cerrar". Franja café con base, ventas en efectivo, abonos, gastos, retiros y esperado. Movimientos de hoy (hora, tipo, concepto, quién y monto con signo, sin rojos) con filtro por tipo y, debajo, "Otros medios" que no entran a la caja física. Arqueo por denominación (billetes de $100.000 a $1.000 y monedas en total), esperado, contado y diferencia con signo y flecha; con diferencia, la nota es obligatoria. Al final, los últimos 5 cierres de la sede.
 
+**Clientes** (`Clientes.dc.html`): ruta, h1 y "Sede … · nivel e historial de cada cliente en esta sede", con "Nuevo cliente". Cuatro cifras en una fila abierta con líneas (activos en 90 días, nuevos este mes frente al anterior, vuelven en 30 días y con fiado). La lista: búsqueda por nombre, celular o cédula, orden y filtros por nivel como botones con `aria-pressed` y su conteo; columnas cliente (con el celular enmascarado), nivel, visitas, última visita, gasto de 90 días y deuda. La ficha: iniciales, nombre, celular enmascarado y "cliente desde"; nivel en la sede con su barra al siguiente; ticket, gasto, barbero habitual y lo que más pide; la deuda con su enlace al fiado; preferencias; últimas 5 visitas y "Nueva comanda para …". Los niveles son los del backend: Nuevo, Frecuente, VIP, Inactivo y Deudor; en "todas" la columna dice "Varía por sede".
+
+**Fiados** (`Fiados.dc.html`): ruta, h1 y "Sede … · lo que deben los clientes en esta sede y sus abonos", con "Registrar abono". Franja café con por cobrar, vencido, vence en 7 días y cobrado en el mes. Antigüedad de la deuda en una barra apilada (al día, 1 a 15, 16 a 30 y más de 30 días), más oscura cuanto más vieja, con su leyenda. Pestañas Pendientes, Vencidos y Pagados en el mes; la lista por urgencia con el estado en texto ("▾ Vencido hace N días", "Vence en N días", "Al día"). El panel de abono: total, abonado y saldo, monto con "Pagar todo", formas de pago con la nota de si entran a la caja física, nota opcional y los abonos anteriores. En "todas" se ve la cartera, pero para abonar se elige la sede del fiado.
+
 ## Espacios
 
 - Escala única para margin, padding y gap: 4, 8, 12, 16, 24, 32, 40, 56 y 72px (`--space-*` en `tokens.css`). Ningún espacio fuera de ella; lo revisa `tests/frontend/test_spacing_scale.py`.
 - Contenido: 40px de margen en escritorio y 16px en el celular, todo alineado al mismo borde izquierdo.
 - Secciones: 56px entre ellas. Una sección abierta (sin caja) empieza con una línea café de 1px y 16px de aire arriba, con 16px entre el título y el contenido.
 - Tablas: filas de 44px, cifras a la derecha con `tabular-nums` y encabezados de 11px en mayúsculas.
+- Componentes compartidos (`frontend/static/css/components/`): secciones, tablas, pestañas, franja oscura, totales, fila de cifras, filtros con `aria-pressed` (chips) e historial corto.
 
 ## Reglas
 

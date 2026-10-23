@@ -1,3 +1,5 @@
+# Exportación de Figma Make: referencia visual aprobada, se guarda tal como viene.
+exclude: ^docs/diseno/figma-make/
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.10

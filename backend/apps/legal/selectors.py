@@ -10,6 +10,10 @@ Kind = LegalDocument.Kind
 REQUIRED_FOR_SIGNUP = (Kind.TERMS, Kind.DATA_POLICY, Kind.PRIVACY_NOTICE)
 ACCEPTED_AT_SIGNUP = (Kind.TERMS, Kind.DATA_POLICY)
 
+# Marca de los textos de ejemplo (cargar_demo): sirven para desarrollar, nunca para producción.
+SAMPLE_VERSION_PREFIX = "ejemplo-"
+SAMPLE_BODY = "Texto de ejemplo, no válido para producción."
+
 
 def current_document(kind: str) -> LegalDocument | None:
     """La versión publicada más reciente; una con fecha futura todavía no rige."""
@@ -22,3 +26,9 @@ def current_document(kind: str) -> LegalDocument | None:
 
 def missing_signup_documents() -> list[str]:
     return [kind for kind in REQUIRED_FOR_SIGNUP if current_document(kind) is None]
+
+
+def sample_documents_in_force() -> list[str]:
+    """Los documentos cuya versión vigente es de ejemplo (versión con `SAMPLE_VERSION_PREFIX`)."""
+    current = (current_document(kind) for kind in REQUIRED_FOR_SIGNUP)
+    return [document.kind for document in current if document and document.version.startswith(SAMPLE_VERSION_PREFIX)]

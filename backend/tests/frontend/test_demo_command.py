@@ -15,6 +15,8 @@ from apps.alerts.models import Alert, AlertType
 from apps.cash.models import CashSession
 from apps.core.tenant_context import tenant_context
 from apps.inventory.models import MovementType, StockLevel, StockMovement
+from apps.legal.models import LegalDocument
+from apps.legal.selectors import SAMPLE_VERSION_PREFIX, current_document
 from apps.sales.models import Order, OrderItem, OrderStatus
 from apps.tenancy.models import Barbershop
 
@@ -77,6 +79,13 @@ def test_la_demo_no_deja_cajas_de_dias_anteriores_abiertas():
     with tenant_context(shop.pk):
         open_days = {timezone.localtime(s.opened_at, BOGOTA).date() for s in CashSession.objects.filter(closed_at=None)}
     assert open_days == {date(2026, 10, 14)}  # solo las de hoy, una por sede
+
+
+def test_la_demo_publica_una_politica_de_datos_de_ejemplo():
+    _demo_at(12)
+    policy = current_document(LegalDocument.Kind.DATA_POLICY)
+    assert policy.version.startswith(SAMPLE_VERSION_PREFIX)
+    assert policy.body == "Texto de ejemplo, no válido para producción."
 
 
 def test_antes_de_la_apertura_no_hay_caja_ni_ventas_de_hoy():

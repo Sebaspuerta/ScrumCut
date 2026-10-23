@@ -1,0 +1,59 @@
+{% load formatting %}
+{# Abono del fiado elegido. El servidor valida que el monto sea mayor que 0 y no pase el saldo, y que vaya a #}
+{# la sede de origen; payment-preview.js solo muestra el saldo después y llena "Pagar todo". #}
+{% with debt=selected.receivable %}
+<section id="abono" class="section receivables__payment" aria-labelledby="t-abono">
+  <div class="order-head">
+    <span class="label num">Registrar abono · {% if debt.order %}comanda #{{ debt.order.number }}{% else %}fiado manual{% endif %} · {{ debt.origin_branch.name }}</span>
+    <h2 id="t-abono" class="order-head__client">{{ debt.client.full_name }}</h2>
+    <span class="due-status due-status--{{ selected.status.tone }}">{{ selected.status.text }}{% if debt.due_date %} · {% if selected.status.tone == "overdue" %}venció{% else %}vence{% endif %} el {{ debt.due_date|date:"j M" }}{% endif %}</span>
+  </div>
+  <dl class="order-totals num">
+    <div class="order-totals__row"><dt class="muted">Total</dt><dd>{{ debt.total|cop }}</dd></div>
+    <div class="order-totals__row"><dt class="muted">Abonado</dt><dd>{{ selected.paid|cop }}</dd></div>
+    <div class="order-totals__row order-totals__row--total"><dt class="strong">Saldo</dt><dd class="order-totals__total">{{ debt.balance|cop }}</dd></div>
+  </dl>
+  {% if debt.balance and debt.status != "anulado" and can_pay %}
+  {% if request.branch_scope.branch %}
+  <form class="stack-form" method="post" action="{% url 'receivables_pay' debt.public_id %}" data-payment data-balance="{{ debt.balance|floatformat:0 }}">
+    {% csrf_token %}
+    <input type="hidden" name="saldo_visto" value="{{ debt.balance|floatformat:2 }}">
+    <label class="field-label">Monto del abono
+      <input class="field field--figure" type="number" name="monto" min="1" step="1" max="{{ debt.balance|floatformat:0 }}" inputmode="numeric" data-amount>
+    </label>
+    <p class="muted num" data-after aria-live="polite"></p>
+    <fieldset class="checkout__methods">
+      <legend class="label">Forma de pago</legend>
+      <div class="checkout__segments">
+        {% for value, label in methods %}
+        <label class="checkout__method"><input type="radio" name="metodo" value="{{ value }}"{% if forloop.first %} checked{% endif %} data-cash="{% if value == 'efectivo' %}true{% else %}false{% endif %}"> {{ label }}</label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <p class="muted checkout__note" data-method-note>El efectivo entra a la caja abierta de {{ debt.origin_branch.name }}; los demás medios no entran a la caja física y quedan en "otros medios" del cierre.</p>
+    <label class="field-label">Nota (opcional)<input class="field" type="text" name="nota" maxlength="200" placeholder="Ej.: abonó al recoger a su hijo"></label>
+    <div class="inline-form">
+      <button type="submit" class="button button--primary">Registrar abono</button>
+      <button type="submit" class="button button--outline num" name="pagar_todo" value="1">Pagar todo ({{ debt.balance|cop }})</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="notice-banner" role="status">Para abonar, elige la sede {{ debt.origin_branch.name }} en la barra superior: un fiado solo se abona en su sede.</p>
+  {% endif %}
+  {% endif %}
+  <div class="history">
+    <span class="label">Abonos anteriores</span>
+    <ul class="num">
+      {% for payment in debt.payments.all %}
+      <li class="history__item">
+        <span class="muted">{{ payment.created_at|date:"j M" }}</span>
+        <span>{{ payment.get_method_display }} · <span class="muted">recibió {{ payment.received_by.full_name|default:payment.received_by.email }}</span></span>
+        <span class="strong">{{ payment.amount|cop }}</span>
+      </li>
+      {% empty %}
+      <li class="muted">Todavía no ha abonado.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endwith %}

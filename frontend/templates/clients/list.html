@@ -1,0 +1,53 @@
+{% load formatting %}
+{# Lista de clientes: búsqueda, nivel y orden por GET; las cifras son de las sedes del alcance. #}
+<section class="section clients__list" aria-labelledby="t-lista">
+  <h2 id="t-lista" class="visually-hidden">Lista de clientes</h2>
+  <form class="clients__filters" method="get" action="{% url 'clients_board' %}">
+    <div class="clients__search">
+      <label for="buscar-cliente" class="visually-hidden">Buscar cliente</label>
+      <input id="buscar-cliente" class="field" type="search" name="q" value="{{ filters.search }}" placeholder="Nombre, celular o cédula">
+      <label for="orden" class="visually-hidden">Ordenar por</label>
+      <select id="orden" class="field" name="orden">
+        {% for value, label in orderings %}<option value="{{ value }}"{% if value == filters.order %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="button button--outline">Buscar</button>
+    </div>
+    <div class="chips" role="group" aria-label="Filtrar por nivel">
+      {% for chip in chips %}
+      <button type="submit" class="chip" name="nivel" value="{{ chip.value }}" aria-pressed="{% if chip.on %}true{% else %}false{% endif %}">
+        {{ chip.label }} <span class="chip__count num">{{ chip.count }}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </form>
+  <div class="table-scroll">
+    <table class="data-table">
+      <caption class="visually-hidden">Clientes de la sede {{ shell.branches.current }}</caption>
+      <thead><tr><th scope="col">Cliente</th><th scope="col" class="data-table__text">Nivel</th><th scope="col">Visitas</th><th scope="col">Última visita</th><th scope="col">Gasto 90 días</th><th scope="col">Debe</th></tr></thead>
+      <tbody>
+        {% for client in page %}
+        <tr{% if card and card.client.pk == client.pk %} class="is-current"{% endif %}>
+          <td>
+            <a class="cell-stack" href="{% url 'clients_detail' client.public_id %}?{{ request.GET.urlencode }}"{% if card and card.client.pk == client.pk %} aria-current="true"{% endif %}>
+              <span class="strong">{{ client.full_name }}</span>
+              <span class="muted">{{ client.phone|mask_phone|default:"Sin celular" }}</span>
+            </a>
+          </td>
+          <td class="data-table__text">{% if request.branch_scope.is_all %}<span class="muted">Varía por sede</span>{% else %}<span class="level-tag level-tag--{{ client.level }}">{{ client.level|level_label }}</span>{% endif %}</td>
+          {% if client.level == "sin_sede" %}
+          <td>—</td><td>—</td><td>—</td><td>—</td>
+          {% else %}
+          <td>{{ client.visits }}</td>
+          <td>{% if client.last_visit %}{{ client.last_visit|date:"j M Y" }}{% else %}—{% endif %}</td>
+          <td>{{ client.spent_recent|cop }}</td>
+          <td class="strong">{% if client.debt %}{{ client.debt|cop }}{% else %}—{% endif %}</td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">Ningún cliente coincide. Revisa la búsqueda o crea uno nuevo.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted clients__count num">Mostrando {{ page.object_list|length }} de {{ page.paginator.count }} clientes{% if page.has_next %} · <a class="link-button" href="?{% if filters.search %}q={{ filters.search|urlencode }}&amp;{% endif %}nivel={{ filters.level }}&amp;orden={{ filters.order }}&amp;pagina={{ page.next_page_number }}">Ver más</a>{% endif %}</p>
+</section>

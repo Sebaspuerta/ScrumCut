@@ -18,7 +18,7 @@ from tests.frontend.html_support import elements, forms
 pytestmark = pytest.mark.django_db
 
 ADMIN_GROUPS = ["Barbería", "Equipo", "Catálogo y precios", "Clientes y fiados", "Seguridad y datos", "Cuenta y plan"]
-WITH_SCREEN = {"Tablero", "Comandas", "Caja"}
+WITH_SCREEN = {"Tablero", "Comandas", "Caja", "Clientes", "Fiados"}
 ALL_SIDEBAR = {
     "Operación": ["Tablero", "Agenda", "Comandas", "Caja"],
     "Clientes": ["Clientes", "Fiados", "Reseñas"],
@@ -102,6 +102,9 @@ def test_lo_que_no_tiene_pantalla_no_es_un_enlace(world):
         reverse("orders_quick"),
         reverse("cash_register"),
         reverse("cash_register") + "#gasto",
+        reverse("clients_board"),
+        reverse("clients_new"),
+        reverse("receivables_board"),
         reverse("mfa_index"),
         reverse("reports_export") + f"?mes={local_today(world.owner):%Y-%m}",
         *(reverse("legal_document", args=[slug]) for slug in ("terminos", "privacidad", "cookies")),
@@ -174,22 +177,19 @@ def test_la_campana_cuenta_las_alertas_sin_leer_del_alcance(client, make_shop, m
     assert f'aria-label="Alertas: {expected} sin leer"' in response.content.decode()
 
 
-def test_comandas_y_caja_son_enlaces_y_nuevo_solo_trae_lo_permitido(world):
+def test_las_pantallas_son_enlaces_y_nuevo_solo_trae_lo_permitido(world):
     owner, cashier, barber = _page(world, "owner"), _page(world, "cashier"), _page(world, "barber")
 
     links = {item["label"]: item["url"] for group in owner.context["shell"]["sidebar"] for item in group["items"]}
     assert (links["Comandas"], links["Caja"]) == (reverse("orders_board"), reverse("cash_register"))
-    assert [a["label"] for a in owner.context["shell"]["new_actions"]] == [
+    everything = ["Nueva comanda", "Cobro rápido", "Registrar gasto", "Nuevo cliente", "Abono a fiado"]
+    assert [a["label"] for a in owner.context["shell"]["new_actions"]] == everything
+    assert [a["label"] for a in cashier.context["shell"]["new_actions"]] == everything
+    assert [a["label"] for a in barber.context["shell"]["new_actions"]] == [
         "Nueva comanda",
         "Cobro rápido",
-        "Registrar gasto",
+        "Nuevo cliente",
     ]
-    assert [a["label"] for a in cashier.context["shell"]["new_actions"]] == [
-        "Nueva comanda",
-        "Cobro rápido",
-        "Registrar gasto",
-    ]
-    assert [a["label"] for a in barber.context["shell"]["new_actions"]] == ["Nueva comanda", "Cobro rápido"]
 
 
 def test_el_detalle_de_una_comanda_deja_activo_comandas(world):

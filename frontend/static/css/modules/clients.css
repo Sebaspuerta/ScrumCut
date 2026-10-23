@@ -1,0 +1,111 @@
+/* Clientes (Clientes.dc.html): la lista a la izquierda y la ficha a la derecha. */
+
+.clients {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.clients__list {
+  flex: 3 1 560px;
+}
+
+.clients__card {
+  flex: 2 1 380px;
+  gap: var(--space-6);
+}
+
+.clients__filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.clients__search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.clients__search input[type="search"] {
+  flex: 1 1 200px;
+}
+
+.clients__count {
+  font-size: var(--text-small);
+}
+
+.client-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.client-head__initials {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-48);
+  height: var(--size-48);
+  border-radius: 50%;
+  background: var(--color-espresso);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-h2);
+  color: var(--color-on-dark);
+}
+
+.client-head__text {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-level {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.client-level__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.client-level__track {
+  height: var(--space-2);
+  background: var(--color-espresso-200);
+  border-radius: var(--radius-chart);
+}
+
+.client-level__bar {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-chart);
+}
+
+.client-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+
+.client-facts dd {
+  font-weight: 600;
+}
+
+.client-debt {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-espresso-200);
+  border-radius: var(--radius);
+}

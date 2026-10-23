@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+{# Nuevo cliente o editar: validación en el servidor; un duplicado solo muestra el nombre del que ya existe. #}
+{% block head_title %}{% if client %}Editar cliente{% else %}Nuevo cliente{% endif %} · ScrumCut{% endblock %}
+{% block styles %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/modules/clients.css' %}">{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li><a href="{% url 'clients_board' %}">Clientes</a></li><li aria-current="page">{% if client %}Editar{% else %}Nuevo{% endif %}</li></ol>
+    </nav>
+    <h1>{% if client %}{{ client.full_name }}{% else %}Nuevo cliente{% endif %}</h1>
+    <p class="muted">Los datos de la persona son de la barbería: cualquier sede la encuentra.</p>
+  </div>
+</section>
+<section class="section form-section" aria-label="Datos del cliente">
+  {% if missing_policy %}
+  <p class="notice-banner" role="status">No hay una política de tratamiento de datos publicada: sin ella no se pueden registrar clientes.</p>
+  {% else %}
+  {% if duplicate %}<p class="notice-banner" role="alert">Ya existe un cliente con ese celular o cédula: <a href="{% url 'clients_detail' duplicate.public_id %}">{{ duplicate.full_name }}</a>.</p>{% endif %}
+  {% if similar %}<p class="notice-banner" role="alert">Ya hay un cliente con ese nombre: {% for other in similar %}<a href="{% url 'clients_detail' other.public_id %}">{{ other.full_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}. Si es otra persona, márcalo abajo.</p>{% endif %}
+  {% if error %}<p class="notice-banner" role="alert">{{ error }}</p>{% endif %}
+  <form class="stack-form" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    {% if field.name == "other_person" and not similar %}{% elif field.field.widget.input_type == "checkbox" %}
+    <label class="checkbox">{{ field }} {{ field.label }}</label>
+    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    {% else %}
+    <label class="field-label">{{ field.label }}{% if client and field.name == "phone" %} (deja vacío para no cambiarlo){% endif %}{% if client and field.name == "document" %} (deja vacío para no cambiarla){% endif %}
+      {{ field }}
+    </label>
+    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    {% endif %}
+    {% endfor %}
+    <button type="submit" class="button button--primary">{% if client %}Guardar cambios{% else %}Crear cliente{% endif %}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

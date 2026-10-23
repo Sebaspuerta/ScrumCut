@@ -5,8 +5,10 @@ from io import StringIO
 import pytest
 from django.core.checks import run_checks
 from django.core.management import CommandError, call_command
+from django.utils import timezone
 
 from apps.legal.models import LegalDocument
+from apps.legal.selectors import SAMPLE_BODY, SAMPLE_VERSION_PREFIX
 
 pytestmark = pytest.mark.django_db
 
@@ -26,6 +28,16 @@ def test_el_chequeo_pasa_con_los_documentos_publicados(legal_documents):
 def test_un_borrador_sin_publicar_no_cuenta(legal_documents):
     LegalDocument.objects.filter(kind=LegalDocument.Kind.PRIVACY_NOTICE).update(published_at=None)
     assert _legal_errors(include_deployment_checks=True) == ["legal.E001"]
+
+
+def test_el_chequeo_falla_si_rige_el_texto_de_ejemplo_de_la_demo(legal_documents):
+    LegalDocument.objects.create(
+        kind=LegalDocument.Kind.DATA_POLICY,
+        version=f"{SAMPLE_VERSION_PREFIX}demo",
+        body=SAMPLE_BODY,
+        published_at=timezone.now(),  # más reciente que la aprobada: es la que rige
+    )
+    assert _legal_errors(include_deployment_checks=True) == ["legal.E003"]
 
 
 def test_el_chequeo_no_corre_fuera_del_despliegue():

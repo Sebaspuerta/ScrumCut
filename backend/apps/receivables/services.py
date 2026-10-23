@@ -134,10 +134,18 @@ def _writable(membership: Membership, scope: BranchScope) -> QuerySet[Receivable
     return scope.writable(membership, Receivable.objects, "origin_branch")
 
 
-def _locked_open_receivable(receivables: QuerySet[Receivable], public_id: UUID | str, *, amount: Decimal) -> Receivable:
+STALE_BALANCE = "El saldo del fiado cambió mientras abonabas: revisa el saldo y vuelve a intentarlo."
+
+
+def _locked_open_receivable(
+    receivables: QuerySet[Receivable], public_id: UUID | str, *, amount: Decimal, expected_balance: Decimal | None
+) -> Receivable:
     locked = receivables.select_for_update().get(public_id=public_id)
     if locked.status not in OPEN_STATUSES:
         raise ValidationError("Este fiado ya está pagado o anulado.")
+    if expected_balance is not None and locked.balance != expected_balance:
+        # Un segundo envío del mismo formulario ya no ve el saldo que vio el primero: no abona dos veces.
+        raise ValidationError(STALE_BALANCE, code="stale_balance")
     if amount > locked.balance:
         raise ValidationError(
             "El abono supera el saldo de %(balance)s.", code="over_balance", params={"balance": locked.balance}
@@ -146,7 +154,7 @@ def _locked_open_receivable(receivables: QuerySet[Receivable], public_id: UUID |
 
 
 def _record_payment(
-    locked: Receivable, session, *, membership: Membership, amount: Decimal, method: str
+    locked: Receivable, session, *, membership: Membership, amount: Decimal, method: str, note: str
 ) -> ReceivablePayment:
     """El dinero entra a la caja de la sesión, que es de la sede de origen del fiado (no se guarda aparte)."""
     movement = record_money(
@@ -155,7 +163,7 @@ def _record_payment(
         direction=Direction.IN,
         method=method,
         amount=amount,
-        description=f"Abono a fiado de {locked.client}",
+        description=f"Abono a fiado de {locked.client}" + (f" · {note.strip()}" if note.strip() else ""),
         actor=membership,
     )
     payment = ReceivablePayment(
@@ -177,13 +185,22 @@ def _record_payment(
 
 
 def add_payment(
-    membership: Membership, receivable: UUID | str, *, scope: BranchScope, amount: Decimal, method: str
+    membership: Membership,
+    receivable: UUID | str,
+    *,
+    scope: BranchScope,
+    amount: Decimal,
+    method: str,
+    note: str = "",
+    expected_balance: Decimal | None = None,
 ) -> ReceivablePayment:
     """Regla 27 con el defecto 24 corregido: monto ≤ saldo, solo a fiados vivos, con caja abierta.
 
     Decisión 3 de docs/sedes.md: el abono entra solo a la caja de la sede de origen del fiado, que
     debe ser la del alcance y estar activa; ninguna operación de dinero cruza sedes. Un fiado de otra
-    sede no se encuentra (`DoesNotExist`). Cualquier método, un solo libro.
+    sede no se encuentra (`DoesNotExist`). Cualquier método, un solo libro; el efectivo respeta la regla
+    de la caja de otro día (`record_money`). Con `expected_balance` (el saldo que vio quien abona), un
+    segundo envío del mismo abono se rechaza. La nota va en la descripción del movimiento de caja.
     """
     ensure_permission(membership, "fiados.abonar")
     amount = Decimal(amount)
@@ -191,12 +208,12 @@ def add_payment(
         raise ValidationError({"amount": "El abono debe ser mayor que cero."})
     receivables = _writable(membership, scope)
     with transaction.atomic():
-        locked = _locked_open_receivable(receivables, receivable, amount=amount)
+        locked = _locked_open_receivable(receivables, receivable, amount=amount, expected_balance=expected_balance)
         session = open_session_for(locked.origin_branch)
         if session is None:
             raise ValidationError("No hay una caja abierta en esta sede para recibir el abono.", code="no_open_session")
         before = _snapshot(locked)
-        payment = _record_payment(locked, session, membership=membership, amount=amount, method=method)
+        payment = _record_payment(locked, session, membership=membership, amount=amount, method=method, note=note)
         _audit(membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked))
     return payment
 

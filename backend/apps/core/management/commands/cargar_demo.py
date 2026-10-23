@@ -23,6 +23,8 @@ from apps.catalog import services as catalog
 from apps.clients import services as clients
 from apps.core.tenant_context import tenant_context
 from apps.inventory import services as inventory
+from apps.legal.models import LegalDocument
+from apps.legal.selectors import SAMPLE_BODY, SAMPLE_VERSION_PREFIX
 from apps.receivables import services as receivables
 from apps.sales import services as sales
 from apps.staff import services as staff
@@ -71,6 +73,7 @@ class Command(BaseCommand):
             raise CommandError("cargar_demo solo corre en desarrollo (DEBUG activo); nunca en producción.")
         if Barbershop.objects.filter(slug=SLUG).exists():
             raise CommandError(f"La barbería de ejemplo '{SLUG}' ya existe.")
+        _publish_sample_policy()
         password = secrets.token_urlsafe(12)
         shop = Barbershop.objects.create(trade_name="Barbería Demo", slug=SLUG, max_branches=MAX_BRANCHES)
         today = timezone.localdate()
@@ -84,6 +87,18 @@ class Command(BaseCommand):
             f"Barbería de ejemplo lista. Entra con {OWNER_EMAIL} (dueño) o {CASHIER_EMAIL} (cajero de Centro) "
             f"y la contraseña {password}"
         )
+
+
+def _publish_sample_policy() -> None:
+    """Una política de datos de ejemplo para poder registrar clientes en desarrollo (Ley 1581 exige una).
+
+    Lleva la marca de ejemplo en la versión: el chequeo de despliegue legal.E003 impide que rija en producción.
+    """
+    LegalDocument.objects.get_or_create(
+        kind=LegalDocument.Kind.DATA_POLICY,
+        version=f"{SAMPLE_VERSION_PREFIX}demo",
+        defaults={"body": SAMPLE_BODY, "published_at": timezone.now() - timedelta(days=1)},
+    )
 
 
 # ── Barbería, sedes y personal ───────────────────────────────────────────────

@@ -43,8 +43,8 @@ SIDEBAR = (
     NavGroup(
         "Clientes",
         (
-            NavItem("Clientes", "clientes.ver", icon="users"),
-            NavItem("Fiados", "fiados.ver", icon="notebook-pen"),
+            NavItem("Clientes", "clientes.ver", "clients_board", "users"),
+            NavItem("Fiados", "fiados.ver", "receivables_board", "notebook-pen"),
             NavItem("Reseñas", "clientes.ver", icon="star"),
         ),
     ),
@@ -124,7 +124,9 @@ ADMINISTRATION = (
 NEW_ACTIONS = (
     NavItem("Nueva comanda", "comandas.crear", "orders_new", "receipt"),
     NavItem("Cobro rápido", "comandas.cerrar", "orders_quick", "banknote"),
-    NavItem("Registrar gasto", "caja.movimiento", "cash_register", "notebook-pen", fragment="gasto"),
+    NavItem("Registrar gasto", "caja.movimiento", "cash_register", "banknote", fragment="gasto"),
+    NavItem("Nuevo cliente", "clientes.crear", "clients_new", "users"),
+    NavItem("Abono a fiado", "fiados.abonar", "receivables_board", "notebook-pen"),
 )
 
 

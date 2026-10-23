@@ -8,14 +8,14 @@
 <form class="auth-form" method="post" action="{% url 'account_login' %}">
   {% csrf_token %}
   {% include "components/form.html#errors" with errors=form.non_field_errors %}
-  <div class="field">
+  <div class="auth-field">
     <label for="{{ form.login.id_for_label }}">Correo</label>
     <input id="{{ form.login.id_for_label }}" name="{{ form.login.html_name }}" type="email" autocomplete="email"
            placeholder="nombre@barberia.com" required{% if form.login.value %} value="{{ form.login.value }}"{% endif %}>
     {% include "components/form.html#errors" with errors=form.login.errors %}
   </div>
-  <div class="field">
-    <div class="field__row">
+  <div class="auth-field">
+    <div class="auth-field__row">
       <label for="{{ form.password.id_for_label }}">Contraseña</label>
       <a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a>
     </div>

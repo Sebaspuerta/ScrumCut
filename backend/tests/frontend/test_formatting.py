@@ -6,7 +6,7 @@ from decimal import Decimal
 import pytest
 from django.template import Context, Template
 
-from apps.core.formatting import day_label, format_cop, format_difference, format_variation, short_date
+from apps.core.formatting import day_label, format_cop, format_difference, format_variation, mask_phone, short_date
 
 D = Decimal
 
@@ -49,3 +49,16 @@ def test_diferencia_del_arqueo_sin_rojos():
 def test_fechas_cortas_en_espanol():
     assert short_date(date(2026, 10, 3)) == "3 oct"
     assert day_label(date(2026, 10, 9)) == "Vie 9 oct"
+
+
+@pytest.mark.parametrize(
+    ("phone", "expected"),
+    [
+        ("573001234567", "300 *** 4567"),  # como lo guarda normalize_phone
+        ("300 123 4567", "300 *** 4567"),
+        ("12345", ""),  # con tan pocos dígitos no se muestra
+        ("", ""),
+    ],
+)
+def test_el_celular_se_enmascara_sin_el_prefijo_57(phone, expected):
+    assert mask_phone(phone) == expected

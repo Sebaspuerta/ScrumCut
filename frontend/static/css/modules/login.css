@@ -124,24 +124,24 @@
 }
 
 /* Campos en todo el panel: los códigos de recuperación de allauth no van dentro de un formulario. */
-.entrance__panel .field {
+.entrance__panel .auth-field {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.auth-form .field__row {
+.auth-form .auth-field__row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: var(--space-3);
 }
 
-.auth-form .field__row a {
+.auth-form .auth-field__row a {
   font-size: var(--text-meta);
 }
 
-.entrance__panel .field label {
+.entrance__panel .auth-field label {
   font-size: var(--text-small);
   font-weight: 500;
   letter-spacing: var(--tracking-field);
@@ -183,19 +183,19 @@
   cursor: text;
 }
 
-.entrance__panel .field--check {
+.entrance__panel .auth-field--check {
   flex-direction: row;
   align-items: flex-start;
 }
 
-.entrance__panel .field--check label {
+.entrance__panel .auth-field--check label {
   font-size: var(--text-meta);
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
 }
 
-.entrance__panel .field__help {
+.entrance__panel .auth-field__help {
   font-size: var(--text-small);
   color: var(--color-espresso-700);
 }

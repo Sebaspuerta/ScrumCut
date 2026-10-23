@@ -1,0 +1,102 @@
+/* Fiados (Fiados.dc.html): cartera, antigüedad de la deuda, lista por urgencia y panel de abono. */
+
+.portfolio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.aging {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.aging__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Más oscuro cuanto más vieja la deuda; sin rojos (docs/diseno.md). */
+.aging__bar {
+  display: flex;
+  height: var(--space-3);
+  overflow: hidden;
+  border-radius: var(--radius-chart);
+  background: var(--color-espresso-200);
+}
+
+.aging__part--current { background: var(--color-espresso-300); }
+.aging__part--d1_15 { background: var(--color-espresso-400); }
+.aging__part--d16_30 { background: var(--color-espresso-600); }
+.aging__part--d30 { background: var(--color-espresso); }
+
+.aging__legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3) var(--space-6);
+  font-size: var(--text-meta);
+}
+
+.aging__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.aging__swatch {
+  flex: none;
+  width: var(--space-3);
+  height: var(--space-3);
+  margin-top: var(--space-1);
+  border-radius: var(--radius-chart);
+}
+
+.receivables {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.receivables__list {
+  flex: 3 1 560px;
+}
+
+.receivables__payment {
+  flex: 2 1 360px;
+  gap: var(--space-6);
+}
+
+.receivables__filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.receivables__list .cell-stack {
+  display: block;
+}
+
+/* Estado del fiado en texto: lo vencido en café oscuro y en negrita, sin rojos. */
+.due-status {
+  white-space: nowrap;
+}
+
+.due-status--overdue {
+  font-weight: 600;
+  color: var(--color-espresso-600);
+}
+
+.due-status--soon {
+  font-weight: 500;
+  color: var(--color-espresso);
+}
+
+.due-status--ok,
+.due-status--done {
+  color: var(--color-text-muted);
+}

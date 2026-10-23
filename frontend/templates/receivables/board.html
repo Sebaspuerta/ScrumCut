@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static formatting %}
+{# Fiados (Fiados.dc.html): cartera de la sede, antigüedad, lista por urgencia y abono del fiado elegido. #}
+{% block head_title %}Fiados{% if shell.shop %} · {{ shell.shop.name }}{% endif %} · ScrumCut{% endblock %}
+{% block styles %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/modules/receivables.css' %}">
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  {% if selected %}<script type="module" src="{% static 'js/modules/payment-preview.js' %}"></script>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="page-header">
+    <nav class="breadcrumb" aria-label="Ruta">
+      <ol><li><a href="{% url 'home' %}">Inicio</a></li><li aria-current="page">Fiados</li></ol>
+    </nav>
+    <h1>Fiados</h1>
+    <p class="muted">Sede {{ shell.branches.current }} · lo que deben los clientes en esta sede y sus abonos</p>
+  </div>
+  {% if can_pay %}<div class="page-head__actions"><a class="button button--primary" href="{% if selected %}#abono{% else %}?pestana=pendientes{% endif %}">Registrar abono</a></div>{% endif %}
+</section>
+{% include "receivables/board.html#portfolio" %}
+<div class="receivables">
+  {% include "receivables/list.html" %}
+  {% if selected %}{% include "receivables/payment.html" %}{% endif %}
+</div>
+{% endblock %}
+
+{% partialdef portfolio %}
+<section class="portfolio" aria-labelledby="t-cartera">
+  <h2 id="t-cartera" class="visually-hidden">Resumen de la cartera</h2>
+  <div class="dark-strip num">
+    <div class="dark-strip__cell"><span class="dark-strip__label">Por cobrar</span><span class="dark-strip__value">{{ data.pendientes_total|cop }}</span><span class="dark-strip__note">{{ data.pendientes_count }} fiado{{ data.pendientes_count|pluralize }} de {{ data.pendientes_clients }} cliente{{ data.pendientes_clients|pluralize }}</span></div>
+    <div class="dark-strip__cell"><span class="dark-strip__label">Vencido</span><span class="dark-strip__value">{{ data.vencidos_total|cop }}</span><span class="dark-strip__note">{{ data.vencidos_clients }} cliente{{ data.vencidos_clients|pluralize }}{% if data.pendientes_total %} · {% widthratio data.vencidos_total data.pendientes_total 100 %} % de la cartera{% endif %}</span></div>
+    <div class="dark-strip__cell"><span class="dark-strip__label">Vence en 7 días</span><span class="dark-strip__value">{{ data.due_soon_total|cop }}</span><span class="dark-strip__note">{{ data.due_soon_clients }} cliente{{ data.due_soon_clients|pluralize }}</span></div>
+    <div class="dark-strip__cell"><span class="dark-strip__label">Cobrado en {{ today|date:"F"|lower }}</span><span class="dark-strip__value">{{ collected.total|cop }}</span><span class="dark-strip__note">{{ collected.count }} abono{{ collected.count|pluralize }}</span></div>
+  </div>
+  <div class="aging">
+    <div class="aging__head"><span class="label">Antigüedad de la deuda</span><span class="num muted">Total {{ data.pendientes_total|cop }}</span></div>
+    <div class="aging__bar" role="img" aria-label="{% for bucket in aging %}{{ bucket.label }} {{ bucket.amount|cop }} ({{ bucket.percent }} %){% if not forloop.last %}, {% endif %}{% endfor %}">
+      {% for bucket in aging %}{% if bucket.amount %}<div class="aging__part aging__part--{{ bucket.key }}" data-bar-width="{{ bucket.percent }}"></div>{% endif %}{% endfor %}
+    </div>
+    <div class="aging__legend num">
+      {% for bucket in aging %}
+      <div class="aging__item">
+        <span class="aging__swatch aging__part--{{ bucket.key }}" aria-hidden="true"></span>
+        <span><span class="muted">{{ bucket.label }}</span><br><span class="strong">{{ bucket.amount|cop }}</span> <span class="muted">· {{ bucket.percent }} %</span></span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endpartialdef %}

@@ -1,20 +1,20 @@
 {% load allauth %}
 {# Mismo campo que components/form.html: etiqueta arriba, campo y ayuda debajo, en columna. #}
 {% if attrs.type == "checkbox" or attrs.type == "radio" %}
-<div class="field field--check">
+<div class="auth-field auth-field--check">
   <input type="{{ attrs.type }}"{% if attrs.id %} id="{{ attrs.id }}"{% endif %}{% if attrs.name %} name="{{ attrs.name }}"{% endif %}{% if attrs.value is not None %} value="{{ attrs.value }}"{% endif %}{% if attrs.checked %} checked{% endif %}{% if attrs.required %} required{% endif %}{% if attrs.disabled %} disabled{% endif %}>
   <label for="{{ attrs.id }}">{% slot label %}{% endslot %}</label>
   {% include "components/form.html#errors" with errors=attrs.errors %}
 </div>
 {% else %}
-<div class="field">
+<div class="auth-field">
   <label for="{{ attrs.id }}">{% slot label %}{% endslot %}</label>
   {% if attrs.type == "textarea" %}
   <textarea{% if attrs.id %} id="{{ attrs.id }}"{% endif %}{% if attrs.name %} name="{{ attrs.name }}"{% endif %}{% if attrs.rows %} rows="{{ attrs.rows }}"{% endif %}{% if attrs.placeholder %} placeholder="{{ attrs.placeholder }}"{% endif %}{% if attrs.required %} required{% endif %}{% if attrs.readonly %} readonly{% endif %}{% if attrs.disabled %} disabled{% endif %}>{% slot value %}{% endslot %}</textarea>
   {% else %}
   <input type="{{ attrs.type }}"{% if attrs.id %} id="{{ attrs.id }}"{% endif %}{% if attrs.name %} name="{{ attrs.name }}"{% endif %}{% if attrs.value is not None %} value="{{ attrs.value }}"{% endif %}{% if attrs.placeholder %} placeholder="{{ attrs.placeholder }}"{% endif %}{% if attrs.autocomplete %} autocomplete="{{ attrs.autocomplete }}"{% endif %}{% if attrs.required %} required{% endif %}{% if attrs.readonly %} readonly{% endif %}{% if attrs.disabled %} disabled{% endif %}>
   {% endif %}
-  {% if slots.help_text %}<div class="field__help">{% slot help_text %}{% endslot %}</div>{% endif %}
+  {% if slots.help_text %}<div class="auth-field__help">{% slot help_text %}{% endslot %}</div>{% endif %}
   {% include "components/form.html#errors" with errors=attrs.errors %}
 </div>
 {% endif %}

@@ -56,7 +56,11 @@
     {% for alert in dashboard.alerts %}
     <li class="alert-list__item">
       <span class="label alert-list__kind">{{ alert.get_alert_type_display }}</span>
+      {% if alert.receivable %}
+      <a class="alert-list__text strong" href="{% url 'receivables_detail' alert.receivable.public_id %}">{{ alert.message }}</a>
+      {% else %}
       <span class="alert-list__text strong">{{ alert.message }}</span>
+      {% endif %}
     </li>
     {% empty %}
     <li class="muted">No hay alertas sin leer.</li>

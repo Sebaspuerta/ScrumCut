@@ -12,16 +12,16 @@
 {% if field.is_hidden or field.field.widget.attrs.hidden %}
 {{ field }}
 {% elif field.widget_type == "checkbox" %}
-<div class="field field--check">
+<div class="auth-field auth-field--check">
   {{ field }}
   <label for="{{ field.id_for_label }}">{{ field.label }}</label>
   {% include "components/form.html#errors" with errors=field.errors %}
 </div>
 {% else %}
-<div class="field">
+<div class="auth-field">
   <label for="{{ field.id_for_label }}">{{ field.label }}</label>
   {{ field }}
-  {% if field.help_text %}<div class="field__help">{{ field.help_text|safe }}</div>{% endif %}
+  {% if field.help_text %}<div class="auth-field__help">{{ field.help_text|safe }}</div>{% endif %}
   {% include "components/form.html#errors" with errors=field.errors %}
 </div>
 {% endif %}

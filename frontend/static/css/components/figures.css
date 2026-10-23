@@ -1,0 +1,41 @@
+/* Fila abierta de cifras (Clientes.dc.html): sin caja, entre una línea café arriba y una clara abajo. */
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 0;
+  border-top: var(--line-width) solid var(--color-espresso);
+  border-bottom: var(--line-width) solid var(--color-line);
+}
+
+.figures__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-6) var(--space-4) 0;
+}
+
+.figures__item + .figures__item {
+  padding-left: var(--space-6);
+  border-left: var(--line-width) solid var(--color-line);
+}
+
+.figures__value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-readout);
+  line-height: 1.1;
+}
+
+.figures__note {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 860px) {
+  .figures__item + .figures__item {
+    padding-left: 0;
+    border-left: 0;
+    border-top: var(--line-width) solid var(--color-line);
+  }
+}

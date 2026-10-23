@@ -5,7 +5,11 @@ from decimal import ROUND_HALF_UP, Decimal
 
 MINUS = "−"  # signo menos tipográfico, como en las maquetas
 NOON = 12
-MASK_MIN_DIGITS = 7  # con menos dígitos, mostrar inicio y final dejaría el número a la vista
+MASK_MIN_DIGITS = 7
+COLOMBIA_PREFIX, COLOMBIA_FULL_LENGTH = (
+    "57",
+    12,
+)  # así guarda el celular `normalize_phone`  # con menos dígitos, mostrar inicio y final dejaría el número a la vista
 MONTHS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
 MONTH_NAMES = (
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -44,8 +48,10 @@ def format_difference(value: Decimal | None) -> str:
 
 
 def mask_phone(phone: str | None) -> str:
-    """Celular enmascarado para la pantalla: 300 *** 4512. Sin número, vacío."""
+    """Celular enmascarado para la pantalla: 300 *** 4512 (sin el prefijo 57 con que se guarda). Sin número, vacío."""
     digits = "".join(character for character in phone or "" if character.isdigit())
+    if len(digits) == COLOMBIA_FULL_LENGTH and digits.startswith(COLOMBIA_PREFIX):
+        digits = digits[len(COLOMBIA_PREFIX) :]
     if len(digits) < MASK_MIN_DIGITS:
         return ""
     return f"{digits[:3]} *** {digits[-4:]}"

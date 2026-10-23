@@ -59,3 +59,13 @@
   text-transform: uppercase;
   color: var(--color-espresso-600);
 }
+
+/* Celda con nombre y un dato debajo (cliente y celular), y la fila elegida. */
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.data-table tr.is-current td {
+  background: var(--color-espresso-200);
+}

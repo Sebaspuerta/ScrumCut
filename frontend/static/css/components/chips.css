@@ -1,0 +1,49 @@
+/* Filtros como botones con aria-pressed y su conteo (nivel de cliente). */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  background: transparent;
+  border: var(--line-width) solid var(--color-control-border);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  font-weight: 500;
+  color: var(--color-espresso);
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--color-espresso);
+  border-color: var(--color-espresso);
+  color: var(--color-on-dark);
+}
+
+.chip__count {
+  opacity: 0.75;
+}
+
+/* Nivel del cliente: tonos de café, sin rojos; la deuda se marca con borde. */
+.level-tag {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.level-tag--new { background: var(--color-sidebar); color: var(--color-nav-text); }
+.level-tag--frequent { background: var(--color-espresso-200); color: var(--color-espresso); }
+.level-tag--vip { background: var(--color-espresso); color: var(--color-on-dark); }
+.level-tag--inactive { background: transparent; color: var(--color-text-muted); border: var(--line-width) dashed var(--color-control-border); }
+.level-tag--debtor { background: transparent; color: var(--color-espresso); border: var(--line-width) solid var(--color-espresso); }
