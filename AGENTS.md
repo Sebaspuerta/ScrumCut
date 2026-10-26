@@ -3,6 +3,14 @@
 ScrumCut by ScrumTech: SaaS de gestión para barberías, multi-barbería, 100 % web.
 Arquitectura completa: ver `docs/arquitectura.md`.
 
+## Principio
+Todo el código es de nivel senior: limpio, sin nada de sobra, duradero en el tiempo, seguro y escalable. Ante la duda entre rápido y bien hecho, se hace bien hecho.
+
+- Limpio: nada de código muerto, duplicado ni "por si acaso"; cada cosa tiene un solo lugar.
+- Duradero: las reglas del negocio viven en services, selectors y modelos, nunca en vistas, serializers ni React; las críticas se refuerzan además con restricciones en la base de datos. Los nombres explican qué hace el código y los comentarios, solo el porqué.
+- Seguro: el servidor decide permisos, sede y montos; nunca se confía en el cliente.
+- Escalable: consultas constantes, paginación y nada que se rompa al crecer en barberías, sedes o datos.
+
 ## Reglas no negociables
 
 1. MAGNUS v1 (../MAGNUS-PROJECTO) es la base funcional de ScrumCut. Su lógica de negocio se porta a Django módulo por módulo, adaptada a multi-barbería (TenantScopedModel) y a la estructura services/selectors. Nunca se copian: la marca Magnus (nombre, logos, colores, eslogan, créditos AvanzaTech), el código maestro de recuperación, tokens en localStorage, usuarios fijos por nombre (mateo/admin), el frontend HTML/JS de MAGNUS, ni ningún patrón de los hallazgos de seguridad listados en docs/arquitectura.md.
@@ -125,7 +133,7 @@ npm ci
 npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build
 ```
 
-Si cambia la API: regenerar `frontend/app/openapi.json` (`manage.py spectacular`) y `npm run gen:types` (ver `tests/api/test_openapi_schema.py`).
+Si cambia la API: regenerar `frontend/app/openapi.json` (`manage.py openapi_schema`) y `npm run gen:types` (ver `tests/api/test_openapi_schema.py`).
 
 Pruebas:
 - Nunca correr dos procesos de pytest a la vez contra la misma base de pruebas. Si una corrida pasa a segundo plano, esperar a que termine antes de lanzar otra.
@@ -135,5 +143,6 @@ Cambios en permisos, pagos, migraciones o seguridad requieren aprobación humana
 
 ## Git
 - Los agentes de código nunca ejecutan git commit, git push, git tag ni nada que cree o suba historial, ni git add.
+- Los agentes no ejecutan comandos de git que cambien el repositorio o el índice (add, rm, commit, restore --staged, push, tag, etc.). Solo lectura: status, diff, log.
 - Ningún commit, archivo, comentario, mensaje o documento lleva atribución a herramientas de IA (Co-Authored-By, Session, "Generated with" ni similares).
 - Al terminar cada tarea se entrega solo la lista de archivos cambiados y un mensaje de commit sugerido en español, sin atribuciones. El commit y el push los hace una persona.
