@@ -125,3 +125,25 @@ class AlertGroupSerializer(serializers.Serializer):
 class NotificationsSerializer(serializers.Serializer):
     unread = serializers.IntegerField()
     groups = AlertGroupSerializer(many=True, help_text="«Hoy» y «Anteriores», solo los que tienen alertas.")
+
+
+class ApiErrorSerializer(serializers.Serializer):
+    """La forma de todo error de /api/v1/ (`apps.api.exceptions`): el mensaje, qué pasó y los campos."""
+
+    detail = serializers.CharField(help_text="Para el usuario: un texto fijo o el mensaje de la validación.")
+    code = serializers.CharField(help_text="«invalid», «permission_denied», «not_found», «stale_session»…")
+    field_errors = serializers.DictField(
+        child=serializers.ListField(child=serializers.CharField()), help_text="Los mensajes de cada campo; o vacío."
+    )
+
+
+def error_responses(*statuses: int) -> dict[int, type[ApiErrorSerializer]]:
+    """Las respuestas de error de una operación en el esquema, todas con la misma forma."""
+    return dict.fromkeys(statuses, ApiErrorSerializer)
+
+
+# Toda vista exige sesión (sin ella, 403 con SessionAuthentication) y tiene límite de peticiones (429).
+READ_ERRORS = error_responses(403, 429)
+WRITE_ERRORS = error_responses(400, 403, 429)
+OBJECT_READ_ERRORS = error_responses(403, 404, 429)
+OBJECT_WRITE_ERRORS = error_responses(400, 403, 404, 429)

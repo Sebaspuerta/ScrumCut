@@ -46,7 +46,7 @@ export function NavEntry({ item, onNavigate }: NavEntryProps) {
   return (
     <span className={cx(styles.entry, styles.soon)}>
       {icon}
-      {item.label}
+      <span className={styles.label}>{item.label}</span>
       <span className={styles.tag}>
         <Pill>{WITHOUT_SCREEN[item.status]}</Pill>
       </span>

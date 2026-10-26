@@ -6,6 +6,8 @@ Fase S4a de docs/sedes.md: toda escritura es sobre una comanda de la sede del al
 el barbero trabaja en esa sede y el precio es el vigente en ella.
 """
 
+from collections.abc import Iterable
+from dataclasses import dataclass
 from decimal import Decimal
 from uuid import UUID
 
@@ -269,6 +271,40 @@ def set_discount(
         locked.save(update_fields=["discount", "discount_reason", "total", "updated_at"])
         _audit(membership, "comanda.descontar", order=locked, before=before, after=_order_snapshot(locked))
     return locked
+
+
+@dataclass(frozen=True)
+class NewLine:
+    """Una línea para abrir la comanda: un servicio o un producto, sin precio (sale del catálogo de la sede)."""
+
+    service: UUID | str | None = None
+    product: UUID | str | None = None
+    quantity: int = 1
+    barber: UUID | str | None = None
+
+
+def open_order_with_lines(
+    membership: Membership,
+    scope: BranchScope,
+    *,
+    client: UUID | str | None = None,
+    barber: UUID | str | None = None,
+    lines: Iterable[NewLine] = (),
+) -> Order:
+    """`create_order` y un `add_item` por línea en una sola transacción: si una línea falla, no queda la comanda."""
+    with transaction.atomic():
+        order = create_order(membership, scope, client=client, barber=barber)
+        for line in lines:
+            add_item(
+                membership,
+                order.public_id,
+                scope=scope,
+                service=line.service,
+                product=line.product,
+                quantity=line.quantity,
+                barber=line.barber,
+            )
+    return order
 
 
 def _move(

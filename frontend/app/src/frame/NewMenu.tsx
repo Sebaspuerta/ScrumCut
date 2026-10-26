@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { useId } from "react";
+import { Link } from "react-router";
 
 import type { NavItem } from "../api/types";
 import { useHotkey } from "../hooks/useHotkey";
@@ -16,7 +17,7 @@ interface NewMenuProps {
 /** "+ Nuevo" (atajo N): las acciones que ya tienen pantalla y que el rol puede usar. */
 export function NewMenu({ actions }: NewMenuProps) {
   const menuId = useId();
-  const { open, toggle, containerRef, triggerRef } = usePopover();
+  const { open, toggle, close, containerRef, triggerRef } = usePopover();
   useHotkey({ key: "n" }, toggle);
   if (actions.length === 0) return null;
   return (
@@ -37,10 +38,17 @@ export function NewMenu({ actions }: NewMenuProps) {
         <ul id={menuId} className={styles.menu} aria-label="Crear">
           {actions.map((action) => (
             <li key={action.label}>
-              <a className={styles.item} href={action.url ?? undefined}>
-                <NavIcon name={action.icon} size={18} />
-                {action.label}
-              </a>
+              {action.app_path === null ? (
+                <a className={styles.item} href={action.url ?? undefined}>
+                  <NavIcon name={action.icon} size={18} />
+                  {action.label}
+                </a>
+              ) : (
+                <Link className={styles.item} to={action.app_path} onClick={close}>
+                  <NavIcon name={action.icon} size={18} />
+                  {action.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

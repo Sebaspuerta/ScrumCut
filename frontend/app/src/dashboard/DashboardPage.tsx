@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router";
 
+import { StaleCashNotice } from "../cash/StaleCashNotice";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useDashboard } from "../hooks/useDashboard";
 import { useMe } from "../hooks/useMe";
@@ -13,7 +14,6 @@ import { DashboardTitle } from "./DashboardTitle";
 import { MetricStrip } from "./MetricStrip";
 import { ProductsPanel } from "./ProductsPanel";
 import { SalesPanel } from "./SalesPanel";
-import { StaleCashNotice } from "./StaleCashNotice";
 
 const REPORTS_PERMISSION = "reportes.ver";
 

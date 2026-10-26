@@ -1,20 +1,16 @@
 """El esquema OpenAPI guardado es el que genera drf-spectacular: si la API cambia, hay que regenerarlo.
 
 cd backend
-python manage.py spectacular --format openapi-json --validate --fail-on-warn --file ../frontend/app/openapi.json
+python manage.py openapi_schema
 cd ../frontend/app && npm run gen:types
 """
 
-import json
-
-from django.conf import settings
-from django.core.management import call_command
-
-COMMITTED_SCHEMA = settings.FRONTEND_DIR / "app" / "openapi.json"
+from apps.api.management.commands.openapi_schema import SCHEMA_PATH, render_schema
 
 
-def test_el_esquema_guardado_coincide_con_la_api(tmp_path):
-    generated = tmp_path / "openapi.json"
-    call_command("spectacular", "--format", "openapi-json", "--validate", "--fail-on-warn", "--file", str(generated))
+def test_el_esquema_guardado_coincide_con_la_api_byte_a_byte():
+    assert SCHEMA_PATH.read_text(encoding="utf-8") == render_schema()
 
-    assert json.loads(COMMITTED_SCHEMA.read_text(encoding="utf-8")) == json.loads(generated.read_text(encoding="utf-8"))
+
+def test_el_esquema_termina_con_un_salto_de_linea():
+    assert SCHEMA_PATH.read_bytes().endswith(b"}\n")

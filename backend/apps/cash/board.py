@@ -7,6 +7,7 @@ o una lista: el número de consultas no crece con el número de movimientos.
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
+from django.core.paginator import Page, Paginator
 from django.db.models import Count, DecimalField, Q, QuerySet, Sum, Value
 from django.db.models.functions import Coalesce
 
@@ -22,6 +23,7 @@ from apps.tenancy.permissions import ensure_permission
 from apps.tenancy.roles import role_has_permission
 
 LAST_CLOSINGS = 5
+CLOSINGS_PAGE_SIZE = 20
 STRIP = (MovementKind.SALE, MovementKind.RECEIVABLE_PAYMENT, MovementKind.EXPENSE, MovementKind.WITHDRAWAL)
 _CASH = Q(payment_method=PaymentMethod.CASH)
 
@@ -83,9 +85,20 @@ def stale_session(membership: Membership, *, scope: BranchScope) -> CashSession 
     return session if session is not None and is_from_previous_day(session) else None
 
 
-def last_closings(scope: BranchScope) -> QuerySet[CashSession]:
+def _closed(scope: BranchScope) -> QuerySet[CashSession]:
     closed = scope.apply(CashSession.objects.filter(closed_at__isnull=False)).select_related("closed_by")
-    return closed.order_by("-closed_at", "-pk")[:LAST_CLOSINGS]
+    return closed.order_by("-closed_at", "-pk")
+
+
+def last_closings(scope: BranchScope) -> QuerySet[CashSession]:
+    return _closed(scope)[:LAST_CLOSINGS]
+
+
+def closings_page(membership: Membership, *, scope: BranchScope, page: int = 1) -> Page:
+    """El historial de cierres de las sedes del alcance, del más reciente al más antiguo, por páginas."""
+    ensure_permission(membership, "caja.ver")
+    scope.check(membership)
+    return Paginator(_closed(scope).select_related("branch"), CLOSINGS_PAGE_SIZE).get_page(page)
 
 
 def cash_register(membership: Membership, *, scope: BranchScope, kind: str | None = None) -> dict:

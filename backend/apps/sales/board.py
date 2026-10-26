@@ -6,7 +6,7 @@ crece con el número de comandas.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -33,15 +33,18 @@ class BoardFilter:
     tab: str = OPEN
     search: str = ""
     barber: UUID | None = None
+    day: date | None = None  # el día de las cerradas y las anuladas; sin día, hoy
 
 
-def _today(membership: Membership) -> tuple[datetime, datetime]:
-    today = local_today(membership)
-    return day_bounds(membership.barbershop.timezone, today, today)
+def _bounds(membership: Membership, day: date | None) -> tuple[datetime, datetime]:
+    """El día pedido (o hoy) en la zona de la barbería."""
+    day = day or local_today(membership)
+    return day_bounds(membership.barbershop.timezone, day, day)
 
 
-def _tab_conditions(membership: Membership) -> dict[str, Q]:
-    start, end = _today(membership)
+def _tab_conditions(membership: Membership, day: date | None = None) -> dict[str, Q]:
+    """Las abiertas son todas las vigentes; las cerradas y las anuladas, las del día."""
+    start, end = _bounds(membership, day)
     return {
         OPEN: Q(status__in=EDITABLE_STATUSES),
         CLOSED_TODAY: Q(status=OrderStatus.CLOSED, closed_at__gte=start, closed_at__lt=end),
@@ -54,9 +57,9 @@ def _visible(membership: Membership, scope: BranchScope) -> QuerySet[Order]:
     return scope.readable(membership, scoped_orders(membership))
 
 
-def tab_counts(membership: Membership, *, scope: BranchScope) -> dict[str, int]:
+def tab_counts(membership: Membership, *, scope: BranchScope, day: date | None = None) -> dict[str, int]:
     """Cuántas comandas hay en cada pestaña, en una sola consulta."""
-    conditions = _tab_conditions(membership)
+    conditions = _tab_conditions(membership, day)
     return _visible(membership, scope).aggregate(**{tab: Count("pk", filter=q) for tab, q in conditions.items()})
 
 
@@ -75,7 +78,7 @@ def _lines() -> Prefetch:
 
 def board_orders(membership: Membership, *, scope: BranchScope, filters: BoardFilter, page: int = 1) -> Page:
     """Las comandas de la pestaña, con sus líneas, barberos y pagos ya cargados."""
-    orders = _visible(membership, scope).filter(_tab_conditions(membership)[filters.tab])
+    orders = _visible(membership, scope).filter(_tab_conditions(membership, filters.day)[filters.tab])
     orders = _search(orders, filters.search)
     if filters.barber is not None:
         orders = orders.filter(Q(barber__public_id=filters.barber) | Q(items__barber__public_id=filters.barber))
@@ -94,9 +97,9 @@ def _money(expression, condition: Q | None = None) -> Coalesce:
     )
 
 
-def closed_today_summary(membership: Membership, *, scope: BranchScope) -> dict[str, Decimal]:
-    """Lo cobrado hoy en efectivo y en otros medios, y lo que quedó como fiado."""
-    closed = _visible(membership, scope).filter(_tab_conditions(membership)[CLOSED_TODAY])
+def closed_today_summary(membership: Membership, *, scope: BranchScope, day: date | None = None) -> dict[str, Decimal]:
+    """Lo cobrado en el día (hoy, si no se indica) en efectivo y en otros medios, y lo que quedó como fiado."""
+    closed = _visible(membership, scope).filter(_tab_conditions(membership, day)[CLOSED_TODAY])
     paid = Payment.objects.filter(order__in=closed).aggregate(
         cash=_money("amount", Q(method=PaymentMethod.CASH)),
         other=_money("amount", ~Q(method=PaymentMethod.CASH)),

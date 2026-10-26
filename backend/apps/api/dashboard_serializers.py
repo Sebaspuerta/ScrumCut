@@ -2,11 +2,8 @@
 
 from rest_framework import serializers
 
+from apps.api.fields import money
 from apps.api.serializers import AlertItemSerializer
-
-
-def money(**kwargs) -> serializers.DecimalField:
-    return serializers.DecimalField(max_digits=14, decimal_places=2, **kwargs)
 
 
 class VariationSerializer(serializers.Serializer):

@@ -2,7 +2,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 import styles from "./Dialog.module.css";
 
-const FOCUSABLE = "a[href], button:not(:disabled), input:not(:disabled), select, [tabindex='0']";
+const FOCUSABLE = "a[href], button:not(:disabled), input:not(:disabled), select, textarea, [tabindex='0']";
+// El primer campo de un formulario, si lo marca; si no, el primer elemento que recibe foco.
+const FIRST_FOCUS = "[data-autofocus]";
 
 interface DialogProps {
   label: string;
@@ -37,7 +39,7 @@ export function Dialog({ label, onClose, placement = "center", className = "", c
   useEffect(() => {
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const box = boxRef.current;
-    box?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    (box?.querySelector<HTMLElement>(FIRST_FOCUS) ?? box?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeRef.current();
       else if (event.key === "Tab" && box) keepFocusInside(event, box);

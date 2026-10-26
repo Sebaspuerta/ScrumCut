@@ -42,8 +42,12 @@ def test_el_cajero_de_centro_no_puede_cambiar_a_lo_que_no_le_permite_choose_bran
     assert Membership.objects.get(pk=world.cashier.pk).last_branch_id != norte.pk
 
 
-def test_sin_el_campo_sede_responde_400_generico(cashier_client):
+def test_sin_el_campo_sede_responde_400_con_el_error_del_campo(cashier_client):
     response = cashier_client.post(reverse("api_branch"), {}, content_type="application/json")
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "Revisa los datos enviados."}
+    assert response.json() == {
+        "detail": "Revisa los datos enviados.",
+        "code": "invalid",
+        "field_errors": {"sede": ["Este campo es requerido."]},
+    }

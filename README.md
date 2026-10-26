@@ -38,7 +38,7 @@ python manage.py runserver 127.0.0.1:8000
 
 ```powershell
 # Terminal 2: Vite en localhost:5173
-cd frontendpp
+cd frontend\app
 npm ci
 npm run dev
 ```
@@ -48,7 +48,7 @@ Abre `http://localhost:5173/app/`. Vite atiende `/app/` y pasa todo lo demás (A
 Compilación para producción (Django la sirve en `/app/` desde `frontend/static/app/`):
 
 ```powershell
-cd frontendpp
+cd frontend\app
 npm run build
 ```
 
@@ -56,8 +56,8 @@ Si cambia la API, regenera el esquema y los tipos:
 
 ```powershell
 cd backend
-python manage.py spectacular --format openapi-json --validate --fail-on-warn --file ..rontendpp\openapi.json
-cd ..rontendpp
+python manage.py openapi_schema
+cd ..\frontend\app
 npm run gen:types
 ```
 

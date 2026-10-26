@@ -37,6 +37,459 @@
                             }
                         },
                         "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/cash/": {
+            "get": {
+                "operationId": "cash_retrieve",
+                "description": "La caja de la sede del alcance; ?tipo= filtra los movimientos, como en la pantalla de Django.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "tipo",
+                        "schema": {
+                            "enum": [
+                                "",
+                                "venta",
+                                "abono_fiado",
+                                "gasto",
+                                "retiro"
+                            ],
+                            "type": "string",
+                            "default": "",
+                            "minLength": 1
+                        },
+                        "description": "* `` - Todos\n* `venta` - Ventas\n* `abono_fiado` - Abonos\n* `gasto` - Gastos\n* `retiro` - Retiros"
+                    }
+                ],
+                "tags": [
+                    "cash"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CashState"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/cash/{session}/close/": {
+            "post": {
+                "operationId": "cash_close_create",
+                "description": "Con diferencia entre el contado y el esperado, `close_session` exige la nota.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "session",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "cash"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CloseCashRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Closing"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/cash/{session}/movements/": {
+            "post": {
+                "operationId": "cash_movements_create",
+                "description": "Ingreso, gasto o retiro en efectivo de la caja abierta; `record_money` rechaza la de otro día.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "session",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "cash"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ManualMovementRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CashState"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/cash/closings/": {
+            "get": {
+                "operationId": "cash_closings_retrieve",
+                "description": "El historial de cierres de la sede, por páginas.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    }
+                ],
+                "tags": [
+                    "cash"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Closings"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/cash/open/": {
+            "post": {
+                "operationId": "cash_open_create",
+                "description": "Cada escritura responde la caja como queda. `error_fields` traduce las claves de los errores de los\nservices a los campos de la API (`apps.api.exceptions`).",
+                "tags": [
+                    "cash"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpenCashRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CashState"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/clients/search/": {
+            "get": {
+                "operationId": "clients_search_list",
+                "description": "Cualquier cliente de la barbería por nombre, celular o documento; solo su nombre y el celular enmascarado.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "",
+                            "maxLength": 60
+                        }
+                    }
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ClientChoice"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -59,6 +512,26 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Csrf"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
                                 }
                             }
                         },
@@ -99,6 +572,26 @@
                             }
                         },
                         "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -121,6 +614,26 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Me"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
                                 }
                             }
                         },
@@ -160,6 +673,36 @@
                             }
                         },
                         "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -186,6 +729,26 @@
                             }
                         },
                         "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -208,6 +771,824 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Notifications"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/": {
+            "get": {
+                "operationId": "orders_list",
+                "description": "La lista por pestaña (?estado=abiertas|cerradas|anuladas) y día (?fecha=); un valor inválido vuelve al\nvalor por defecto, como en la pantalla de Django.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "barbero",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "estado",
+                        "schema": {
+                            "enum": [
+                                "abiertas",
+                                "cerradas",
+                                "anuladas"
+                            ],
+                            "type": "string",
+                            "default": "abiertas",
+                            "minLength": 1
+                        },
+                        "description": "* `abiertas` - Abiertas\n* `cerradas` - Cerradas hoy\n* `anuladas` - Anuladas"
+                    },
+                    {
+                        "in": "query",
+                        "name": "fecha",
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "nullable": true
+                        },
+                        "description": "AAAA-MM-DD; si falta, hoy."
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "",
+                            "maxLength": 60
+                        }
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/": {
+            "get": {
+                "operationId": "orders_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/cancel/": {
+            "post": {
+                "operationId": "orders_cancel_create",
+                "description": "`cancel_order` exige comandas.editar si está abierta y comandas.anular si ya se cerró.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/checkout/": {
+            "post": {
+                "operationId": "orders_checkout_create",
+                "description": "Un solo cobro aunque llegue dos veces: `close_order` bloquea la comanda y la segunda la encuentra cerrada.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CheckoutRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CheckoutResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/client/": {
+            "post": {
+                "operationId": "orders_client_create",
+                "description": "Cada escritura responde la comanda como queda, leída de nuevo por el alcance. `error_fields` traduce las\nclaves de los errores de los services a los campos de la API (`apps.api.exceptions`).",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangeClientRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/discount/": {
+            "post": {
+                "operationId": "orders_discount_create",
+                "description": "Cada escritura responde la comanda como queda, leída de nuevo por el alcance. `error_fields` traduce las\nclaves de los errores de los services a los campos de la API (`apps.api.exceptions`).",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DiscountRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/lines/": {
+            "post": {
+                "operationId": "orders_lines_create",
+                "description": "El precio no viaja: `add_item` lo toma del catálogo de la sede de la comanda.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NewLineRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/{public_id}/lines/{item}/remove/": {
+            "post": {
+                "operationId": "orders_lines_remove_create",
+                "description": "Cada escritura responde la comanda como queda, leída de nuevo por el alcance. `error_fields` traduce las\nclaves de los errores de los services a los campos de la API (`apps.api.exceptions`).",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "item",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/catalog/": {
+            "get": {
+                "operationId": "orders_catalog_retrieve",
+                "description": "Barberos, servicios y productos con su precio y stock en la sede, y las formas de pago habilitadas.",
+                "tags": [
+                    "orders"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderCatalog"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/create/": {
+            "post": {
+                "operationId": "orders_create_create",
+                "description": "Abre la comanda en la sede del alcance con sus líneas, al precio vigente de la sede.",
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NewOrderRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
                                 }
                             }
                         },
@@ -321,6 +1702,35 @@
                 "type": "string",
                 "description": "* `agotado` - Agotado\n* `stock_bajo` - Stock bajo\n* `por_vencer` - Por vencer\n* `fiado_vencido` - Fiado vencido"
             },
+            "ApiError": {
+                "type": "object",
+                "description": "La forma de todo error de /api/v1/ (`apps.api.exceptions`): el mensaje, qué pasó y los campos.",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "description": "Para el usuario: un texto fijo o el mensaje de la validación."
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "«invalid», «permission_denied», «not_found», «stale_session»…"
+                    },
+                    "field_errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Los mensajes de cada campo; o vacío."
+                    }
+                },
+                "required": [
+                    "code",
+                    "detail",
+                    "field_errors"
+                ]
+            },
             "BarberRow": {
                 "type": "object",
                 "properties": {
@@ -370,6 +1780,24 @@
                     "initials",
                     "name",
                     "timezone"
+                ]
+            },
+            "BillCountRequest": {
+                "type": "object",
+                "properties": {
+                    "denomination": {
+                        "type": "integer",
+                        "description": "Una de `denominations` de la caja."
+                    },
+                    "count": {
+                        "type": "integer",
+                        "maximum": 100000,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "count",
+                    "denomination"
                 ]
             },
             "BranchChoiceRequest": {
@@ -575,6 +2003,38 @@
                     "total"
                 ]
             },
+            "CancelRequest": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                    }
+                },
+                "required": [
+                    "reason"
+                ]
+            },
+            "CashActions": {
+                "type": "object",
+                "properties": {
+                    "open": {
+                        "type": "boolean"
+                    },
+                    "movement": {
+                        "type": "boolean"
+                    },
+                    "close": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "close",
+                    "movement",
+                    "open"
+                ]
+            },
             "CashFlow": {
                 "type": "object",
                 "properties": {
@@ -629,6 +2089,189 @@
                     "opened_at"
                 ]
             },
+            "CashMovement": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/CashMovementKindEnum"
+                    },
+                    "kind_label": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "by": {
+                        "type": "string"
+                    },
+                    "direction": {
+                        "$ref": "#/components/schemas/CashMovementDirectionEnum"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "amount",
+                    "at",
+                    "by",
+                    "description",
+                    "direction",
+                    "id",
+                    "kind",
+                    "kind_label"
+                ]
+            },
+            "CashMovementDirectionEnum": {
+                "enum": [
+                    "in",
+                    "out"
+                ],
+                "type": "string",
+                "description": "* `in` - Entrada\n* `out` - Salida"
+            },
+            "CashMovementKindEnum": {
+                "enum": [
+                    "venta",
+                    "abono_fiado",
+                    "ingreso_manual",
+                    "gasto",
+                    "retiro",
+                    "ajuste",
+                    "devolucion"
+                ],
+                "type": "string",
+                "description": "* `venta` - Venta\n* `abono_fiado` - Abono de fiado\n* `ingreso_manual` - Ingreso manual\n* `gasto` - Gasto\n* `retiro` - Retiro\n* `ajuste` - Ajuste\n* `devolucion` - Devolución"
+            },
+            "CashSession": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "opened_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "opened_by": {
+                        "type": "string"
+                    },
+                    "stale": {
+                        "type": "boolean",
+                        "description": "Viene de otro día: no recibe efectivo y solo se cierra."
+                    },
+                    "opening_amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "strip": {
+                        "$ref": "#/components/schemas/CashStrip"
+                    },
+                    "expected": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Base + entradas en efectivo − salidas en efectivo."
+                    },
+                    "movements": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CashMovement"
+                        },
+                        "description": "Lo que entra o sale de la caja física."
+                    },
+                    "other_media": {
+                        "$ref": "#/components/schemas/OtherMedia"
+                    }
+                },
+                "required": [
+                    "expected",
+                    "id",
+                    "movements",
+                    "opened_at",
+                    "opened_by",
+                    "opening_amount",
+                    "other_media",
+                    "stale",
+                    "strip"
+                ]
+            },
+            "CashState": {
+                "type": "object",
+                "properties": {
+                    "needs_branch": {
+                        "type": "boolean",
+                        "description": "En «todas» no se mezclan cajas: hay que elegir una sede."
+                    },
+                    "branch": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "today": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "description": "El filtro de movimientos aplicado; vacío, todos."
+                    },
+                    "kinds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        },
+                        "description": "Los filtros de movimientos."
+                    },
+                    "manual_kinds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        },
+                        "description": "Lo que se registra a mano, siempre en efectivo."
+                    },
+                    "denominations": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "Billetes, del mayor al menor."
+                    },
+                    "session": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CashSession"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "actions": {
+                        "$ref": "#/components/schemas/CashActions"
+                    }
+                },
+                "required": [
+                    "actions",
+                    "branch",
+                    "denominations",
+                    "kind",
+                    "kinds",
+                    "manual_kinds",
+                    "needs_branch",
+                    "session",
+                    "today"
+                ]
+            },
             "CashStep": {
                 "type": "object",
                 "properties": {
@@ -660,6 +2303,218 @@
                 "type": "string",
                 "description": "* `total` - total\n* `up` - up\n* `down` - down\n* `counted` - counted"
             },
+            "CashStrip": {
+                "type": "object",
+                "properties": {
+                    "sales": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/KindTotal"
+                            }
+                        ],
+                        "description": "Ventas en efectivo."
+                    },
+                    "receivable_payments": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/KindTotal"
+                            }
+                        ],
+                        "description": "Abonos de fiados en efectivo."
+                    },
+                    "expenses": {
+                        "$ref": "#/components/schemas/KindTotal"
+                    },
+                    "withdrawals": {
+                        "$ref": "#/components/schemas/KindTotal"
+                    }
+                },
+                "required": [
+                    "expenses",
+                    "receivable_payments",
+                    "sales",
+                    "withdrawals"
+                ]
+            },
+            "ChangeClientRequest": {
+                "type": "object",
+                "properties": {
+                    "client": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "null la deja como cliente de mostrador."
+                    }
+                },
+                "required": [
+                    "client"
+                ]
+            },
+            "CheckoutRequest": {
+                "type": "object",
+                "properties": {
+                    "parts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentPartRequest"
+                        }
+                    },
+                    "received": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "description": "El efectivo entregado."
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true,
+                        "description": "Fecha del fiado."
+                    }
+                },
+                "required": [
+                    "parts"
+                ]
+            },
+            "CheckoutResult": {
+                "type": "object",
+                "properties": {
+                    "order": {
+                        "$ref": "#/components/schemas/OrderDetail"
+                    },
+                    "change": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Las vueltas, solo sobre la parte en efectivo."
+                    }
+                },
+                "required": [
+                    "change",
+                    "order"
+                ]
+            },
+            "ClientChoice": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "phone"
+                ]
+            },
+            "CloseCashRequest": {
+                "type": "object",
+                "properties": {
+                    "bills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BillCountRequest"
+                        }
+                    },
+                    "coins": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Las monedas, como un total en pesos."
+                    },
+                    "notes": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 500
+                    }
+                },
+                "required": [
+                    "bills",
+                    "coins"
+                ]
+            },
+            "ClosedSummary": {
+                "type": "object",
+                "properties": {
+                    "cash": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "other": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "credit": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "cash",
+                    "credit",
+                    "other"
+                ]
+            },
+            "Closing": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "branch": {
+                        "type": "string"
+                    },
+                    "closed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "closed_by": {
+                        "type": "string"
+                    },
+                    "expected": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "counted": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "difference": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Contado − esperado: positivo sobra, negativo falta."
+                    },
+                    "notes": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "branch",
+                    "closed_at",
+                    "closed_by",
+                    "counted",
+                    "difference",
+                    "expected",
+                    "id",
+                    "notes"
+                ]
+            },
             "ClosingRow": {
                 "type": "object",
                 "properties": {
@@ -688,6 +2543,59 @@
                     "date",
                     "difference",
                     "expected"
+                ]
+            },
+            "Closings": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Cierres por página."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Closing"
+                        }
+                    }
+                },
+                "required": [
+                    "count",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "results"
+                ]
+            },
+            "Credit": {
+                "type": "object",
+                "properties": {
+                    "debt": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Lo que el cliente debe en la sede de la comanda."
+                    },
+                    "available": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "description": "Su cupo; sin límite en la barbería, null."
+                    }
+                },
+                "required": [
+                    "available",
+                    "debt"
                 ]
             },
             "Csrf": {
@@ -833,13 +2741,23 @@
                     "total"
                 ]
             },
-            "DirectionEnum": {
-                "enum": [
-                    "up",
-                    "down"
-                ],
-                "type": "string",
-                "description": "* `up` - up\n* `down` - down"
+            "DiscountRequest": {
+                "type": "object",
+                "properties": {
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "amount"
+                ]
             },
             "IncomeKpi": {
                 "type": "object",
@@ -861,6 +2779,23 @@
                 "required": [
                     "value",
                     "variation"
+                ]
+            },
+            "KindTotal": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "count",
+                    "total"
                 ]
             },
             "Kpis": {
@@ -925,6 +2860,38 @@
                     "entity"
                 ]
             },
+            "ManualMovementKindEnum": {
+                "enum": [
+                    "ingreso_manual",
+                    "gasto",
+                    "retiro"
+                ],
+                "type": "string",
+                "description": "* `ingreso_manual` - ingreso_manual\n* `gasto` - gasto\n* `retiro` - retiro"
+            },
+            "ManualMovementRequest": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "$ref": "#/components/schemas/ManualMovementKindEnum"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "amount",
+                    "description",
+                    "kind"
+                ]
+            },
             "Me": {
                 "type": "object",
                 "properties": {
@@ -968,6 +2935,22 @@
                     "permissions",
                     "role",
                     "user"
+                ]
+            },
+            "Named": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
                 ]
             },
             "NavGroup": {
@@ -1074,6 +3057,54 @@
                     "unread_alerts"
                 ]
             },
+            "NewLineRequest": {
+                "type": "object",
+                "description": "Un servicio o un producto (el service exige uno de los dos), sin precio.",
+                "properties": {
+                    "service": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "product": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "maximum": 99,
+                        "minimum": 1,
+                        "default": 1
+                    },
+                    "barber": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    }
+                }
+            },
+            "NewOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "client": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "barber": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NewLineRequest"
+                        }
+                    }
+                }
+            },
             "Notifications": {
                 "type": "object",
                 "properties": {
@@ -1092,6 +3123,502 @@
                     "groups",
                     "unread"
                 ]
+            },
+            "OpenCashRequest": {
+                "type": "object",
+                "properties": {
+                    "opening_amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "opening_amount"
+                ]
+            },
+            "Option": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "label",
+                    "value"
+                ]
+            },
+            "OrderActions": {
+                "type": "object",
+                "properties": {
+                    "edit": {
+                        "type": "boolean"
+                    },
+                    "discount": {
+                        "type": "boolean"
+                    },
+                    "checkout": {
+                        "type": "boolean"
+                    },
+                    "cancel": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "cancel",
+                    "checkout",
+                    "discount",
+                    "edit"
+                ]
+            },
+            "OrderCatalog": {
+                "type": "object",
+                "properties": {
+                    "needs_branch": {
+                        "type": "boolean",
+                        "description": "En «todas» no hay precios de sede: hay que elegir una."
+                    },
+                    "branch": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "barbers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Named"
+                        }
+                    },
+                    "services": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PricedItem"
+                        }
+                    },
+                    "products": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StockedItem"
+                        }
+                    },
+                    "methods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        },
+                        "description": "Las formas de pago habilitadas en la barbería."
+                    },
+                    "max_parts": {
+                        "type": "integer",
+                        "description": "Partes máximas de un pago dividido."
+                    },
+                    "max_quantity": {
+                        "type": "integer",
+                        "description": "Unidades máximas por línea."
+                    }
+                },
+                "required": [
+                    "barbers",
+                    "branch",
+                    "max_parts",
+                    "max_quantity",
+                    "methods",
+                    "needs_branch",
+                    "products",
+                    "services"
+                ]
+            },
+            "OrderClient": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Enmascarado: 300 *** 4512."
+                    },
+                    "level": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Su nivel en las sedes del alcance."
+                    },
+                    "visits": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "id",
+                    "level",
+                    "name",
+                    "phone",
+                    "visits"
+                ]
+            },
+            "OrderDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "number": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/OrderStatusEnum"
+                    },
+                    "client_name": {
+                        "type": "string",
+                        "description": "El cliente o «Cliente de mostrador»."
+                    },
+                    "barbers": {
+                        "type": "string"
+                    },
+                    "items": {
+                        "type": "string"
+                    },
+                    "payment": {
+                        "type": "string",
+                        "description": "Las formas de pago de la comanda, o «Sin cobro»."
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "closed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "cancel_reason": {
+                        "type": "string"
+                    },
+                    "branch": {
+                        "type": "string"
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    },
+                    "client": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OrderClient"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "barber": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderLine"
+                        }
+                    },
+                    "subtotal": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "discount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "discount_reason": {
+                        "type": "string"
+                    },
+                    "amount_paid": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "payments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderPayment"
+                        }
+                    },
+                    "credit": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Credit"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Con cliente registrado; sin cliente no hay fiado."
+                    },
+                    "actions": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OrderActions"
+                            }
+                        ],
+                        "description": "Lo que el rol puede hacer con la comanda en su estado."
+                    }
+                },
+                "required": [
+                    "actions",
+                    "amount_paid",
+                    "balance",
+                    "barber",
+                    "barbers",
+                    "branch",
+                    "cancel_reason",
+                    "client",
+                    "client_name",
+                    "closed_at",
+                    "created_at",
+                    "credit",
+                    "discount",
+                    "discount_reason",
+                    "editable",
+                    "id",
+                    "items",
+                    "lines",
+                    "number",
+                    "payment",
+                    "payments",
+                    "status",
+                    "subtotal",
+                    "total"
+                ]
+            },
+            "OrderLine": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/OrderLineKindEnum"
+                    },
+                    "kind_label": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "barber": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "integer"
+                    },
+                    "unit_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "line_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "barber",
+                    "id",
+                    "kind",
+                    "kind_label",
+                    "line_total",
+                    "name",
+                    "quantity",
+                    "unit_price"
+                ]
+            },
+            "OrderLineKindEnum": {
+                "enum": [
+                    "servicio",
+                    "producto"
+                ],
+                "type": "string",
+                "description": "* `servicio` - Servicio\n* `producto` - Producto"
+            },
+            "OrderList": {
+                "type": "object",
+                "properties": {
+                    "tab": {
+                        "$ref": "#/components/schemas/OrderTabEnum"
+                    },
+                    "day": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "El día de las cerradas y las anuladas."
+                    },
+                    "tabs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Tab"
+                        }
+                    },
+                    "summary": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ClosedSummary"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Solo en las cerradas."
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Comandas por página."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderRow"
+                        }
+                    },
+                    "stale_cash": {
+                        "type": "boolean",
+                        "description": "La caja de la sede viene de otro día."
+                    }
+                },
+                "required": [
+                    "count",
+                    "day",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "results",
+                    "stale_cash",
+                    "summary",
+                    "tab",
+                    "tabs"
+                ]
+            },
+            "OrderPayment": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "reference": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "amount",
+                    "method",
+                    "reference"
+                ]
+            },
+            "OrderRow": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "number": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/OrderStatusEnum"
+                    },
+                    "client_name": {
+                        "type": "string",
+                        "description": "El cliente o «Cliente de mostrador»."
+                    },
+                    "barbers": {
+                        "type": "string"
+                    },
+                    "items": {
+                        "type": "string"
+                    },
+                    "payment": {
+                        "type": "string",
+                        "description": "Las formas de pago de la comanda, o «Sin cobro»."
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "closed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "cancel_reason": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "barbers",
+                    "cancel_reason",
+                    "client_name",
+                    "closed_at",
+                    "created_at",
+                    "id",
+                    "items",
+                    "number",
+                    "payment",
+                    "status",
+                    "total"
+                ]
+            },
+            "OrderStatusEnum": {
+                "enum": [
+                    "abierta",
+                    "en_espera",
+                    "cerrada",
+                    "anulada"
+                ],
+                "type": "string",
+                "description": "* `abierta` - Abierta\n* `en_espera` - En espera\n* `cerrada` - Cerrada\n* `anulada` - Anulada"
+            },
+            "OrderTabEnum": {
+                "enum": [
+                    "abiertas",
+                    "cerradas",
+                    "anuladas"
+                ],
+                "type": "string",
+                "description": "* `abiertas` - Abiertas\n* `cerradas` - Cerradas hoy\n* `anuladas` - Anuladas"
             },
             "OrdersKpi": {
                 "type": "object",
@@ -1117,6 +3644,31 @@
                     "variation"
                 ]
             },
+            "OtherMedia": {
+                "type": "object",
+                "properties": {
+                    "transfers": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/KindTotal"
+                            }
+                        ],
+                        "description": "Ventas por otros medios: no entran a la caja física."
+                    },
+                    "credit": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/KindTotal"
+                            }
+                        ],
+                        "description": "Fiados nuevos de hoy en la sede."
+                    }
+                },
+                "required": [
+                    "credit",
+                    "transfers"
+                ]
+            },
             "PatchedPreferencesRequest": {
                 "type": "object",
                 "properties": {
@@ -1124,6 +3676,32 @@
                         "$ref": "#/components/schemas/ThemeEnum"
                     }
                 }
+            },
+            "PaymentPartRequest": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Una forma de pago habilitada o «fiado».",
+                        "maxLength": 20
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "description": "Sin monto, todo el total."
+                    },
+                    "reference": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 80
+                    }
+                },
+                "required": [
+                    "method"
+                ]
             },
             "PlanUsage": {
                 "type": "object",
@@ -1149,6 +3727,29 @@
                 },
                 "required": [
                     "theme"
+                ]
+            },
+            "PricedItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El precio vigente en la sede."
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "price"
                 ]
             },
             "ProductRow": {
@@ -1235,6 +3836,53 @@
                 ],
                 "type": "string",
                 "description": "* `owner` - Dueño\n* `admin` - Administrador\n* `cashier` - Cajero\n* `barber` - Barbero\n* `viewer` - Consultor"
+            },
+            "StockedItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El precio vigente en la sede."
+                    },
+                    "stock": {
+                        "type": "integer",
+                        "description": "Existencias en la sede."
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "price",
+                    "stock"
+                ]
+            },
+            "Tab": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "$ref": "#/components/schemas/OrderTabEnum"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "count",
+                    "label",
+                    "value"
+                ]
             },
             "ThemeEnum": {
                 "enum": [
@@ -1333,13 +3981,21 @@
                         "pattern": "^-?\\d{0,7}(?:\\.\\d{0,1})?$"
                     },
                     "direction": {
-                        "$ref": "#/components/schemas/DirectionEnum"
+                        "$ref": "#/components/schemas/VariationDirectionEnum"
                     }
                 },
                 "required": [
                     "direction",
                     "percent"
                 ]
+            },
+            "VariationDirectionEnum": {
+                "enum": [
+                    "up",
+                    "down"
+                ],
+                "type": "string",
+                "description": "* `up` - up\n* `down` - down"
             }
         },
         "securitySchemes": {

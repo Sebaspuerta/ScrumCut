@@ -21,6 +21,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cash/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description La caja de la sede del alcance; ?tipo= filtra los movimientos, como en la pantalla de Django. */
+        get: operations["cash_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cash/{session}/close/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Con diferencia entre el contado y el esperado, `close_session` exige la nota. */
+        post: operations["cash_close_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cash/{session}/movements/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Ingreso, gasto o retiro en efectivo de la caja abierta; `record_money` rechaza la de otro día. */
+        post: operations["cash_movements_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cash/closings/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description El historial de cierres de la sede, por páginas. */
+        get: operations["cash_closings_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cash/open/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Cada escritura responde la caja como queda. `error_fields` traduce las claves de los errores de los
+         *     services a los campos de la API (`apps.api.exceptions`).
+         */
+        post: operations["cash_open_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/search/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Cualquier cliente de la barbería por nombre, celular o documento; solo su nombre y el celular enmascarado. */
+        get: operations["clients_search_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/csrf/": {
         parameters: {
             query?: never;
@@ -123,6 +228,187 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orders/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description La lista por pestaña (?estado=abiertas|cerradas|anuladas) y día (?fecha=); un valor inválido vuelve al
+         *     valor por defecto, como en la pantalla de Django.
+         */
+        get: operations["orders_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["orders_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/cancel/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description `cancel_order` exige comandas.editar si está abierta y comandas.anular si ya se cerró. */
+        post: operations["orders_cancel_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/checkout/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Un solo cobro aunque llegue dos veces: `close_order` bloquea la comanda y la segunda la encuentra cerrada. */
+        post: operations["orders_checkout_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/client/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Cada escritura responde la comanda como queda, leída de nuevo por el alcance. `error_fields` traduce las
+         *     claves de los errores de los services a los campos de la API (`apps.api.exceptions`).
+         */
+        post: operations["orders_client_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/discount/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Cada escritura responde la comanda como queda, leída de nuevo por el alcance. `error_fields` traduce las
+         *     claves de los errores de los services a los campos de la API (`apps.api.exceptions`).
+         */
+        post: operations["orders_discount_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/lines/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description El precio no viaja: `add_item` lo toma del catálogo de la sede de la comanda. */
+        post: operations["orders_lines_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{public_id}/lines/{item}/remove/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Cada escritura responde la comanda como queda, leída de nuevo por el alcance. `error_fields` traduce las
+         *     claves de los errores de los services a los campos de la API (`apps.api.exceptions`).
+         */
+        post: operations["orders_lines_remove_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/catalog/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Barberos, servicios y productos con su precio y stock en la sede, y las formas de pago habilitadas. */
+        get: operations["orders_catalog_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/create/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Abre la comanda en la sede del alcance con sus líneas, al precio vigente de la sede. */
+        post: operations["orders_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -159,6 +445,17 @@ export interface components {
          * @enum {string}
          */
         AlertItemKindEnum: "agotado" | "stock_bajo" | "por_vencer" | "fiado_vencido";
+        /** @description La forma de todo error de /api/v1/ (`apps.api.exceptions`): el mensaje, qué pasó y los campos. */
+        ApiError: {
+            /** @description Para el usuario: un texto fijo o el mensaje de la validación. */
+            detail: string;
+            /** @description «invalid», «permission_denied», «not_found», «stale_session»… */
+            code: string;
+            /** @description Los mensajes de cada campo; o vacío. */
+            field_errors: {
+                [key: string]: string[];
+            };
+        };
         BarberRow: {
             name: string;
             orders: number;
@@ -173,6 +470,11 @@ export interface components {
             initials: string;
             /** @description Zona horaria de la barbería: «hoy» y las horas se leen en ella. */
             timezone: string;
+        };
+        BillCountRequest: {
+            /** @description Una de `denominations` de la caja. */
+            denomination: number;
+            count: number;
         };
         /** @description Solo el formato: qué sede se puede elegir lo decide `tenancy.services.choose_branch`. */
         BranchChoiceRequest: {
@@ -238,6 +540,14 @@ export interface components {
             /** Format: decimal */
             total: string;
         };
+        CancelRequest: {
+            reason: string;
+        };
+        CashActions: {
+            open: boolean;
+            movement: boolean;
+            close: boolean;
+        };
         CashFlow: {
             is_open: boolean;
             /** Format: date-time */
@@ -254,6 +564,73 @@ export interface components {
             /** Format: date-time */
             opened_at: string;
         };
+        CashMovement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            at: string;
+            kind: components["schemas"]["CashMovementKindEnum"];
+            kind_label: string;
+            description: string;
+            by: string;
+            direction: components["schemas"]["CashMovementDirectionEnum"];
+            /** Format: decimal */
+            amount: string;
+        };
+        /**
+         * @description * `in` - Entrada
+         *     * `out` - Salida
+         * @enum {string}
+         */
+        CashMovementDirectionEnum: "in" | "out";
+        /**
+         * @description * `venta` - Venta
+         *     * `abono_fiado` - Abono de fiado
+         *     * `ingreso_manual` - Ingreso manual
+         *     * `gasto` - Gasto
+         *     * `retiro` - Retiro
+         *     * `ajuste` - Ajuste
+         *     * `devolucion` - Devolución
+         * @enum {string}
+         */
+        CashMovementKindEnum: "venta" | "abono_fiado" | "ingreso_manual" | "gasto" | "retiro" | "ajuste" | "devolucion";
+        CashSession: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            opened_at: string;
+            opened_by: string;
+            /** @description Viene de otro día: no recibe efectivo y solo se cierra. */
+            stale: boolean;
+            /** Format: decimal */
+            opening_amount: string;
+            strip: components["schemas"]["CashStrip"];
+            /**
+             * Format: decimal
+             * @description Base + entradas en efectivo − salidas en efectivo.
+             */
+            expected: string;
+            /** @description Lo que entra o sale de la caja física. */
+            movements: components["schemas"]["CashMovement"][];
+            other_media: components["schemas"]["OtherMedia"];
+        };
+        CashState: {
+            /** @description En «todas» no se mezclan cajas: hay que elegir una sede. */
+            needs_branch: boolean;
+            branch: string | null;
+            /** Format: date */
+            today: string;
+            /** @description El filtro de movimientos aplicado; vacío, todos. */
+            kind: string;
+            /** @description Los filtros de movimientos. */
+            kinds: components["schemas"]["Option"][];
+            /** @description Lo que se registra a mano, siempre en efectivo. */
+            manual_kinds: components["schemas"]["Option"][];
+            /** @description Billetes, del mayor al menor. */
+            denominations: number[];
+            session: components["schemas"]["CashSession"] | null;
+            actions: components["schemas"]["CashActions"];
+        };
         CashStep: {
             label: string;
             kind: components["schemas"]["CashStepKindEnum"];
@@ -268,6 +645,84 @@ export interface components {
          * @enum {string}
          */
         CashStepKindEnum: "total" | "up" | "down" | "counted";
+        CashStrip: {
+            /** @description Ventas en efectivo. */
+            sales: components["schemas"]["KindTotal"];
+            /** @description Abonos de fiados en efectivo. */
+            receivable_payments: components["schemas"]["KindTotal"];
+            expenses: components["schemas"]["KindTotal"];
+            withdrawals: components["schemas"]["KindTotal"];
+        };
+        ChangeClientRequest: {
+            /**
+             * Format: uuid
+             * @description null la deja como cliente de mostrador.
+             */
+            client: string | null;
+        };
+        CheckoutRequest: {
+            parts: components["schemas"]["PaymentPartRequest"][];
+            /**
+             * Format: decimal
+             * @description El efectivo entregado.
+             */
+            received?: string | null;
+            /**
+             * Format: date
+             * @description Fecha del fiado.
+             */
+            due_date?: string | null;
+        };
+        CheckoutResult: {
+            order: components["schemas"]["OrderDetail"];
+            /**
+             * Format: decimal
+             * @description Las vueltas, solo sobre la parte en efectivo.
+             */
+            change: string;
+        };
+        ClientChoice: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone: string | null;
+        };
+        CloseCashRequest: {
+            bills: components["schemas"]["BillCountRequest"][];
+            /**
+             * Format: decimal
+             * @description Las monedas, como un total en pesos.
+             */
+            coins: string;
+            /** @default  */
+            notes: string;
+        };
+        ClosedSummary: {
+            /** Format: decimal */
+            cash: string;
+            /** Format: decimal */
+            other: string;
+            /** Format: decimal */
+            credit: string;
+        };
+        Closing: {
+            /** Format: uuid */
+            id: string;
+            branch: string;
+            /** Format: date-time */
+            closed_at: string;
+            closed_by: string;
+            /** Format: decimal */
+            expected: string;
+            /** Format: decimal */
+            counted: string;
+            /**
+             * Format: decimal
+             * @description Contado − esperado: positivo sobra, negativo falta.
+             */
+            difference: string;
+            notes: string;
+        };
         ClosingRow: {
             /** Format: date */
             date: string;
@@ -277,6 +732,26 @@ export interface components {
             counted: string;
             /** Format: decimal */
             difference: string;
+        };
+        Closings: {
+            count: number;
+            page: number;
+            pages: number;
+            /** @description Cierres por página. */
+            page_size: number;
+            results: components["schemas"]["Closing"][];
+        };
+        Credit: {
+            /**
+             * Format: decimal
+             * @description Lo que el cliente debe en la sede de la comanda.
+             */
+            debt: string;
+            /**
+             * Format: decimal
+             * @description Su cupo; sin límite en la barbería, null.
+             */
+            available: string | null;
         };
         Csrf: {
             csrf_token: string;
@@ -314,16 +789,21 @@ export interface components {
             /** Format: decimal */
             total: string;
         };
-        /**
-         * @description * `up` - up
-         *     * `down` - down
-         * @enum {string}
-         */
-        DirectionEnum: "up" | "down";
+        DiscountRequest: {
+            /** Format: decimal */
+            amount: string;
+            /** @default  */
+            reason: string;
+        };
         IncomeKpi: {
             /** Format: decimal */
             value: string;
             variation: components["schemas"]["Variation"] | null;
+        };
+        KindTotal: {
+            /** Format: decimal */
+            total: string;
+            count: number;
         };
         Kpis: {
             /** @description Contra qué se comparan los de hoy. */
@@ -342,12 +822,30 @@ export interface components {
             /** Format: date-time */
             at: string;
         };
+        /**
+         * @description * `ingreso_manual` - ingreso_manual
+         *     * `gasto` - gasto
+         *     * `retiro` - retiro
+         * @enum {string}
+         */
+        ManualMovementKindEnum: "ingreso_manual" | "gasto" | "retiro";
+        ManualMovementRequest: {
+            kind: components["schemas"]["ManualMovementKindEnum"];
+            /** Format: decimal */
+            amount: string;
+            description: string;
+        };
         Me: {
             user: components["schemas"]["User"];
             barbershop: components["schemas"]["Barbershop"] | null;
             role: components["schemas"]["Role"] | null;
             permissions: string[];
             branch: components["schemas"]["BranchState"] | null;
+        };
+        Named: {
+            /** Format: uuid */
+            id: string;
+            name: string;
         };
         NavGroup: {
             title: string;
@@ -379,18 +877,207 @@ export interface components {
             /** @description Sin alertas.ver, null. */
             unread_alerts: number | null;
         };
+        /** @description Un servicio o un producto (el service exige uno de los dos), sin precio. */
+        NewLineRequest: {
+            /** Format: uuid */
+            service?: string | null;
+            /** Format: uuid */
+            product?: string | null;
+            /** @default 1 */
+            quantity: number;
+            /** Format: uuid */
+            barber?: string | null;
+        };
+        NewOrderRequest: {
+            /** Format: uuid */
+            client?: string | null;
+            /** Format: uuid */
+            barber?: string | null;
+            lines?: components["schemas"]["NewLineRequest"][];
+        };
         Notifications: {
             unread: number;
             /** @description «Hoy» y «Anteriores», solo los que tienen alertas. */
             groups: components["schemas"]["AlertGroup"][];
         };
+        OpenCashRequest: {
+            /** Format: decimal */
+            opening_amount: string;
+        };
+        Option: {
+            value: string;
+            label: string;
+        };
+        OrderActions: {
+            edit: boolean;
+            discount: boolean;
+            checkout: boolean;
+            cancel: boolean;
+        };
+        OrderCatalog: {
+            /** @description En «todas» no hay precios de sede: hay que elegir una. */
+            needs_branch: boolean;
+            branch: string | null;
+            barbers: components["schemas"]["Named"][];
+            services: components["schemas"]["PricedItem"][];
+            products: components["schemas"]["StockedItem"][];
+            /** @description Las formas de pago habilitadas en la barbería. */
+            methods: components["schemas"]["Option"][];
+            /** @description Partes máximas de un pago dividido. */
+            max_parts: number;
+            /** @description Unidades máximas por línea. */
+            max_quantity: number;
+        };
+        OrderClient: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Enmascarado: 300 *** 4512. */
+            phone: string | null;
+            /** @description Su nivel en las sedes del alcance. */
+            level: string | null;
+            visits: number;
+        };
+        OrderDetail: {
+            /** Format: uuid */
+            id: string;
+            number: number;
+            status: components["schemas"]["OrderStatusEnum"];
+            /** @description El cliente o «Cliente de mostrador». */
+            client_name: string;
+            barbers: string;
+            items: string;
+            /** @description Las formas de pago de la comanda, o «Sin cobro». */
+            payment: string;
+            /** Format: decimal */
+            total: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            closed_at: string | null;
+            cancel_reason: string;
+            branch: string;
+            editable: boolean;
+            client: components["schemas"]["OrderClient"] | null;
+            barber: string | null;
+            lines: components["schemas"]["OrderLine"][];
+            /** Format: decimal */
+            subtotal: string;
+            /** Format: decimal */
+            discount: string;
+            discount_reason: string;
+            /** Format: decimal */
+            amount_paid: string;
+            /** Format: decimal */
+            balance: string;
+            payments: components["schemas"]["OrderPayment"][];
+            /** @description Con cliente registrado; sin cliente no hay fiado. */
+            credit: components["schemas"]["Credit"] | null;
+            /** @description Lo que el rol puede hacer con la comanda en su estado. */
+            actions: components["schemas"]["OrderActions"];
+        };
+        OrderLine: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["OrderLineKindEnum"];
+            kind_label: string;
+            name: string;
+            barber: string | null;
+            quantity: number;
+            /** Format: decimal */
+            unit_price: string;
+            /** Format: decimal */
+            line_total: string;
+        };
+        /**
+         * @description * `servicio` - Servicio
+         *     * `producto` - Producto
+         * @enum {string}
+         */
+        OrderLineKindEnum: "servicio" | "producto";
+        OrderList: {
+            tab: components["schemas"]["OrderTabEnum"];
+            /**
+             * Format: date
+             * @description El día de las cerradas y las anuladas.
+             */
+            day: string;
+            tabs: components["schemas"]["Tab"][];
+            /** @description Solo en las cerradas. */
+            summary: components["schemas"]["ClosedSummary"] | null;
+            count: number;
+            page: number;
+            pages: number;
+            /** @description Comandas por página. */
+            page_size: number;
+            results: components["schemas"]["OrderRow"][];
+            /** @description La caja de la sede viene de otro día. */
+            stale_cash: boolean;
+        };
+        OrderPayment: {
+            method: string;
+            /** Format: decimal */
+            amount: string;
+            reference: string;
+        };
+        OrderRow: {
+            /** Format: uuid */
+            id: string;
+            number: number;
+            status: components["schemas"]["OrderStatusEnum"];
+            /** @description El cliente o «Cliente de mostrador». */
+            client_name: string;
+            barbers: string;
+            items: string;
+            /** @description Las formas de pago de la comanda, o «Sin cobro». */
+            payment: string;
+            /** Format: decimal */
+            total: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            closed_at: string | null;
+            cancel_reason: string;
+        };
+        /**
+         * @description * `abierta` - Abierta
+         *     * `en_espera` - En espera
+         *     * `cerrada` - Cerrada
+         *     * `anulada` - Anulada
+         * @enum {string}
+         */
+        OrderStatusEnum: "abierta" | "en_espera" | "cerrada" | "anulada";
+        /**
+         * @description * `abiertas` - Abiertas
+         *     * `cerradas` - Cerradas hoy
+         *     * `anuladas` - Anuladas
+         * @enum {string}
+         */
+        OrderTabEnum: "abiertas" | "cerradas" | "anuladas";
         OrdersKpi: {
             value: number;
             open: number;
             variation: components["schemas"]["Variation"] | null;
         };
+        OtherMedia: {
+            /** @description Ventas por otros medios: no entran a la caja física. */
+            transfers: components["schemas"]["KindTotal"];
+            /** @description Fiados nuevos de hoy en la sede. */
+            credit: components["schemas"]["KindTotal"];
+        };
         PatchedPreferencesRequest: {
             theme?: components["schemas"]["ThemeEnum"];
+        };
+        PaymentPartRequest: {
+            /** @description Una forma de pago habilitada o «fiado». */
+            method: string;
+            /**
+             * Format: decimal
+             * @description Sin monto, todo el total.
+             */
+            amount?: string | null;
+            /** @default  */
+            reference: string;
         };
         PlanUsage: {
             active: number;
@@ -398,6 +1085,16 @@ export interface components {
         };
         Preferences: {
             theme: components["schemas"]["ThemeEnum"];
+        };
+        PricedItem: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /**
+             * Format: decimal
+             * @description El precio vigente en la sede.
+             */
+            price: string;
         };
         ProductRow: {
             name: string;
@@ -429,6 +1126,23 @@ export interface components {
          * @enum {string}
          */
         RoleCodeEnum: "owner" | "admin" | "cashier" | "barber" | "viewer";
+        StockedItem: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /**
+             * Format: decimal
+             * @description El precio vigente en la sede.
+             */
+            price: string;
+            /** @description Existencias en la sede. */
+            stock: number;
+        };
+        Tab: {
+            value: components["schemas"]["OrderTabEnum"];
+            label: string;
+            count: number;
+        };
         /**
          * @description * `system` - Sistema
          *     * `light` - Claro
@@ -456,8 +1170,14 @@ export interface components {
         Variation: {
             /** Format: decimal */
             percent: string;
-            direction: components["schemas"]["DirectionEnum"];
+            direction: components["schemas"]["VariationDirectionEnum"];
         };
+        /**
+         * @description * `up` - up
+         *     * `down` - down
+         * @enum {string}
+         */
+        VariationDirectionEnum: "up" | "down";
     };
     responses: never;
     parameters: never;
@@ -488,6 +1208,309 @@ export interface operations {
                     "application/json": components["schemas"]["BranchState"];
                 };
             };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cash_retrieve: {
+        parameters: {
+            query?: {
+                /**
+                 * @description * `` - Todos
+                 *     * `venta` - Ventas
+                 *     * `abono_fiado` - Abonos
+                 *     * `gasto` - Gastos
+                 *     * `retiro` - Retiros
+                 */
+                tipo?: "" | "venta" | "abono_fiado" | "gasto" | "retiro";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashState"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cash_close_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseCashRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Closing"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cash_movements_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualMovementRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashState"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cash_closings_retrieve: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Closings"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cash_open_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenCashRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashState"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    clients_search_list: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientChoice"][];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     csrf_retrieve: {
@@ -505,6 +1528,22 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Csrf"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -529,6 +1568,22 @@ export interface operations {
                     "application/json": components["schemas"]["Dashboard"];
                 };
             };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     me_retrieve: {
@@ -546,6 +1601,22 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Me"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -571,6 +1642,30 @@ export interface operations {
                     "application/json": components["schemas"]["Preferences"];
                 };
             };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     navigation_retrieve: {
@@ -590,6 +1685,22 @@ export interface operations {
                     "application/json": components["schemas"]["Navigation"];
                 };
             };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
         };
     };
     notifications_retrieve: {
@@ -607,6 +1718,535 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Notifications"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_list: {
+        parameters: {
+            query?: {
+                barbero?: string | null;
+                /**
+                 * @description * `abiertas` - Abiertas
+                 *     * `cerradas` - Cerradas hoy
+                 *     * `anuladas` - Anuladas
+                 */
+                estado?: "abiertas" | "cerradas" | "anuladas";
+                /** @description AAAA-MM-DD; si falta, hoy. */
+                fecha?: string | null;
+                page?: number;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderList"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_cancel_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_checkout_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutResult"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_client_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeClientRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_discount_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiscountRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_lines_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["NewLineRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_lines_remove_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item: string;
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_catalog_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderCatalog"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_create_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["NewOrderRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };

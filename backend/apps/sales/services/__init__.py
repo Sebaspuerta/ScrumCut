@@ -19,10 +19,12 @@ from apps.sales.services.cancellation import cancel_order
 from apps.sales.services.checkout import Checkout, PaymentPart, cash_change, checkout_order
 from apps.sales.services.closing import close_order
 from apps.sales.services.open_orders import (
+    NewLine,
     add_item,
     change_order_client,
     create_order,
     hold_order,
+    open_order_with_lines,
     remove_item,
     resume_order,
     set_discount,
@@ -33,6 +35,7 @@ from apps.sales.services.quick_charge import quick_register
 __all__ = [
     "NOT_EDITABLE",
     "Checkout",
+    "NewLine",
     "PaymentPart",
     "cash_change",
     "change_order_client",
@@ -42,6 +45,7 @@ __all__ = [
     "close_order",
     "create_order",
     "hold_order",
+    "open_order_with_lines",
     "quick_register",
     "remove_item",
     "resume_order",

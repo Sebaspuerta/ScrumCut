@@ -1,0 +1,6 @@
+.alert {
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid color-mix(in srgb, var(--color-attention) 50%, var(--color-line));
+  background: color-mix(in srgb, var(--color-attention) 8%, var(--color-surface));
+  color: var(--color-text);
+}

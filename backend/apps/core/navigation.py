@@ -38,8 +38,8 @@ SIDEBAR = (
         (
             NavItem("Tablero", None, "home", "layout-dashboard", app_path="/"),
             NavItem("Agenda", "agenda.ver", icon="calendar"),
-            NavItem("Comandas", "comandas.ver", "orders_board", "receipt"),
-            NavItem("Caja", "caja.ver", "cash_register", "banknote"),
+            NavItem("Comandas", "comandas.ver", "orders_board", "receipt", app_path="/comandas"),
+            NavItem("Caja", "caja.ver", "cash_register", "banknote", app_path="/caja"),
         ),
     ),
     NavGroup(
@@ -124,9 +124,16 @@ ADMINISTRATION = (
 
 # "+ Nuevo": solo las acciones que ya tienen pantalla, cada una con su permiso.
 NEW_ACTIONS = (
-    NavItem("Nueva comanda", "comandas.crear", "orders_new", "receipt"),
+    NavItem("Nueva comanda", "comandas.crear", "orders_new", "receipt", app_path="/comandas?nueva=1"),
     NavItem("Cobro rápido", "comandas.cerrar", "orders_quick", "banknote"),
-    NavItem("Registrar gasto", "caja.movimiento", "cash_register", "banknote", fragment="gasto"),
+    NavItem(
+        "Registrar gasto",
+        "caja.movimiento",
+        "cash_register",
+        "banknote",
+        fragment="gasto",
+        app_path="/caja?registrar=gasto",
+    ),
     NavItem("Nuevo cliente", "clientes.crear", "clients_new", "users"),
     NavItem("Abono a fiado", "fiados.abonar", "receivables_board", "notebook-pen"),
 )

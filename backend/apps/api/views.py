@@ -14,6 +14,8 @@ from apps.api.dashboard_serializers import DashboardQuerySerializer, DashboardSe
 from apps.api.notifications import notifications
 from apps.api.permissions import HasRolePermission
 from apps.api.serializers import (
+    READ_ERRORS,
+    WRITE_ERRORS,
     BranchChoiceSerializer,
     BranchStateSerializer,
     CsrfSerializer,
@@ -31,7 +33,7 @@ class MeView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=MeSerializer)
+    @extend_schema(responses={200: MeSerializer, **READ_ERRORS})
     def get(self, request: Request) -> Response:
         data = selectors.me(request.user, request.membership, request.branch_scope)
         return Response(MeSerializer(data).data)
@@ -42,7 +44,7 @@ class NavigationView(APIView):
 
     permission_classes = [IsAuthenticated, HasRolePermission]
 
-    @extend_schema(responses=NavigationSerializer)
+    @extend_schema(responses={200: NavigationSerializer, **READ_ERRORS})
     def get(self, request: Request) -> Response:
         data = selectors.navigation(request.membership, request.branch_scope)
         return Response(NavigationSerializer(data).data)
@@ -53,7 +55,7 @@ class BranchView(APIView):
 
     permission_classes = [IsAuthenticated, HasRolePermission]
 
-    @extend_schema(request=BranchChoiceSerializer, responses=BranchStateSerializer)
+    @extend_schema(request=BranchChoiceSerializer, responses={200: BranchStateSerializer, **WRITE_ERRORS})
     def post(self, request: Request) -> Response:
         choice = BranchChoiceSerializer(data=request.data)
         choice.is_valid(raise_exception=True)
@@ -67,7 +69,7 @@ class CsrfView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=CsrfSerializer)
+    @extend_schema(responses={200: CsrfSerializer, **READ_ERRORS})
     def get(self, request: Request) -> Response:
         return Response(CsrfSerializer({"csrf_token": get_token(request)}).data)
 
@@ -77,7 +79,7 @@ class PreferencesView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(request=PreferencesSerializer, responses=PreferencesSerializer)
+    @extend_schema(request=PreferencesSerializer, responses={200: PreferencesSerializer, **WRITE_ERRORS})
     def patch(self, request: Request) -> Response:
         preferences = PreferencesSerializer(data=request.data)
         preferences.is_valid(raise_exception=True)
@@ -91,7 +93,7 @@ class NotificationsView(APIView):
     permission_classes = [IsAuthenticated, HasRolePermission]
     required_permission = "alertas.ver"
 
-    @extend_schema(responses=NotificationsSerializer)
+    @extend_schema(responses={200: NotificationsSerializer, **READ_ERRORS})
     def get(self, request: Request) -> Response:
         data = notifications(request.membership, scope=request.branch_scope)
         return Response(NotificationsSerializer(data).data)
@@ -105,7 +107,7 @@ class DashboardView(APIView):
 
     @extend_schema(
         parameters=[OpenApiParameter("mes", str, description="AAAA-MM; si no vale, el mes actual.")],
-        responses=DashboardSerializer,
+        responses={200: DashboardSerializer, **READ_ERRORS},
     )
     def get(self, request: Request) -> Response:
         query = DashboardQuerySerializer(data=request.query_params)

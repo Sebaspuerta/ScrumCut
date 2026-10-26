@@ -1,5 +1,7 @@
+import { Link } from "react-router";
+
 import type { Dashboard } from "../api/types";
-import { DJANGO_ROUTES } from "../lib/djangoRoutes";
+import { CASH_PATH } from "../lib/appRoutes";
 import { clock, formatCop } from "../lib/format";
 import { cx } from "../lib/cx";
 import { buttonClass } from "../ui/Button";
@@ -52,9 +54,9 @@ export function CashPanel({ cash, canOpenCash, timeZone }: CashPanelProps) {
         </dl>
       )}
       {canOpenCash && !cash.needs_branch && (
-        <a className={cx(buttonClass("secondary", true), styles.go)} href={DJANGO_ROUTES.cash}>
+        <Link className={cx(buttonClass("secondary", true), styles.go)} to={CASH_PATH}>
           Ir a caja
-        </a>
+        </Link>
       )}
     </Panel>
   );

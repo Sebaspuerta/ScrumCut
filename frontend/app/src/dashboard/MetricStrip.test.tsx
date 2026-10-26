@@ -21,9 +21,10 @@ describe("indicadores", () => {
     expect(metric("Esperado en caja")).toContain("$1.284.000");
   });
 
-  it("lo positivo sube con flecha y signo; lo negativo baja, sin rojos", () => {
-    expect(metric("Ingresos de hoy")).toContain("▴ +12,4 % vs. sábado anterior a esta hora");
-    expect(metric("Ticket promedio")).toContain("▾ −3,1 % vs. período anterior");
+  it("lo positivo sube con flecha y signo; lo negativo baja, sin rojos ni flechas de texto", () => {
+    expect(metric("Ingresos de hoy")).toContain("sube +12,4 % vs. sábado anterior a esta hora");
+    expect(metric("Ticket promedio")).toContain("baja −3,1 % vs. período anterior");
+    expect(metric("Ingresos de hoy")).not.toMatch(/[▴▾]/);
   });
 
   it("sin con qué comparar lo dice en texto", () => {

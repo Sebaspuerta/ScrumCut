@@ -17,6 +17,7 @@ from apps.core.formatting import (
     format_variation,
     mask_phone,
     month_label,
+    opened_since,
     short_date,
 )
 
@@ -52,6 +53,12 @@ def test_mes_igual_que_en_la_app_de_react(value, expected):
 @pytest.mark.parametrize(("value", "zone", "expected"), SHARED["clock"])
 def test_hora_igual_que_en_la_app_de_react(value, zone, expected):
     assert clock(datetime.fromisoformat(value).astimezone(ZoneInfo(zone))) == expected
+
+
+@pytest.mark.parametrize(("value", "today", "zone", "expected"), SHARED["opened_since"])
+def test_desde_cuando_esta_abierta_la_caja_igual_que_en_la_app_de_react(value, today, zone, expected):
+    moment = datetime.fromisoformat(value).astimezone(ZoneInfo(zone))
+    assert opened_since(moment, date.fromisoformat(today)) == expected
 
 
 def test_el_filtro_de_plantilla_usa_el_mismo_formato():

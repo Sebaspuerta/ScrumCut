@@ -101,10 +101,42 @@ export function zonedDate(isoDateTime: string, timeZone: string): string {
   );
 }
 
-/** ▴ +12,4 % o ▾ −3,1 %: sin rojos, lo negativo va con signo y flecha. */
+/** +12,4 % o −3,1 %: sin rojos; la flecha la pone el ícono (ui/Change) junto a la cifra. */
 export function formatVariation(percent: string | null): string {
   if (percent === null) return EMPTY;
   const negative = percent.trim().startsWith("-");
   const digits = percent.replace("-", "").replace(".", ",");
-  return negative ? `▾ ${MINUS}${digits} %` : `▴ +${digits} %`;
+  return negative ? `${MINUS}${digits} %` : `+${digits} %`;
+}
+
+/** +$5.000, −$8.000 o $0: un monto que suma o resta (diferencias del arqueo, movimientos de caja). */
+export function signedCop(value: string): string {
+  const text = formatCop(value);
+  return text.startsWith(MINUS) || text === "$0" ? text : `+${text}`;
+}
+
+/** «1 comanda», «3 comandas». */
+export function countOf(count: number, one: string, many: string): string {
+  return `${String(count)} ${count === 1 ? one : many}`;
+}
+
+/** −$8.000: un monto que sale de la caja (gasto, retiro, devolución); en cero, $0. */
+export function outflowCop(value: string): string {
+  const amount = value.trim();
+  return formatCop(amount.startsWith("-") ? amount.slice(1) : `-${amount}`);
+}
+
+function previousDay(isoDate: string): string {
+  const { year, month, day } = calendarDay(isoDate);
+  return new Date(Date.UTC(year, month - 1, day - 1)).toISOString().slice(0, "AAAA-MM-DD".length);
+}
+
+/** Desde cuándo está abierta una caja: "desde las 8:00 a. m.", "desde ayer, 8:00 a. m." o
+ * "desde el lun 19 oct, 8:00 a. m.", en la zona horaria de la barbería. */
+export function openedSince(isoDateTime: string, today: string, timeZone: string): string {
+  const day = zonedDate(isoDateTime, timeZone);
+  const time = clock(isoDateTime, timeZone);
+  if (day === today) return `desde las ${time}`;
+  if (day === previousDay(today)) return `desde ayer, ${time}`;
+  return `desde el ${dayLabel(day).toLowerCase()}, ${time}`;
 }

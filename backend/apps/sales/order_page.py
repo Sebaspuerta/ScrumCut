@@ -47,13 +47,18 @@ def catalog_for_branch(membership: Membership, *, scope: BranchScope, branch: Br
     }
 
 
-def order_page(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> dict:
-    """La comanda con sus líneas, su cliente, su fiado posible y lo que se le puede agregar."""
+def order_summary(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> dict:
+    """La comanda con sus líneas, su cliente y su fiado posible (la API pide el catálogo aparte)."""
     order = get_order(membership, public_id, scope=scope)
     return {
         "order": order,
         "editable": order.status in EDITABLE_STATUSES,
         "client": _client(membership, order, scope),
         "credit": _credit(order),
-        **catalog_for_branch(membership, scope=scope, branch=order.branch),
     }
+
+
+def order_page(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> dict:
+    """La comanda con sus líneas, su cliente, su fiado posible y lo que se le puede agregar."""
+    summary = order_summary(membership, public_id, scope=scope)
+    return {**summary, **catalog_for_branch(membership, scope=scope, branch=summary["order"].branch)}

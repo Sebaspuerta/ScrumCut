@@ -28,6 +28,7 @@ def test_solo_acepta_system_light_o_dark(world, cashier_client, theme):
     response = _patch(cashier_client, theme)
 
     assert response.status_code == 400
+    assert (response.json()["code"], list(response.json()["field_errors"])) == ("invalid", ["theme"])
     assert User.objects.get(pk=world.cashier.user.pk).theme == "system"
 
 

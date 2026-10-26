@@ -1,0 +1,29 @@
+/* Controles de formulario de la identidad: 44 px de alto, fondo del lienzo y línea de 1 px. */
+.input {
+  width: 100%;
+  min-height: var(--target-min);
+  padding: 0 var(--space-12);
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--color-attention);
+}
+
+.input:disabled {
+  color: var(--color-disabled);
+}
+
+.figure {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+textarea.input {
+  padding: var(--space-8) var(--space-12);
+  resize: vertical;
+}

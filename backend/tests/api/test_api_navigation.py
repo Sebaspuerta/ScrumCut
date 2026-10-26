@@ -51,7 +51,7 @@ def test_el_estado_dice_si_hay_pantalla_pronto_o_proximamente(navigation_as):
         "label": "Comandas",
         "icon": "receipt",
         "url": "/comandas/",
-        "app_path": None,
+        "app_path": "/comandas",  # desde la fase R2, en la app de React; la de Django queda de respaldo
         "status": "enlace",
     }
     assert sidebar["Agenda"] == {

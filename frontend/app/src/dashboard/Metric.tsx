@@ -1,10 +1,12 @@
+import type { ReactNode } from "react";
+
 import styles from "./Metric.module.css";
 import { Sparkline } from "./Sparkline";
 
 interface MetricProps {
   label: string;
   value: string;
-  note: string;
+  note: ReactNode;
   /** Los últimos días del período; sin serie, no hay mini tendencia. */
   trend?: number[];
 }

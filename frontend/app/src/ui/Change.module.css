@@ -1,0 +1,11 @@
+.up,
+.down {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  white-space: nowrap;
+}
+
+.up {
+  color: var(--color-positive);
+}

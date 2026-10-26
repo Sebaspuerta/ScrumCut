@@ -229,6 +229,8 @@ SPECTACULAR_SETTINGS = {
         "RoleCodeEnum": "apps.tenancy.roles.Role",
         "BranchModeEnum": "apps.api.serializers.BRANCH_MODES",
         "NavStatusEnum": "apps.api.serializers.NAV_STATUSES",
+        "OrderStatusEnum": "apps.sales.models.OrderStatus",
+        "OrderTabEnum": "apps.sales.board.TABS",
     },
 }
 

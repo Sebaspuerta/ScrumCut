@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 
-from apps.api.exceptions import GENERIC_MESSAGES
+from apps.api.exceptions import GENERIC_MESSAGES, STATUS_CODES
 from apps.tenancy.models import Membership
 from tests.conftest import TEST_PASSWORD
 
@@ -28,7 +28,11 @@ def test_sin_sesion_el_cambio_de_sede_responde_401_o_403(client):
 
 def test_el_error_es_generico_y_en_espanol(client):
     response = client.get(reverse("api_me"))
-    assert response.json() == {"detail": GENERIC_MESSAGES[response.status_code]}
+    assert response.json() == {
+        "detail": GENERIC_MESSAGES[response.status_code],
+        "code": STATUS_CODES[response.status_code],
+        "field_errors": {},
+    }
 
 
 def test_no_acepta_basic_auth(world):

@@ -17,6 +17,7 @@ from apps.sales.services.checkout import MAX_PARTS, Checkout, PaymentPart
 CASH, CREDIT = PaymentMethod.CASH, "fiado"
 _MONEY = {"max_digits": 14, "decimal_places": 2}
 SERVICE_PREFIX, PRODUCT_PREFIX = "servicio:", "producto:"
+MAX_LINE_QUANTITY = 99  # unidades por línea; la API lo usa y se lo entrega a la app de React
 
 
 class BoardFilterForm(forms.Form):
@@ -51,7 +52,7 @@ class AddItemForm(forms.Form):
 
     item = forms.CharField(max_length=60)
     barbero = forms.UUIDField(required=False)
-    cantidad = forms.IntegerField(min_value=1, max_value=99, initial=1)
+    cantidad = forms.IntegerField(min_value=1, max_value=MAX_LINE_QUANTITY, initial=1)
 
     def clean_item(self) -> dict:
         value = self.cleaned_data["item"]

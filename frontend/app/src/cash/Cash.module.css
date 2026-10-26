@@ -1,0 +1,155 @@
+/* Caja (Caja.dc.html en la identidad R1): la franja de cifras, movimientos y arqueo lado a lado, y el historial. */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin-bottom: var(--space-24);
+  border: var(--line);
+  background: var(--color-surface);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  gap: var(--space-24);
+  align-items: start;
+  margin-bottom: var(--space-24);
+}
+
+.scroll {
+  /* Posicionado: así también recorta los textos ocultos (position: absolute) de las flechas. */
+  position: relative;
+  overflow-x: auto;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+
+.otherMedia {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-16);
+  padding-top: var(--space-12);
+  border-top: var(--line);
+}
+
+.label {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.count {
+  min-width: 0;
+  padding: var(--space-24);
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-16));
+}
+
+.title {
+  font: 400 22px var(--font-brand);
+  margin-bottom: var(--space-8);
+}
+
+.muted {
+  color: var(--color-muted);
+  margin-bottom: var(--space-12);
+}
+
+.countInputs {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.denom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.denom b {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.error {
+  color: var(--color-attention);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.totals {
+  margin: var(--space-16) 0 0;
+}
+
+.totals > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 40px;
+  border-bottom: var(--line);
+}
+
+.totals dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.grand {
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--color-text);
+  border-bottom: 0 !important;
+}
+
+.grand dd {
+  font: 400 18px var(--font-brand);
+}
+
+.difference {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-12);
+  margin: var(--space-12) 0;
+  padding: var(--space-12);
+  background: var(--color-soft);
+}
+
+.history {
+  height: auto;
+}
+
+@media (max-width: 1100px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .scroll table {
+    min-width: 620px;
+  }
+
+  .scroll th,
+  .scroll td {
+    white-space: nowrap;
+  }
+
+  .strip {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .count {
+    padding: var(--space-16);
+  }
+}

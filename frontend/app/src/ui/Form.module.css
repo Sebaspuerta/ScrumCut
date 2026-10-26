@@ -1,0 +1,31 @@
+/* Formularios dentro de un panel o de un diálogo: campos en columna y las acciones al final. */
+.form {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-8);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--target-min);
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+}

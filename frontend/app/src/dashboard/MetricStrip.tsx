@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
+
 import type { Dashboard } from "../api/types";
 import { clock, formatCop, formatVariation } from "../lib/format";
+import { Change } from "../ui/Change";
 import { Metric } from "./Metric";
 import styles from "./MetricStrip.module.css";
 
@@ -9,8 +12,13 @@ interface MetricStripProps {
 
 type Variation = Dashboard["kpis"]["income"]["variation"];
 
-function compared(variation: Variation, against: string): string {
-  return variation ? `${formatVariation(variation.percent)} ${against}` : "Sin datos para comparar";
+function compared(variation: Variation, against: string): ReactNode {
+  if (!variation) return "Sin datos para comparar";
+  return (
+    <>
+      <Change direction={variation.direction}>{formatVariation(variation.percent)}</Change> {against}
+    </>
+  );
 }
 
 function cashNote(data: Dashboard): string {

@@ -21,7 +21,14 @@ a.entry:hover {
 }
 
 .soon {
+  flex-wrap: wrap;
   color: var(--color-muted);
+}
+
+/* El nombre nunca se parte («Comparativo de sedes» cabe justo en la barra de 224 px); si además no cabe la
+   etiqueta «Pronto», ella baja a la derecha. */
+.label {
+  white-space: nowrap;
 }
 
 .tag {
