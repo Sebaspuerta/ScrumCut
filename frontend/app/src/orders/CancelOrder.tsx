@@ -3,7 +3,7 @@ import { useState, type SubmitEvent } from "react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { OrderDetail } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { MAX_LENGTH } from "../lib/fieldLimits";
 import { Button } from "../ui/Button";
 import { Field } from "../ui/Field";
@@ -21,7 +21,7 @@ interface CancelOrderProps {
 export function CancelOrder({ order }: CancelOrderProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const cancel = useMoneyMutation(() =>
+  const cancel = useWriteMutation(() =>
     api.post("/api/v1/orders/{public_id}/cancel/", { reason }, { public_id: order.id }),
   );
   const errors = formErrors(cancel.error);

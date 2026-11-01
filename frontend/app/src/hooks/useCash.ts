@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { api } from "../api/client";
-import { CASH_KEY } from "./useMoneyMutation";
+import { CASH_KEY } from "./useWriteMutation";
 
 /** La caja de la sede: su sesión, la franja, los movimientos (filtrados por ?tipo=) y lo que el rol puede hacer. */
 export function useCash(kind: string, enabled = true) {

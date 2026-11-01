@@ -1,0 +1,321 @@
+/* Fiados (Fiados.dc.html en la identidad R1): la cartera, la antigüedad (aging), la lista por urgencia y el abono. */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: var(--space-16);
+  border: var(--line);
+  background: var(--color-surface);
+}
+
+.aging {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) repeat(4, minmax(0, 1fr));
+  margin: 0 0 var(--space-24);
+  padding: var(--space-16);
+  border: var(--line);
+  background: var(--color-surface);
+}
+
+.aging > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: start;
+  gap: var(--space-8);
+  min-width: 0;
+  padding: 0 var(--space-16);
+  border-right: var(--line);
+}
+
+.aging > div:last-child {
+  border-right: 0;
+}
+
+.aging dt {
+  color: var(--color-muted);
+  font-size: var(--text-eyebrow);
+}
+
+.aging dd {
+  margin: 0;
+}
+
+/* La cifra va arriba de su rótulo (dt antes de dd en el HTML, como pide la lista de definición). */
+.aging > .total {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.total dd {
+  order: -1;
+}
+
+.wideCell {
+  grid-column: 1 / -1;
+}
+
+.total dd {
+  font: 400 22px var(--font-brand);
+}
+
+/* El ancho llega como variable de CSS desde el porcentaje del servidor (AgingStrip). */
+.bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  background: color-mix(in srgb, var(--color-line) 60%, transparent);
+}
+
+.bar i {
+  display: block;
+  width: var(--share, 0%);
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.list {
+  min-width: 0;
+  padding: var(--space-12);
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.list th:first-child,
+.list td:first-child {
+  padding-left: var(--space-8);
+}
+
+/* Fechas y montos en una línea; el cliente y el estado pueden partirse. Si aun así no cabe, la tabla se desplaza
+   dentro de su panel y la página nunca. */
+.tableScroll {
+  position: relative;
+  overflow-x: auto;
+}
+
+.list td {
+  white-space: nowrap;
+}
+
+.list td:first-child,
+.list td:last-child {
+  white-space: normal;
+}
+
+.rowLink {
+  display: grid;
+  min-height: var(--target-min);
+  align-content: center;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.rowLink small,
+.muted {
+  color: var(--color-muted);
+}
+
+.current {
+  background: var(--color-soft);
+  box-shadow: inset 2px 0 var(--color-accent);
+}
+
+.empty {
+  padding: var(--space-24) var(--space-12);
+  color: var(--color-muted);
+}
+
+.note {
+  margin-top: var(--space-12);
+  color: var(--color-muted);
+  font-size: var(--text-small);
+}
+
+/* El estado sin rojos: vencido en negrita con su flecha (del servidor); por vencer, en el color de atención. */
+.overdue {
+  font-weight: 700;
+}
+
+.soon {
+  color: var(--color-attention);
+  font-weight: 600;
+}
+
+.ok,
+.done {
+  color: var(--color-muted);
+}
+
+.panel {
+  min-width: 0;
+  padding: var(--space-24);
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding-bottom: var(--space-16);
+  border-bottom: var(--line);
+}
+
+.eyebrow {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-eyebrow);
+  letter-spacing: 0.13em;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.client {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  font: 400 22px var(--font-brand);
+  color: var(--color-text);
+}
+
+.close {
+  width: var(--target-min);
+  height: var(--target-min);
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.amount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-16) 0;
+  padding: var(--space-16);
+  background: var(--color-soft);
+}
+
+.amount strong {
+  font: 400 24px var(--font-brand);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-16);
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-16));
+}
+
+.amountRow {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.amountRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+}
+
+.submit {
+  min-height: 48px;
+}
+
+.subhead {
+  margin: var(--space-24) 0 var(--space-8);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  min-height: 48px;
+  padding: var(--space-8) 0;
+  border-bottom: var(--line);
+}
+
+.line > span {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.line small {
+  color: var(--color-muted);
+}
+
+.figure {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .strip {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .aging {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-16) 0;
+  }
+
+  .aging > div:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .total {
+    grid-column: 1 / -1;
+  }
+
+  .panel {
+    padding: var(--space-16);
+  }
+
+  .wide {
+    display: none;
+  }
+
+  .list td {
+    white-space: normal;
+  }
+}

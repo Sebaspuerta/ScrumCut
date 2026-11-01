@@ -5,6 +5,9 @@
 
 from django.db import models
 
+# La referencia de un pago que no es en efectivo (Nequi 4821): la del pago de una comanda y la de un abono.
+PAYMENT_REFERENCE_MAX_LENGTH = 80
+
 
 class PaymentMethod(models.TextChoices):
     CASH = "efectivo", "Efectivo"

@@ -3,7 +3,7 @@ import { useState, type SubmitEvent } from "react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { OrderDetail } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { cx } from "../lib/cx";
 import { MAX_LENGTH } from "../lib/fieldLimits";
 import { digitsOnly, toCents } from "../lib/money";
@@ -22,7 +22,7 @@ interface DiscountFormProps {
 export function DiscountForm({ order, onDone }: DiscountFormProps) {
   const [amount, setAmount] = useState(digitsOnly(order.discount.split(".")[0] ?? ""));
   const [reason, setReason] = useState(order.discount_reason);
-  const save = useMoneyMutation(() =>
+  const save = useWriteMutation(() =>
     api.post("/api/v1/orders/{public_id}/discount/", { amount, reason }, { public_id: order.id }),
   );
   const errors = formErrors(save.error);

@@ -23,7 +23,7 @@ from apps.tenancy.roles import Role
 from tests.conftest import scope_of
 from tests.frontend.conftest import logged_in_with_mfa
 from tests.frontend.html_support import elements, forms
-from tests.reports.helpers import close_at, sell
+from tests.reports.helpers import close_at, fixed_now, sell
 
 pytestmark = pytest.mark.django_db
 
@@ -208,12 +208,18 @@ def _branches_with_sales(world, extra: int) -> None:
 def test_las_consultas_del_marco_y_del_tablero_no_crecen(
     world, owner_client, django_assert_num_queries, extra_branches, selling_days
 ):
-    """Con 1 sede y 1 día con ventas, o con 3 sedes y 5 días: el mismo número de consultas."""
-    today = local_today(world.owner)
-    for day in range(selling_days):
-        close_at(sell(world, world.ana, service=world.corte), datetime.combine(today - timedelta(days=day), time(9)))
-    _branches_with_sales(world, extra_branches)
-    owner_client.post(reverse("switch_branch"), {"sede": "todas"})
+    """Con 1 sede y 1 día con ventas, o con 3 sedes y 5 días: el mismo número de consultas.
 
-    with django_assert_num_queries(HOME_QUERIES):
-        owner_client.get(reverse("home"))
+    Con "hoy" a mitad de mes, los 5 días caen siempre en el mes del tablero, corra la prueba el día que corra.
+    """
+    with fixed_now():
+        today = local_today(world.owner)
+        for day in range(selling_days):
+            close_at(
+                sell(world, world.ana, service=world.corte), datetime.combine(today - timedelta(days=day), time(9))
+            )
+        _branches_with_sales(world, extra_branches)
+        owner_client.post(reverse("switch_branch"), {"sede": "todas"})
+
+        with django_assert_num_queries(HOME_QUERIES):
+            owner_client.get(reverse("home"))

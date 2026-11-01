@@ -3,7 +3,7 @@ import { useState, type SubmitEvent } from "react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { CashState, ManualKind } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { cx } from "../lib/cx";
 import { MAX_LENGTH } from "../lib/fieldLimits";
 import { digitsOnly } from "../lib/money";
@@ -27,7 +27,7 @@ export function MovementDialog({ state, session, initialKind, onClose }: Movemen
   const [kind, setKind] = useState(options.find((option) => option.value === initialKind)?.value ?? "gasto");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const save = useMoneyMutation(() =>
+  const save = useWriteMutation(() =>
     api.post("/api/v1/cash/{session}/movements/", { kind: kind as ManualKind, amount, description }, { session }),
   );
   const errors = formErrors(save.error);

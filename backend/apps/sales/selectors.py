@@ -62,6 +62,12 @@ def local_today(membership: Membership) -> date:
     return timezone.now().astimezone(ZoneInfo(membership.barbershop.timezone)).date()
 
 
+def month_start(membership: Membership) -> datetime:
+    """El primer instante del mes en curso, en la zona de la barbería."""
+    today = local_today(membership)
+    return day_bounds(membership.barbershop.timezone, today.replace(day=1), today)[0]
+
+
 def period_dates(
     membership: Membership, date_from: date | None = None, date_to: date | None = None
 ) -> tuple[date, date]:

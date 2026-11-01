@@ -4,7 +4,7 @@ import type { OrderList } from "../api/types";
 import { StatusMessage } from "../frame/StatusMessage";
 import { Pagination } from "../ui/Pagination";
 import { OrderFilters } from "./OrderFilters";
-import { PAGE_PARAM, withParam } from "./orderParams";
+import { PAGE_PARAM, withParam } from "../lib/searchParams";
 import styles from "./OrderList.module.css";
 import { OrderRowLink } from "./OrderRowLink";
 

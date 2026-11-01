@@ -8,6 +8,7 @@ import {
   formatVariation,
   longDate,
   monthLabel,
+  monthName,
   openedSince,
   outflowCop,
   shortDate,
@@ -60,6 +61,11 @@ describe("formato colombiano", () => {
     expect(longDate("2026-10-22", true)).toBe("Jueves, 22 de octubre de 2026");
     expect(longDate("2026-10-01")).toBe("Jueves, 1 de octubre");
     expect(weekdayIndex("2026-10-19")).toBe(0);
+  });
+
+  it("monthName da el mes en minúscula, para una frase", () => {
+    expect(monthName("2026-10-31")).toBe("octubre");
+    expect(monthName("2027-01-01")).toBe("enero");
   });
 
   it("el día de un instante se lee en la zona de la barbería", () => {

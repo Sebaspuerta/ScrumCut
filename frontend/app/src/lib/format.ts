@@ -74,6 +74,11 @@ export function monthLabel(isoDate: string): string {
   return `${MONTH_NAMES[month - 1] ?? ""} ${String(year)}`;
 }
 
+/** octubre: el mes en medio de una frase («Cobrado en octubre»). */
+export function monthName(isoDate: string): string {
+  return (MONTH_NAMES[calendarDay(isoDate).month - 1] ?? "").toLowerCase();
+}
+
 /** 8:00 a. m. / 3:15 p. m., en la zona horaria de la barbería. */
 export function clock(isoDateTime: string, timeZone: string): string {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", minute: "2-digit", hourCycle: "h23" })

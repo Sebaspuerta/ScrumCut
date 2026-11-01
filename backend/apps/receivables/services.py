@@ -154,7 +154,7 @@ def _locked_open_receivable(
 
 
 def _record_payment(
-    locked: Receivable, session, *, membership: Membership, amount: Decimal, method: str, note: str
+    locked: Receivable, session, *, membership: Membership, amount: Decimal, method: str, reference: str, note: str
 ) -> ReceivablePayment:
     """El dinero entra a la caja de la sesión, que es de la sede de origen del fiado (no se guarda aparte)."""
     movement = record_money(
@@ -172,6 +172,7 @@ def _record_payment(
         cash_movement=movement,
         amount=amount,
         method=method,
+        reference=(reference or "").strip(),
         received_by=membership.user,
     )
     payment.full_clean()
@@ -191,6 +192,7 @@ def add_payment(
     scope: BranchScope,
     amount: Decimal,
     method: str,
+    reference: str = "",
     note: str = "",
     expected_balance: Decimal | None = None,
 ) -> ReceivablePayment:
@@ -200,7 +202,8 @@ def add_payment(
     debe ser la del alcance y estar activa; ninguna operación de dinero cruza sedes. Un fiado de otra
     sede no se encuentra (`DoesNotExist`). Cualquier método, un solo libro; el efectivo respeta la regla
     de la caja de otro día (`record_money`). Con `expected_balance` (el saldo que vio quien abona), un
-    segundo envío del mismo abono se rechaza. La nota va en la descripción del movimiento de caja.
+    segundo envío del mismo abono se rechaza. La referencia (Nequi 4821) queda en el abono, ligado a su movimiento
+    de caja, como en el pago de una comanda; la nota va en la descripción del movimiento.
     """
     ensure_permission(membership, "fiados.abonar")
     amount = Decimal(amount)
@@ -213,7 +216,9 @@ def add_payment(
         if session is None:
             raise ValidationError("No hay una caja abierta en esta sede para recibir el abono.", code="no_open_session")
         before = _snapshot(locked)
-        payment = _record_payment(locked, session, membership=membership, amount=amount, method=method, note=note)
+        payment = _record_payment(
+            locked, session, membership=membership, amount=amount, method=method, reference=reference, note=note
+        )
         _audit(membership, "fiado.abonar", receivable=locked, before=before, after=_snapshot(locked))
     return payment
 

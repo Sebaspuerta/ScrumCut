@@ -25,7 +25,7 @@ function Receipt({ order, onClose }: { order: OrderDetail; onClose: () => void }
       <OrderLines order={order} />
       {order.actions.edit && <AddLineForm orderId={order.id} />}
       <OrderTotals order={order} />
-      {order.payments.length > 0 && <OrderPayments order={order} />}
+      {(order.payments.length > 0 || order.receivable) && <OrderPayments order={order} />}
       {order.actions.checkout && <CheckoutForm order={order} />}
       {order.actions.cancel && <CancelOrder order={order} />}
     </section>

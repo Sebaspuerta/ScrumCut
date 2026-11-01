@@ -433,6 +433,326 @@
                 }
             }
         },
+        "/api/v1/clients/": {
+            "get": {
+                "operationId": "clients_list",
+                "description": "La lista de la sede (?q=, ?nivel=, ?orden=, ?page=); la búsqueda encuentra a cualquier cliente de la barbería,\nsin cifras de otras sedes.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "nivel",
+                        "schema": {
+                            "enum": [
+                                "debtor",
+                                "new",
+                                "frequent",
+                                "vip",
+                                "inactive",
+                                ""
+                            ],
+                            "type": "string",
+                            "default": ""
+                        },
+                        "description": "* `debtor` - Deudor\n* `new` - Nuevo\n* `frequent` - Frecuente\n* `vip` - VIP\n* `inactive` - Inactivo"
+                    },
+                    {
+                        "in": "query",
+                        "name": "orden",
+                        "schema": {
+                            "enum": [
+                                "ultima",
+                                "visitas",
+                                "gasto",
+                                "deuda"
+                            ],
+                            "type": "string",
+                            "default": "ultima",
+                            "minLength": 1
+                        },
+                        "description": "* `ultima` - Última visita\n* `visitas` - Más visitas\n* `gasto` - Mayor gasto\n* `deuda` - Mayor deuda"
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "",
+                            "maxLength": 60
+                        },
+                        "description": "Nombre, celular o cédula."
+                    }
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/clients/{public_id}/": {
+            "get": {
+                "operationId": "clients_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/clients/{public_id}/edit/": {
+            "post": {
+                "operationId": "clients_edit_create",
+                "description": "Los datos de la persona, de la barbería; los cambios quedan en la auditoría (`update_client`).",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClientUpdateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/clients/create/": {
+            "post": {
+                "operationId": "clients_create_create",
+                "description": "Un duplicado responde el nombre del cliente que ya existe; uno con el mismo nombre se confirma con\n`other_person`.",
+                "tags": [
+                    "clients"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClientRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClientDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/clients/search/": {
             "get": {
                 "operationId": "clients_search_list",
@@ -1596,6 +1916,242 @@
                     }
                 }
             }
+        },
+        "/api/v1/receivables/": {
+            "get": {
+                "operationId": "receivables_list",
+                "description": "La cartera de la sede y una pestaña (?pestana=pendientes|vencidos|pagados, ?q=, ?page=).",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "pestana",
+                        "schema": {
+                            "enum": [
+                                "pendientes",
+                                "vencidos",
+                                "pagados"
+                            ],
+                            "type": "string",
+                            "default": "pendientes",
+                            "minLength": 1
+                        },
+                        "description": "* `pendientes` - Pendientes\n* `vencidos` - Vencidos\n* `pagados` - Pagados en el mes"
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "",
+                            "maxLength": 60
+                        },
+                        "description": "El nombre del cliente."
+                    }
+                ],
+                "tags": [
+                    "receivables"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReceivableList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/receivables/{public_id}/": {
+            "get": {
+                "operationId": "receivables_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "receivables"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReceivableDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/receivables/{public_id}/pay/": {
+            "post": {
+                "operationId": "receivables_pay_create",
+                "description": "Parcial o total. Un segundo envío del mismo abono se rechaza: ya no ve el saldo que vio el primero.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "receivables"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReceivablePaymentRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReceivableDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1635,6 +2191,33 @@
                     "can_see_audit",
                     "last_change",
                     "members"
+                ]
+            },
+            "Aging": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "current, d1_15, d16_30 o d30: del más nuevo al más viejo."
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "percent": {
+                        "type": "integer",
+                        "description": "Su parte del total por cobrar."
+                    }
+                },
+                "required": [
+                    "amount",
+                    "key",
+                    "label",
+                    "percent"
                 ]
             },
             "AlertGroup": {
@@ -2395,6 +2978,101 @@
                     "order"
                 ]
             },
+            "ClientActions": {
+                "type": "object",
+                "properties": {
+                    "edit": {
+                        "type": "boolean"
+                    },
+                    "new_order": {
+                        "type": "boolean",
+                        "description": "Con comandas.crear y una sede elegida."
+                    }
+                },
+                "required": [
+                    "edit",
+                    "new_order"
+                ]
+            },
+            "ClientActivity": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ClientLevelEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
+                    },
+                    "level_label": {
+                        "type": "string"
+                    },
+                    "progress": {
+                        "$ref": "#/components/schemas/LevelProgress"
+                    },
+                    "visits": {
+                        "type": "integer"
+                    },
+                    "spent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "ticket": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "barber": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/FavoriteBarber"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "favorite": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "El servicio que más pide."
+                    },
+                    "balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Lo que debe en las sedes del alcance."
+                    },
+                    "open_debt": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "Su fiado vivo más antiguo, para abonarlo."
+                    },
+                    "last_visits": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClientVisit"
+                        }
+                    }
+                },
+                "required": [
+                    "balance",
+                    "barber",
+                    "favorite",
+                    "last_visits",
+                    "level",
+                    "level_label",
+                    "open_debt",
+                    "progress",
+                    "spent",
+                    "ticket",
+                    "visits"
+                ]
+            },
             "ClientChoice": {
                 "type": "object",
                 "properties": {
@@ -2414,6 +3092,383 @@
                     "id",
                     "name",
                     "phone"
+                ]
+            },
+            "ClientDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "initials": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Enmascarado: 300 *** 4512."
+                    },
+                    "email": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Solo con clientes.editar, para el formulario."
+                    },
+                    "notes": {
+                        "type": "string",
+                        "description": "Preferencias y notas."
+                    },
+                    "since": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Cliente desde."
+                    },
+                    "activity": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ClientActivity"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Sin historial en la sede, null."
+                    },
+                    "receivables": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReceivableRow"
+                        },
+                        "nullable": true,
+                        "description": "Sus fiados aquí; sin fiados.ver, null."
+                    },
+                    "actions": {
+                        "$ref": "#/components/schemas/ClientActions"
+                    }
+                },
+                "required": [
+                    "actions",
+                    "activity",
+                    "email",
+                    "id",
+                    "initials",
+                    "name",
+                    "notes",
+                    "phone",
+                    "receivables",
+                    "since"
+                ]
+            },
+            "ClientLevelEnum": {
+                "enum": [
+                    "debtor",
+                    "new",
+                    "frequent",
+                    "vip",
+                    "inactive"
+                ],
+                "type": "string",
+                "description": "* `debtor` - Deudor\n* `new` - Nuevo\n* `frequent` - Frecuente\n* `vip` - VIP\n* `inactive` - Inactivo"
+            },
+            "ClientList": {
+                "type": "object",
+                "properties": {
+                    "search": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "string"
+                    },
+                    "order": {
+                        "type": "string"
+                    },
+                    "levels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LevelCount"
+                        },
+                        "description": "Los filtros por nivel con su conteo."
+                    },
+                    "orderings": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        }
+                    },
+                    "stats": {
+                        "$ref": "#/components/schemas/ClientStats"
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Clientes por página."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClientRow"
+                        }
+                    },
+                    "data_policy": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/DataPolicy"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Sin una política publicada no se registran clientes."
+                    }
+                },
+                "required": [
+                    "count",
+                    "data_policy",
+                    "level",
+                    "levels",
+                    "order",
+                    "orderings",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "results",
+                    "search",
+                    "stats"
+                ]
+            },
+            "ClientRequest": {
+                "type": "object",
+                "description": "Celular y cédula vacíos no cambian: no se muestran al editar.",
+                "properties": {
+                    "full_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "phone": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 20
+                    },
+                    "document": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 20
+                    },
+                    "email": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Lo valida ClientForm.",
+                        "maxLength": 254
+                    },
+                    "notes": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 1000
+                    },
+                    "consent": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "El cliente autoriza la política de datos vigente."
+                    },
+                    "other_person": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Es otra persona con el mismo nombre."
+                    }
+                },
+                "required": [
+                    "full_name"
+                ]
+            },
+            "ClientRow": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Enmascarado: 300 *** 4512."
+                    },
+                    "has_activity": {
+                        "type": "boolean",
+                        "description": "Sin actividad en la sede: encontrado por búsqueda, sin cifras."
+                    },
+                    "level": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ClientLevelEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
+                    },
+                    "level_label": {
+                        "type": "string",
+                        "description": "El nivel, «Varía por sede» en «todas» o «Sin visitas en la sede»."
+                    },
+                    "visits": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "last_visit": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "spent_recent": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "description": "Gasto de los últimos 90 días."
+                    },
+                    "debt": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "debt",
+                    "has_activity",
+                    "id",
+                    "last_visit",
+                    "level",
+                    "level_label",
+                    "name",
+                    "phone",
+                    "spent_recent",
+                    "visits"
+                ]
+            },
+            "ClientStats": {
+                "type": "object",
+                "properties": {
+                    "active": {
+                        "type": "integer",
+                        "description": "Con visitas en los últimos 90 días."
+                    },
+                    "with_visits": {
+                        "type": "integer"
+                    },
+                    "new_this_month": {
+                        "type": "integer"
+                    },
+                    "new_last_month": {
+                        "type": "integer"
+                    },
+                    "return_rate": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Vuelven en 30 días, en %; sin cohorte, null."
+                    },
+                    "debtors": {
+                        "type": "integer",
+                        "description": "Clientes con fiado."
+                    },
+                    "debt_total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "active",
+                    "debt_total",
+                    "debtors",
+                    "new_last_month",
+                    "new_this_month",
+                    "return_rate",
+                    "with_visits"
+                ]
+            },
+            "ClientUpdateRequest": {
+                "type": "object",
+                "description": "Celular y cédula vacíos no cambian: no se muestran al editar.",
+                "properties": {
+                    "full_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                    },
+                    "phone": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 20
+                    },
+                    "document": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 20
+                    },
+                    "email": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Lo valida ClientForm.",
+                        "maxLength": 254
+                    },
+                    "notes": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 1000
+                    }
+                },
+                "required": [
+                    "full_name"
+                ]
+            },
+            "ClientVisit": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "closed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "items": {
+                        "type": "string"
+                    },
+                    "barber": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "methods": {
+                        "type": "string",
+                        "description": "Las formas de pago, o «Fiado»."
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "barber",
+                    "closed_at",
+                    "id",
+                    "items",
+                    "methods",
+                    "total"
                 ]
             },
             "CloseCashRequest": {
@@ -2576,6 +3631,24 @@
                     "results"
                 ]
             },
+            "CollectedFigure": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "Abonos del mes."
+                    }
+                },
+                "required": [
+                    "count",
+                    "total"
+                ]
+            },
             "Credit": {
                 "type": "object",
                 "properties": {
@@ -2723,6 +3796,22 @@
                     "needs_branch"
                 ]
             },
+            "DataPolicy": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "El texto vigente, para leerlo con el cliente."
+                    }
+                },
+                "required": [
+                    "url",
+                    "version"
+                ]
+            },
             "DayTotal": {
                 "type": "object",
                 "properties": {
@@ -2738,6 +3827,23 @@
                 },
                 "required": [
                     "date",
+                    "total"
+                ]
+            },
+            "DebtFigure": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "clients": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "clients",
                     "total"
                 ]
             },
@@ -2757,6 +3863,21 @@
                 },
                 "required": [
                     "amount"
+                ]
+            },
+            "FavoriteBarber": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "visits": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "name",
+                    "visits"
                 ]
             },
             "IncomeKpi": {
@@ -2858,6 +3979,47 @@
                     "actor",
                     "at",
                     "entity"
+                ]
+            },
+            "LevelCount": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "description": "Un nivel, o vacío para «Todos»."
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "count",
+                    "label",
+                    "value"
+                ]
+            },
+            "LevelProgress": {
+                "type": "object",
+                "properties": {
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "El siguiente nivel por visitas; en el más alto, null."
+                    },
+                    "missing": {
+                        "type": "integer"
+                    },
+                    "percent": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "missing",
+                    "next",
+                    "percent"
                 ]
             },
             "ManualMovementKindEnum": {
@@ -3124,6 +4286,11 @@
                     "unread"
                 ]
             },
+            "NullEnum": {
+                "enum": [
+                    null
+                ]
+            },
             "OpenCashRequest": {
                 "type": "object",
                 "properties": {
@@ -3369,6 +4536,15 @@
                         "nullable": true,
                         "description": "Con cliente registrado; sin cliente no hay fiado."
                     },
+                    "receivable": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OrderReceivable"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "El fiado que dejó; sin fiados.ver, null."
+                    },
                     "actions": {
                         "allOf": [
                             {
@@ -3400,6 +4576,7 @@
                     "number",
                     "payment",
                     "payments",
+                    "receivable",
                     "status",
                     "subtotal",
                     "total"
@@ -3542,6 +4719,28 @@
                     "reference"
                 ]
             },
+            "OrderReceivable": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ReceivableStatusEnum"
+                    }
+                },
+                "required": [
+                    "balance",
+                    "id",
+                    "status"
+                ]
+            },
             "OrderRow": {
                 "type": "object",
                 "properties": {
@@ -3669,6 +4868,29 @@
                     "transfers"
                 ]
             },
+            "OverdueFigure": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "clients": {
+                        "type": "integer"
+                    },
+                    "share": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Porcentaje de la cartera; sin cartera, null."
+                    }
+                },
+                "required": [
+                    "clients",
+                    "share",
+                    "total"
+                ]
+            },
             "PatchedPreferencesRequest": {
                 "type": "object",
                 "properties": {
@@ -3676,6 +4898,41 @@
                         "$ref": "#/components/schemas/ThemeEnum"
                     }
                 }
+            },
+            "PaymentEntry": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "method": {
+                        "type": "string"
+                    },
+                    "reference": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "received_by": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "amount",
+                    "at",
+                    "id",
+                    "method",
+                    "received_by",
+                    "reference"
+                ]
             },
             "PaymentPartRequest": {
                 "type": "object",
@@ -3703,6 +4960,28 @@
                     "method"
                 ]
             },
+            "PendingFigure": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "clients": {
+                        "type": "integer"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "Fiados con saldo."
+                    }
+                },
+                "required": [
+                    "clients",
+                    "count",
+                    "total"
+                ]
+            },
             "PlanUsage": {
                 "type": "object",
                 "properties": {
@@ -3716,6 +4995,44 @@
                 "required": [
                     "active",
                     "limit"
+                ]
+            },
+            "Portfolio": {
+                "type": "object",
+                "properties": {
+                    "pending": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PendingFigure"
+                            }
+                        ],
+                        "description": "Por cobrar."
+                    },
+                    "overdue": {
+                        "$ref": "#/components/schemas/OverdueFigure"
+                    },
+                    "due_soon": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/DebtFigure"
+                            }
+                        ],
+                        "description": "Vence en los próximos 7 días."
+                    },
+                    "collected": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CollectedFigure"
+                            }
+                        ],
+                        "description": "Cobrado en el mes."
+                    }
+                },
+                "required": [
+                    "collected",
+                    "due_soon",
+                    "overdue",
+                    "pending"
                 ]
             },
             "Preferences": {
@@ -3779,6 +5096,350 @@
                     "sales",
                     "units"
                 ]
+            },
+            "ReceivableActions": {
+                "type": "object",
+                "properties": {
+                    "pay": {
+                        "type": "boolean",
+                        "description": "Con fiados.abonar, saldo vivo y una sede elegida."
+                    }
+                },
+                "required": [
+                    "pay"
+                ]
+            },
+            "ReceivableDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "client": {
+                        "$ref": "#/components/schemas/Named"
+                    },
+                    "order": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ReceivableOrder"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Sin comanda, es un fiado manual."
+                    },
+                    "branch": {
+                        "type": "string",
+                        "description": "La sede de origen: solo ahí se abona."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "paid": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Lo abonado: total − saldo."
+                    },
+                    "balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ReceivableStatusEnum"
+                    },
+                    "due_text": {
+                        "type": "string",
+                        "description": "«▾ Vencido hace 3 días», «Vence en 2 días», «Al día», «Pagado»…"
+                    },
+                    "due_tone": {
+                        "type": "string",
+                        "description": "overdue, soon, ok o done: el estado sin rojos."
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "payments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentEntry"
+                        },
+                        "description": "Los abonos, el más reciente primero."
+                    },
+                    "methods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        },
+                        "description": "Las formas de pago habilitadas en la barbería."
+                    },
+                    "actions": {
+                        "$ref": "#/components/schemas/ReceivableActions"
+                    },
+                    "needs_branch": {
+                        "type": "boolean",
+                        "description": "En «todas»: para abonar hay que elegir la sede de origen."
+                    }
+                },
+                "required": [
+                    "actions",
+                    "balance",
+                    "branch",
+                    "client",
+                    "created_at",
+                    "due_date",
+                    "due_text",
+                    "due_tone",
+                    "id",
+                    "methods",
+                    "needs_branch",
+                    "notes",
+                    "order",
+                    "paid",
+                    "payments",
+                    "status",
+                    "total"
+                ]
+            },
+            "ReceivableList": {
+                "type": "object",
+                "properties": {
+                    "today": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Hoy en la zona de la barbería: el mes de lo cobrado."
+                    },
+                    "tab": {
+                        "$ref": "#/components/schemas/ReceivableTabEnum"
+                    },
+                    "tabs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReceivableTab"
+                        }
+                    },
+                    "portfolio": {
+                        "$ref": "#/components/schemas/Portfolio"
+                    },
+                    "aging": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Aging"
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Fiados por página."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReceivableRow"
+                        },
+                        "description": "Los vivos por urgencia; los pagados, los más recientes."
+                    }
+                },
+                "required": [
+                    "aging",
+                    "count",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "portfolio",
+                    "results",
+                    "tab",
+                    "tabs",
+                    "today"
+                ]
+            },
+            "ReceivableOrder": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "number": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "id",
+                    "number"
+                ]
+            },
+            "ReceivablePaymentRequest": {
+                "type": "object",
+                "properties": {
+                    "amount": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Una forma de pago habilitada.",
+                        "maxLength": 20
+                    },
+                    "reference": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Nequi 4821: solo con los medios que no son efectivo.",
+                        "maxLength": 80
+                    },
+                    "note": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Nota libre: queda en la descripción del movimiento de caja.",
+                        "maxLength": 200
+                    },
+                    "expected_balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El saldo que vio quien abona: un segundo envío del mismo abono se rechaza."
+                    }
+                },
+                "required": [
+                    "amount",
+                    "expected_balance",
+                    "method"
+                ]
+            },
+            "ReceivableRow": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "client": {
+                        "$ref": "#/components/schemas/Named"
+                    },
+                    "order": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ReceivableOrder"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Sin comanda, es un fiado manual."
+                    },
+                    "branch": {
+                        "type": "string",
+                        "description": "La sede de origen: solo ahí se abona."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "paid": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "Lo abonado: total − saldo."
+                    },
+                    "balance": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ReceivableStatusEnum"
+                    },
+                    "due_text": {
+                        "type": "string",
+                        "description": "«▾ Vencido hace 3 días», «Vence en 2 días», «Al día», «Pagado»…"
+                    },
+                    "due_tone": {
+                        "type": "string",
+                        "description": "overdue, soon, ok o done: el estado sin rojos."
+                    }
+                },
+                "required": [
+                    "balance",
+                    "branch",
+                    "client",
+                    "created_at",
+                    "due_date",
+                    "due_text",
+                    "due_tone",
+                    "id",
+                    "order",
+                    "paid",
+                    "status",
+                    "total"
+                ]
+            },
+            "ReceivableStatusEnum": {
+                "enum": [
+                    "pendiente",
+                    "pagado",
+                    "vencido",
+                    "anulado"
+                ],
+                "type": "string",
+                "description": "* `pendiente` - Pendiente\n* `pagado` - Pagado\n* `vencido` - Vencido\n* `anulado` - Anulado"
+            },
+            "ReceivableTab": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "$ref": "#/components/schemas/ReceivableTabEnum"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "count",
+                    "label",
+                    "value"
+                ]
+            },
+            "ReceivableTabEnum": {
+                "enum": [
+                    "pendientes",
+                    "vencidos",
+                    "pagados"
+                ],
+                "type": "string",
+                "description": "* `pendientes` - Pendientes\n* `vencidos` - Vencidos\n* `pagados` - Pagados en el mes"
             },
             "ReceivablesKpi": {
                 "type": "object",

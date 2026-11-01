@@ -2,7 +2,7 @@ import { useState, type SubmitEvent } from "react";
 
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { cx } from "../lib/cx";
 import { digitsOnly } from "../lib/money";
 import { Button } from "../ui/Button";
@@ -15,7 +15,7 @@ import { Panel } from "../ui/Panel";
 /** Abrir la caja de la sede con su base: el efectivo con el que empieza el día. */
 export function OpenCashForm() {
   const [base, setBase] = useState("");
-  const open = useMoneyMutation(() => api.post("/api/v1/cash/open/", { opening_amount: base }));
+  const open = useWriteMutation(() => api.post("/api/v1/cash/open/", { opening_amount: base }));
   const errors = formErrors(open.error);
   const submit = (event: SubmitEvent) => {
     event.preventDefault();

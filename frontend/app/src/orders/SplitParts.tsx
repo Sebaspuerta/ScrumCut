@@ -6,7 +6,7 @@ import { fromCents, digitsOnly } from "../lib/money";
 import { Button } from "../ui/Button";
 import input from "../ui/Input.module.css";
 import { emptyPart, remainingCents, type CheckoutDraft, type PartDraft } from "./checkoutDraft";
-import type { MethodOption } from "./PayMethods";
+import type { MethodOption } from "../ui/PayMethods";
 import { ReferenceInput } from "./ReferenceInput";
 import styles from "./SplitParts.module.css";
 

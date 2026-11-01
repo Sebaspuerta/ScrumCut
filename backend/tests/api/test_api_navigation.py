@@ -62,6 +62,9 @@ def test_el_estado_dice_si_hay_pantalla_pronto_o_proximamente(navigation_as):
         "status": "pronto",
     }
     assert sidebar["Tablero"]["app_path"] == "/"  # el tablero ya existe en la app de React
+    # Desde la fase R3, en la app de React; las de Django quedan de respaldo.
+    assert (sidebar["Clientes"]["app_path"], sidebar["Clientes"]["url"]) == ("/clientes", "/clientes/")
+    assert (sidebar["Fiados"]["app_path"], sidebar["Fiados"]["url"]) == ("/fiados", "/fiados/")
     assert {item["status"] for item in administration} == {"proximamente"}
     assert all(item["url"] is None for item in administration)
 

@@ -40,3 +40,10 @@ export function digitsOnly(text: string): string {
 export function sumCents(values: readonly string[]): number {
   return values.reduce((total, value) => total + (toCents(value) ?? 0), 0);
 }
+
+/** Un monto de la API como lo escribiría la persona: "25000.00" → "25000"; con centavos, "25000.50". */
+export function asTyped(value: string): string {
+  const cents = toCents(value);
+  if (cents === null) return value;
+  return cents % CENTS_PER_PESO === 0 ? String(cents / CENTS_PER_PESO) : fromCents(cents);
+}

@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from apps.clients.models import Client
 from apps.receivables.models import OPEN_STATUSES, Receivable
+from apps.sales.models import Order
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Branch, Membership
 from apps.tenancy.permissions import ensure_permission
@@ -67,6 +68,12 @@ def get_receivable(membership: Membership, public_id: UUID | str, *, scope: Bran
     """El fiado de otra sede no se encuentra: lanza `Receivable.DoesNotExist`."""
     ensure_permission(membership, "fiados.ver")
     return _in_scope(membership, scope).select_related("client", "order").get(public_id=public_id)
+
+
+def order_receivable(membership: Membership, order: Order, *, scope: BranchScope) -> Receivable | None:
+    """El fiado que dejó una comanda, si lo hay. Su sede de origen es la de la comanda (decisión 3)."""
+    ensure_permission(membership, "fiados.ver")
+    return _in_scope(membership, scope).filter(order=order).first()
 
 
 def receivables_summary(membership: Membership, *, scope: BranchScope) -> dict:

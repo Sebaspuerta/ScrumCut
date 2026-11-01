@@ -1,6 +1,7 @@
 """Ventas de prueba hechas con los services reales sobre el fixture `world`."""
 
 from datetime import datetime
+from unittest import mock
 from zoneinfo import ZoneInfo
 
 from apps.sales import services as sales
@@ -8,6 +9,13 @@ from apps.sales.models import Order
 from tests.conftest import scope_of
 
 BOGOTA = ZoneInfo("America/Bogota")
+# Un "hoy" a mitad de mes: deja días antes y después en el mismo mes, corra la prueba el día que corra.
+MID_MONTH = datetime(2026, 10, 14, 12, tzinfo=BOGOTA)
+
+
+def fixed_now(moment: datetime = MID_MONTH):
+    """Fija `timezone.now()` (y con él `local_today`) mientras dura el bloque, como `cargar_demo`."""
+    return mock.patch("django.utils.timezone.now", return_value=moment)
 
 
 def sell(w, barber, *, service=None, product=None, quantity=1, method="efectivo") -> Order:

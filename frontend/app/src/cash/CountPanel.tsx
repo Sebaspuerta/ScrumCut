@@ -3,7 +3,7 @@ import { useState, type SubmitEvent } from "react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { CashSession, CashState, Closing } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { COUNT_ANCHOR } from "../lib/appRoutes";
 import { formatCop } from "../lib/format";
 import { fromCents, isZeroAmount } from "../lib/money";
@@ -25,7 +25,7 @@ interface CountPanelProps {
 export function CountPanel({ state, session, onClosed }: CountPanelProps) {
   const [draft, setDraft] = useState(EMPTY_COUNT);
   const [confirming, setConfirming] = useState(false);
-  const close = useMoneyMutation(() =>
+  const close = useWriteMutation(() =>
     api.post("/api/v1/cash/{session}/close/", toCloseRequest(draft, state.denominations), { session: session.id }),
   );
   const errors = formErrors(close.error);

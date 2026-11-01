@@ -7,6 +7,7 @@ from decimal import Decimal
 from django import forms
 from django.core.exceptions import ValidationError
 
+from apps.cash.choices import PAYMENT_REFERENCE_MAX_LENGTH
 from apps.receivables.board import OVERDUE, PAID, PENDING, ReceivableFilter
 
 TABS = ((PENDING, "Pendientes"), (OVERDUE, "Vencidos"), (PAID, "Pagados en el mes"))
@@ -31,6 +32,7 @@ class PaymentForm(forms.Form):
 
     monto = forms.DecimalField(required=False, **_MONEY)
     metodo = forms.ChoiceField()
+    referencia = forms.CharField(required=False, max_length=PAYMENT_REFERENCE_MAX_LENGTH)
     nota = forms.CharField(required=False, max_length=200)
     saldo_visto = forms.DecimalField(min_value=Decimal("0"), widget=forms.HiddenInput, **_MONEY)
     pagar_todo = forms.BooleanField(required=False)

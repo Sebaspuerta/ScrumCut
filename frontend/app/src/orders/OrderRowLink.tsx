@@ -3,7 +3,8 @@ import { Link } from "react-router";
 import type { OrderRow } from "../api/types";
 import { useTimeZone } from "../hooks/useMe";
 import { clock, formatCop } from "../lib/format";
-import { ORDER_PARAM, withParam } from "./orderParams";
+import { ORDER_PARAM } from "../lib/appRoutes";
+import { withParam } from "../lib/searchParams";
 import styles from "./OrderList.module.css";
 
 interface OrderRowLinkProps {

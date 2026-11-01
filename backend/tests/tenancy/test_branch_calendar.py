@@ -9,7 +9,7 @@ from apps.reports.selectors.calendar import sales_calendar
 from apps.sales import services as sales
 from apps.sales.selectors import local_today
 from tests.conftest import scope_of
-from tests.reports.helpers import close_at, sell
+from tests.reports.helpers import close_at, fixed_now, sell
 
 pytestmark = pytest.mark.django_db
 
@@ -40,19 +40,21 @@ def test_el_cajero_de_centro_no_ve_las_ventas_de_norte(world, norte):
 
 
 def test_en_todas_cada_dia_es_la_suma_de_las_sedes(world, norte):
-    first_of_month = local_today(world.owner).replace(day=1)
-    close_at(sell(world, world.ana, service=world.corte), datetime.combine(first_of_month, datetime.min.time()))
-    sell(world, world.ana, service=world.corte)
-    _sell_in_norte(world, norte)
+    """Con "hoy" a mitad de mes: la venta del día 1 nunca cae hoy, corra la prueba el día que corra."""
+    with fixed_now():
+        first_of_month = local_today(world.owner).replace(day=1)
+        close_at(sell(world, world.ana, service=world.corte), datetime.combine(first_of_month, datetime.min.time()))
+        sell(world, world.ana, service=world.corte)
+        _sell_in_norte(world, norte)
 
-    everything = scope_of(world.owner, everything=True)
-    centro, norte_scope = scope_of(world.owner, world.branch), scope_of(world.owner, norte)
-    month = local_today(world.owner)
+        everything = scope_of(world.owner, everything=True)
+        centro, norte_scope = scope_of(world.owner, world.branch), scope_of(world.owner, norte)
+        month = local_today(world.owner)
 
-    def totals(scope):
-        calendar = sales_calendar(world.owner, month, scope=scope)
-        return [cell["total"] for week in calendar["weeks"] for cell in week["days"] if cell]
+        def totals(scope):
+            calendar = sales_calendar(world.owner, month, scope=scope)
+            return [cell["total"] for week in calendar["weeks"] for cell in week["days"] if cell]
 
-    summed = [a + b for a, b in zip(totals(centro), totals(norte_scope), strict=True)]
-    assert totals(everything) == summed
-    assert _today_total(world.owner, everything) == D("40000")
+        summed = [a + b for a, b in zip(totals(centro), totals(norte_scope), strict=True)]
+        assert totals(everything) == summed
+        assert _today_total(world.owner, everything) == D("40000")

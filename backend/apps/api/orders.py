@@ -11,6 +11,7 @@ from apps.cash.board import stale_session
 from apps.cash.selectors import payment_methods
 from apps.clients.models import Client
 from apps.core.formatting import mask_phone
+from apps.receivables.selectors import order_receivable
 from apps.sales.board import CLOSED_TODAY, TABS, BoardFilter, board_orders, board_row, closed_today_summary, tab_counts
 from apps.sales.forms import MAX_LINE_QUANTITY
 from apps.sales.models import EDITABLE_STATUSES, Order, OrderStatus
@@ -105,6 +106,16 @@ def _payments(order: Order) -> list[dict]:
     ]
 
 
+def _receivable(membership: Membership, order: Order, scope: BranchScope) -> dict | None:
+    """El fiado que dejó la comanda, para enlazarlo; sin fiados.ver, ninguno."""
+    if not role_has_permission(membership.role, "fiados.ver"):
+        return None
+    receivable = order_receivable(membership, order, scope=scope)
+    if receivable is None:
+        return None
+    return {"id": receivable.public_id, "balance": receivable.balance, "status": receivable.status}
+
+
 def _actions(membership: Membership, order: Order, *, writable: bool) -> dict[str, bool]:
     """Lo que el rol puede hacer con la comanda en su estado; anular una cerrada exige comandas.anular.
 
@@ -138,6 +149,7 @@ def order_detail(membership: Membership, public_id: UUID | str, *, scope: Branch
         "balance": order.balance,
         "payments": _payments(order),
         "credit": summary["credit"],
+        "receivable": _receivable(membership, order, scope),
         "actions": _actions(membership, order, writable=scope.branch is not None),
     }
 

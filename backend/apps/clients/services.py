@@ -20,6 +20,8 @@ from django.utils import timezone
 from apps.audit.models import record
 from apps.clients.models import Client
 from apps.clients.normalization import normalize_phone
+from apps.legal.models import LegalDocument
+from apps.legal.selectors import current_document
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
@@ -27,6 +29,7 @@ DUPLICATE_CLIENT = "Ya existe un cliente con ese teléfono o documento."
 POSSIBLE_DUPLICATE = "Ya hay un cliente con ese nombre. Confirma si es otra persona."
 ANONYMIZED_LOCKED = "Un cliente anonimizado no se edita."
 ANONYMIZED_NAME = "Cliente anonimizado"
+MISSING_POLICY = "No hay una política de tratamiento de datos publicada: sin ella no se pueden registrar clientes."
 
 
 class ClientData(TypedDict, total=False):
@@ -170,6 +173,16 @@ def create_client(
         _save_validated(client)
         _audit(membership, "cliente.crear", client=client, before=None, after=_snapshot(client))
     return client
+
+
+def create_client_with_current_policy(membership: Membership, data: ClientData, *, force: bool = False) -> Client:
+    """El cliente autoriza ahora, sobre la versión vigente de la política de datos; sin una publicada, no se crea."""
+    policy = current_document(LegalDocument.Kind.DATA_POLICY)
+    if policy is None:
+        raise ValidationError(MISSING_POLICY, code="missing_policy")
+    return create_client(
+        membership, data, data_consent_at=timezone.now(), data_policy_version=policy.version, force=force
+    )
 
 
 def update_client(membership: Membership, public_id: UUID | str, *, data: ClientData) -> Client:

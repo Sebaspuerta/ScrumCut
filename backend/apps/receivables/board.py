@@ -29,6 +29,8 @@ AGING = (
     ("d30", "Vencido más de 30 días"),
 )
 _ZERO = Value(Decimal("0.00"))
+# Un fiado sin deuda viva (la ficha del cliente también lista los anulados).
+SETTLED_TEXT = {ReceivableStatus.PAID: "Pagado", ReceivableStatus.CANCELLED: "Anulado"}
 
 
 @dataclass(frozen=True)
@@ -93,7 +95,13 @@ def aging(data: dict) -> list[dict]:
 
 
 def receivable_rows(
-    membership: Membership, *, scope: BranchScope, filters: ReceivableFilter, today: date, month_start: datetime
+    membership: Membership,
+    *,
+    scope: BranchScope,
+    filters: ReceivableFilter,
+    today: date,
+    month_start: datetime,
+    page: int | str = 1,
 ) -> Page:
     """La pestaña elegida; los vivos por urgencia (los más vencidos primero) y los pagados, los más recientes."""
     receivables = _in_scope(membership, scope).filter(_conditions(today, month_start)[filters.tab])
@@ -103,7 +111,7 @@ def receivable_rows(
         ordered = receivables.order_by("-updated_at")
     else:
         ordered = receivables.order_by(F("due_date").asc(nulls_last=True), "created_at", "pk")
-    return Paginator(ordered.select_related("client", "order", "origin_branch"), PAGE_SIZE).get_page(1)
+    return Paginator(ordered.select_related("client", "order", "origin_branch"), PAGE_SIZE).get_page(page)
 
 
 def receivable_detail(membership: Membership, public_id: UUID | str, *, scope: BranchScope) -> Receivable:
@@ -118,9 +126,10 @@ def receivable_detail(membership: Membership, public_id: UUID | str, *, scope: B
 
 
 def due_status(receivable: Receivable, today: date) -> dict:
-    """El estado en texto, sin rojos: "▾ Vencido hace N días", "Vence en N días", "Vence hoy" o "Al día"."""
-    if receivable.status == ReceivableStatus.PAID:
-        return {"text": "Pagado", "tone": "done"}
+    """El estado en texto, sin rojos: "▾ Vencido hace N días", "Vence en N días", "Vence hoy", "Al día", "Pagado" o
+    "Anulado"."""
+    if receivable.status in SETTLED_TEXT:
+        return {"text": SETTLED_TEXT[receivable.status], "tone": "done"}
     if receivable.due_date is None:
         return {"text": "Al día", "tone": "ok"}
     days = (receivable.due_date - today).days

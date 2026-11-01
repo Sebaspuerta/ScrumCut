@@ -3,12 +3,13 @@ import { useState, type SubmitEvent } from "react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { OrderDetail } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { useOrderCatalog } from "../hooks/useOrders";
 import { cx } from "../lib/cx";
 import { formatCop } from "../lib/format";
 import { Button } from "../ui/Button";
 import { FormAlert } from "../ui/FormAlert";
+import { PayMethods, type MethodOption } from "../ui/PayMethods";
 import { CashFields } from "./CashFields";
 import {
   initialDraft,
@@ -22,7 +23,6 @@ import {
 } from "./checkoutDraft";
 import { CreditFields } from "./CreditFields";
 import styles from "./OrderDetail.module.css";
-import { PayMethods, type MethodOption } from "./PayMethods";
 import { SingleReference } from "./SingleReference";
 import { SplitParts } from "./SplitParts";
 
@@ -45,7 +45,7 @@ export function CheckoutForm({ order }: CheckoutFormProps) {
   const { methods, maxParts } = useCheckoutOptions(order);
   const [draft, setDraft] = useState<CheckoutDraft | null>(null);
   const current = draft ?? initialDraft(methods[0]?.value ?? "");
-  const charge = useMoneyMutation(() =>
+  const charge = useWriteMutation(() =>
     api.post("/api/v1/orders/{public_id}/checkout/", toRequest(current), { public_id: order.id }),
   );
   const errors = formErrors(charge.error);
@@ -68,7 +68,14 @@ export function CheckoutForm({ order }: CheckoutFormProps) {
           onChange={setDraft}
         />
       ) : (
-        <PayMethods draft={current} methods={methods} error={errors.fields.parts} onChange={setDraft} />
+        <PayMethods
+          value={current.method}
+          methods={methods}
+          error={errors.fields.parts}
+          onChange={(method) => {
+            setDraft({ ...current, method });
+          }}
+        />
       )}
       {usesCash(current) && (
         <CashFields draft={current} total={order.total} error={errors.fields.received} onChange={setDraft} />

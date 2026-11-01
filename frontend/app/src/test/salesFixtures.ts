@@ -58,6 +58,7 @@ export const ORDER: OrderDetail = {
   balance: "25000.00",
   payments: [],
   credit: { debt: "0.00", available: "150000.00" },
+  receivable: null,
   actions: { edit: true, discount: true, checkout: true, cancel: true },
 };
 

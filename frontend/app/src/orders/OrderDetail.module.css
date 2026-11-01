@@ -33,6 +33,10 @@
   margin-bottom: var(--space-4);
 }
 
+.clientLink {
+  color: inherit;
+}
+
 .headSide {
   display: flex;
   align-items: center;

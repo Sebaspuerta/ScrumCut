@@ -27,7 +27,8 @@ from apps.receivables.board import (
 )
 from apps.receivables.forms import TABS, PaymentForm, ReceivableFilterForm
 from apps.receivables.models import Receivable
-from apps.sales.selectors import day_bounds, local_today
+from apps.sales.selectors import local_today
+from apps.sales.selectors import month_start as first_of_month
 from apps.tenancy.permissions import require_permission
 from apps.tenancy.roles import role_has_permission
 
@@ -44,8 +45,7 @@ def _row(receivable: Receivable, today) -> dict:
 
 def _board(request: HttpRequest) -> dict:
     membership, scope = request.membership, request.branch_scope
-    today = local_today(membership)
-    month_start = day_bounds(membership.barbershop.timezone, today.replace(day=1), today)[0]
+    today, month_start = local_today(membership), first_of_month(membership)
     filters = ReceivableFilterForm(request.GET).filters()
     data = portfolio(membership, scope=scope, today=today, month_start=month_start)
     rows = receivable_rows(membership, scope=scope, filters=filters, today=today, month_start=month_start)
@@ -104,6 +104,7 @@ def pay(request: HttpRequest, public_id: UUID) -> HttpResponse:
             scope=request.branch_scope,
             amount=data["monto"],
             method=data["metodo"],
+            reference=data["referencia"],
             note=data["nota"],
             expected_balance=data["saldo_visto"],
         )

@@ -1,6 +1,5 @@
 import { useId } from "react";
 
-import type { CheckoutDraft } from "./checkoutDraft";
 import styles from "./PayMethods.module.css";
 
 export interface MethodOption {
@@ -9,14 +8,15 @@ export interface MethodOption {
 }
 
 interface PayMethodsProps {
-  draft: CheckoutDraft;
+  value: string;
   methods: MethodOption[];
   error: string | undefined;
-  onChange: (draft: CheckoutDraft) => void;
+  onChange: (method: string) => void;
 }
 
-/** Las formas de pago habilitadas y, con cliente registrado, Fiado: radios nativos con la forma de la referencia. */
-export function PayMethods({ draft, methods, error, onChange }: PayMethodsProps) {
+/** Las formas de pago que ofrece el servidor (en el cobro, también Fiado): radios nativos con la forma de la
+ * referencia. */
+export function PayMethods({ value, methods, error, onChange }: PayMethodsProps) {
   const name = useId();
   return (
     <fieldset className={styles.fieldset} aria-describedby={error ? `${name}-error` : undefined}>
@@ -28,9 +28,9 @@ export function PayMethods({ draft, methods, error, onChange }: PayMethodsProps)
               type="radio"
               name={name}
               value={method.value}
-              checked={draft.method === method.value}
+              checked={value === method.value}
               onChange={() => {
-                onChange({ ...draft, method: method.value });
+                onChange(method.value);
               }}
             />
             {method.label}

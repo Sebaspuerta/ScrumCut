@@ -29,8 +29,8 @@ INSERTS = {
     # El movimiento libre evita chocar con el OneToOne del abono que ya existe.
     "receivables_receivablepayment": (
         "INSERT INTO receivables_receivablepayment (public_id, created_at, updated_at, barbershop_id, "
-        "receivable_id, cash_movement_id, amount, method, received_by_id) VALUES (gen_random_uuid(), now(), now(), "
-        "%s, %s, %s, 100, 'efectivo', %s)",
+        "receivable_id, cash_movement_id, amount, method, reference, received_by_id) VALUES (gen_random_uuid(), "
+        "now(), now(), %s, %s, %s, 100, 'efectivo', '', %s)",
         lambda shop, rows: [
             shop.pk,
             rows[shop.pk]["receivable"].pk,

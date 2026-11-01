@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.api import cash_views, order_views, views
+from apps.api import cash_views, client_views, order_views, receivable_views, views
 
 urlpatterns = [
     path("me/", views.MeView.as_view(), name="api_me"),
@@ -24,7 +24,14 @@ urlpatterns = [
     path("orders/<uuid:public_id>/discount/", order_views.OrderDiscountView.as_view(), name="api_order_discount"),
     path("orders/<uuid:public_id>/checkout/", order_views.OrderCheckoutView.as_view(), name="api_order_checkout"),
     path("orders/<uuid:public_id>/cancel/", order_views.OrderCancelView.as_view(), name="api_order_cancel"),
+    path("clients/", client_views.ClientListView.as_view(), name="api_clients"),
+    path("clients/create/", client_views.ClientCreateView.as_view(), name="api_client_create"),
     path("clients/search/", order_views.ClientSearchView.as_view(), name="api_client_search"),
+    path("clients/<uuid:public_id>/", client_views.ClientDetailView.as_view(), name="api_client"),
+    path("clients/<uuid:public_id>/edit/", client_views.ClientUpdateView.as_view(), name="api_client_edit"),
+    path("receivables/", receivable_views.ReceivableListView.as_view(), name="api_receivables"),
+    path("receivables/<uuid:public_id>/", receivable_views.ReceivableDetailView.as_view(), name="api_receivable"),
+    path("receivables/<uuid:public_id>/pay/", receivable_views.ReceivablePayView.as_view(), name="api_receivable_pay"),
     path("cash/", cash_views.CashView.as_view(), name="api_cash"),
     path("cash/open/", cash_views.CashOpenView.as_view(), name="api_cash_open"),
     path("cash/closings/", cash_views.CashClosingsView.as_view(), name="api_cash_closings"),

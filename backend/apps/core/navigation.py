@@ -45,8 +45,8 @@ SIDEBAR = (
     NavGroup(
         "Clientes",
         (
-            NavItem("Clientes", "clientes.ver", "clients_board", "users"),
-            NavItem("Fiados", "fiados.ver", "receivables_board", "notebook-pen"),
+            NavItem("Clientes", "clientes.ver", "clients_board", "users", app_path="/clientes"),
+            NavItem("Fiados", "fiados.ver", "receivables_board", "notebook-pen", app_path="/fiados"),
             NavItem("Reseñas", "clientes.ver", icon="star"),
         ),
     ),
@@ -134,8 +134,8 @@ NEW_ACTIONS = (
         fragment="gasto",
         app_path="/caja?registrar=gasto",
     ),
-    NavItem("Nuevo cliente", "clientes.crear", "clients_new", "users"),
-    NavItem("Abono a fiado", "fiados.abonar", "receivables_board", "notebook-pen"),
+    NavItem("Nuevo cliente", "clientes.crear", "clients_new", "users", app_path="/clientes?nuevo=1"),
+    NavItem("Abono a fiado", "fiados.abonar", "receivables_board", "notebook-pen", app_path="/fiados"),
 )
 
 

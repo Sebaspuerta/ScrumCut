@@ -32,7 +32,13 @@ from apps.api.order_serializers import (
 )
 from apps.api.orders import client_choice, order_catalog, order_detail, order_list
 from apps.api.permissions import HasRolePermission
-from apps.api.serializers import OBJECT_READ_ERRORS, OBJECT_WRITE_ERRORS, READ_ERRORS, WRITE_ERRORS
+from apps.api.serializers import (
+    OBJECT_READ_ERRORS,
+    OBJECT_WRITE_ERRORS,
+    READ_ERRORS,
+    WRITE_ERRORS,
+    query_values,
+)
 from apps.cash.selectors import payment_methods
 from apps.clients.selectors import list_clients
 from apps.sales import services
@@ -173,15 +179,6 @@ class OrderCancelView(OrderWriteView):
         return self.order(public_id)
 
 
-def _list_query(request: Request) -> dict:
-    query = OrderListQuerySerializer(data=request.query_params)
-    if query.is_valid():
-        return query.validated_data
-    defaults = OrderListQuerySerializer(data={})
-    defaults.is_valid(raise_exception=True)
-    return defaults.validated_data
-
-
 class OrderListView(APIView):
     """La lista por pestaña (?estado=abiertas|cerradas|anuladas) y día (?fecha=); un valor inválido vuelve al
     valor por defecto, como en la pantalla de Django."""
@@ -195,7 +192,7 @@ class OrderListView(APIView):
         responses={200: OrderListSerializer, **READ_ERRORS},
     )
     def get(self, request: Request) -> Response:
-        data = _list_query(request)
+        data = query_values(OrderListQuerySerializer, request.query_params)
         filters = BoardFilter(tab=data["estado"], search=data["q"], barber=data["barbero"], day=data["fecha"])
         page = order_list(request.membership, scope=request.branch_scope, filters=filters, page=data["page"])
         return Response(OrderListSerializer(page).data)

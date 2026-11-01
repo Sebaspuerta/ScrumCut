@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from apps.cash.choices import PaymentMethod
+from apps.cash.choices import PAYMENT_REFERENCE_MAX_LENGTH, PaymentMethod
 from apps.core.models import AppendOnlyModel, TenantScopedModel
 
 _MONEY = {"max_digits": 14, "decimal_places": 2}
@@ -165,7 +165,7 @@ class Payment(AppendOnlyModel):
     cash_movement = models.OneToOneField("cash.CashMovement", on_delete=models.PROTECT, related_name="sale_payment")
     method = models.CharField("método", max_length=20, choices=PaymentMethod.choices)
     amount = models.DecimalField("monto", validators=[MinValueValidator(Decimal("0.01"))], **_MONEY)
-    reference = models.CharField("referencia", max_length=80, blank=True)
+    reference = models.CharField("referencia", max_length=PAYMENT_REFERENCE_MAX_LENGTH, blank=True)
     received_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
 
     class Meta:

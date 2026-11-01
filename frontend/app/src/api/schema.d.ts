@@ -109,6 +109,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description La lista de la sede (?q=, ?nivel=, ?orden=, ?page=); la búsqueda encuentra a cualquier cliente de la barbería,
+         *     sin cifras de otras sedes.
+         */
+        get: operations["clients_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{public_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["clients_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{public_id}/edit/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Los datos de la persona, de la barbería; los cambios quedan en la auditoría (`update_client`). */
+        post: operations["clients_edit_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/create/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Un duplicado responde el nombre del cliente que ya existe; uno con el mismo nombre se confirma con
+         *     `other_person`.
+         */
+        post: operations["clients_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients/search/": {
         parameters: {
             query?: never;
@@ -409,6 +482,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/receivables/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description La cartera de la sede y una pestaña (?pestana=pendientes|vencidos|pagados, ?q=, ?page=). */
+        get: operations["receivables_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/receivables/{public_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["receivables_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/receivables/{public_id}/pay/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Parcial o total. Un segundo envío del mismo abono se rechaza: ya no ve el saldo que vio el primero. */
+        post: operations["receivables_pay_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -421,6 +544,15 @@ export interface components {
             /** @description Con auditoria.ver. */
             can_see_audit: boolean;
             last_change: components["schemas"]["LastChange"] | null;
+        };
+        Aging: {
+            /** @description current, d1_15, d16_30 o d30: del más nuevo al más viejo. */
+            key: string;
+            label: string;
+            /** Format: decimal */
+            amount: string;
+            /** @description Su parte del total por cobrar. */
+            percent: number;
         };
         AlertGroup: {
             title: string;
@@ -681,11 +813,175 @@ export interface components {
              */
             change: string;
         };
+        ClientActions: {
+            edit: boolean;
+            /** @description Con comandas.crear y una sede elegida. */
+            new_order: boolean;
+        };
+        ClientActivity: {
+            level: (components["schemas"]["ClientLevelEnum"] | components["schemas"]["NullEnum"]) | null;
+            level_label: string;
+            progress: components["schemas"]["LevelProgress"];
+            visits: number;
+            /** Format: decimal */
+            spent: string;
+            /** Format: decimal */
+            ticket: string;
+            barber: components["schemas"]["FavoriteBarber"] | null;
+            /** @description El servicio que más pide. */
+            favorite: string | null;
+            /**
+             * Format: decimal
+             * @description Lo que debe en las sedes del alcance.
+             */
+            balance: string;
+            /**
+             * Format: uuid
+             * @description Su fiado vivo más antiguo, para abonarlo.
+             */
+            open_debt: string | null;
+            last_visits: components["schemas"]["ClientVisit"][];
+        };
         ClientChoice: {
             /** Format: uuid */
             id: string;
             name: string;
             phone: string | null;
+        };
+        ClientDetail: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            initials: string;
+            /** @description Enmascarado: 300 *** 4512. */
+            phone: string | null;
+            /** @description Solo con clientes.editar, para el formulario. */
+            email: string | null;
+            /** @description Preferencias y notas. */
+            notes: string;
+            /**
+             * Format: date-time
+             * @description Cliente desde.
+             */
+            since: string;
+            /** @description Sin historial en la sede, null. */
+            activity: components["schemas"]["ClientActivity"] | null;
+            /** @description Sus fiados aquí; sin fiados.ver, null. */
+            receivables: components["schemas"]["ReceivableRow"][] | null;
+            actions: components["schemas"]["ClientActions"];
+        };
+        /**
+         * @description * `debtor` - Deudor
+         *     * `new` - Nuevo
+         *     * `frequent` - Frecuente
+         *     * `vip` - VIP
+         *     * `inactive` - Inactivo
+         * @enum {string}
+         */
+        ClientLevelEnum: "debtor" | "new" | "frequent" | "vip" | "inactive";
+        ClientList: {
+            search: string;
+            level: string;
+            order: string;
+            /** @description Los filtros por nivel con su conteo. */
+            levels: components["schemas"]["LevelCount"][];
+            orderings: components["schemas"]["Option"][];
+            stats: components["schemas"]["ClientStats"];
+            count: number;
+            page: number;
+            pages: number;
+            /** @description Clientes por página. */
+            page_size: number;
+            results: components["schemas"]["ClientRow"][];
+            /** @description Sin una política publicada no se registran clientes. */
+            data_policy: components["schemas"]["DataPolicy"] | null;
+        };
+        /** @description Celular y cédula vacíos no cambian: no se muestran al editar. */
+        ClientRequest: {
+            full_name: string;
+            /** @default  */
+            phone: string;
+            /** @default  */
+            document: string;
+            /**
+             * @description Lo valida ClientForm.
+             * @default
+             */
+            email: string;
+            /** @default  */
+            notes: string;
+            /**
+             * @description El cliente autoriza la política de datos vigente.
+             * @default false
+             */
+            consent: boolean;
+            /**
+             * @description Es otra persona con el mismo nombre.
+             * @default false
+             */
+            other_person: boolean;
+        };
+        ClientRow: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Enmascarado: 300 *** 4512. */
+            phone: string | null;
+            /** @description Sin actividad en la sede: encontrado por búsqueda, sin cifras. */
+            has_activity: boolean;
+            level: (components["schemas"]["ClientLevelEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** @description El nivel, «Varía por sede» en «todas» o «Sin visitas en la sede». */
+            level_label: string;
+            visits: number | null;
+            /** Format: date-time */
+            last_visit: string | null;
+            /**
+             * Format: decimal
+             * @description Gasto de los últimos 90 días.
+             */
+            spent_recent: string | null;
+            /** Format: decimal */
+            debt: string | null;
+        };
+        ClientStats: {
+            /** @description Con visitas en los últimos 90 días. */
+            active: number;
+            with_visits: number;
+            new_this_month: number;
+            new_last_month: number;
+            /** @description Vuelven en 30 días, en %; sin cohorte, null. */
+            return_rate: number | null;
+            /** @description Clientes con fiado. */
+            debtors: number;
+            /** Format: decimal */
+            debt_total: string;
+        };
+        /** @description Celular y cédula vacíos no cambian: no se muestran al editar. */
+        ClientUpdateRequest: {
+            full_name: string;
+            /** @default  */
+            phone: string;
+            /** @default  */
+            document: string;
+            /**
+             * @description Lo valida ClientForm.
+             * @default
+             */
+            email: string;
+            /** @default  */
+            notes: string;
+        };
+        ClientVisit: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            closed_at: string;
+            items: string;
+            barber: string | null;
+            /** @description Las formas de pago, o «Fiado». */
+            methods: string;
+            /** Format: decimal */
+            total: string;
         };
         CloseCashRequest: {
             bills: components["schemas"]["BillCountRequest"][];
@@ -741,6 +1037,12 @@ export interface components {
             page_size: number;
             results: components["schemas"]["Closing"][];
         };
+        CollectedFigure: {
+            /** Format: decimal */
+            total: string;
+            /** @description Abonos del mes. */
+            count: number;
+        };
         Credit: {
             /**
              * Format: decimal
@@ -783,17 +1085,31 @@ export interface components {
             needs_branch: boolean;
             flow: components["schemas"]["CashFlow"] | null;
         };
+        DataPolicy: {
+            version: string;
+            /** @description El texto vigente, para leerlo con el cliente. */
+            url: string;
+        };
         DayTotal: {
             /** Format: date */
             date: string;
             /** Format: decimal */
             total: string;
         };
+        DebtFigure: {
+            /** Format: decimal */
+            total: string;
+            clients: number;
+        };
         DiscountRequest: {
             /** Format: decimal */
             amount: string;
             /** @default  */
             reason: string;
+        };
+        FavoriteBarber: {
+            name: string;
+            visits: number;
         };
         IncomeKpi: {
             /** Format: decimal */
@@ -821,6 +1137,18 @@ export interface components {
             actor: string;
             /** Format: date-time */
             at: string;
+        };
+        LevelCount: {
+            /** @description Un nivel, o vacío para «Todos». */
+            value: string;
+            label: string;
+            count: number;
+        };
+        LevelProgress: {
+            /** @description El siguiente nivel por visitas; en el más alto, null. */
+            next: string | null;
+            missing: number;
+            percent: number;
         };
         /**
          * @description * `ingreso_manual` - ingreso_manual
@@ -900,6 +1228,8 @@ export interface components {
             /** @description «Hoy» y «Anteriores», solo los que tienen alertas. */
             groups: components["schemas"]["AlertGroup"][];
         };
+        /** @enum {unknown} */
+        NullEnum: null;
         OpenCashRequest: {
             /** Format: decimal */
             opening_amount: string;
@@ -973,6 +1303,8 @@ export interface components {
             payments: components["schemas"]["OrderPayment"][];
             /** @description Con cliente registrado; sin cliente no hay fiado. */
             credit: components["schemas"]["Credit"] | null;
+            /** @description El fiado que dejó; sin fiados.ver, null. */
+            receivable: components["schemas"]["OrderReceivable"] | null;
             /** @description Lo que el rol puede hacer con la comanda en su estado. */
             actions: components["schemas"]["OrderActions"];
         };
@@ -1020,6 +1352,13 @@ export interface components {
             amount: string;
             reference: string;
         };
+        OrderReceivable: {
+            /** Format: uuid */
+            id: string;
+            /** Format: decimal */
+            balance: string;
+            status: components["schemas"]["ReceivableStatusEnum"];
+        };
         OrderRow: {
             /** Format: uuid */
             id: string;
@@ -1065,8 +1404,26 @@ export interface components {
             /** @description Fiados nuevos de hoy en la sede. */
             credit: components["schemas"]["KindTotal"];
         };
+        OverdueFigure: {
+            /** Format: decimal */
+            total: string;
+            clients: number;
+            /** @description Porcentaje de la cartera; sin cartera, null. */
+            share: number | null;
+        };
         PatchedPreferencesRequest: {
             theme?: components["schemas"]["ThemeEnum"];
+        };
+        PaymentEntry: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            at: string;
+            method: string;
+            reference: string;
+            /** Format: decimal */
+            amount: string;
+            received_by: string;
         };
         PaymentPartRequest: {
             /** @description Una forma de pago habilitada o «fiado». */
@@ -1079,9 +1436,25 @@ export interface components {
             /** @default  */
             reference: string;
         };
+        PendingFigure: {
+            /** Format: decimal */
+            total: string;
+            clients: number;
+            /** @description Fiados con saldo. */
+            count: number;
+        };
         PlanUsage: {
             active: number;
             limit: number;
+        };
+        Portfolio: {
+            /** @description Por cobrar. */
+            pending: components["schemas"]["PendingFigure"];
+            overdue: components["schemas"]["OverdueFigure"];
+            /** @description Vence en los próximos 7 días. */
+            due_soon: components["schemas"]["DebtFigure"];
+            /** @description Cobrado en el mes. */
+            collected: components["schemas"]["CollectedFigure"];
         };
         Preferences: {
             theme: components["schemas"]["ThemeEnum"];
@@ -1104,6 +1477,136 @@ export interface components {
             /** Format: decimal */
             margin: string | null;
         };
+        ReceivableActions: {
+            /** @description Con fiados.abonar, saldo vivo y una sede elegida. */
+            pay: boolean;
+        };
+        ReceivableDetail: {
+            /** Format: uuid */
+            id: string;
+            client: components["schemas"]["Named"];
+            /** @description Sin comanda, es un fiado manual. */
+            order: components["schemas"]["ReceivableOrder"] | null;
+            /** @description La sede de origen: solo ahí se abona. */
+            branch: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date */
+            due_date: string | null;
+            /** Format: decimal */
+            total: string;
+            /**
+             * Format: decimal
+             * @description Lo abonado: total − saldo.
+             */
+            paid: string;
+            /** Format: decimal */
+            balance: string;
+            status: components["schemas"]["ReceivableStatusEnum"];
+            /** @description «▾ Vencido hace 3 días», «Vence en 2 días», «Al día», «Pagado»… */
+            due_text: string;
+            /** @description overdue, soon, ok o done: el estado sin rojos. */
+            due_tone: string;
+            notes: string;
+            /** @description Los abonos, el más reciente primero. */
+            payments: components["schemas"]["PaymentEntry"][];
+            /** @description Las formas de pago habilitadas en la barbería. */
+            methods: components["schemas"]["Option"][];
+            actions: components["schemas"]["ReceivableActions"];
+            /** @description En «todas»: para abonar hay que elegir la sede de origen. */
+            needs_branch: boolean;
+        };
+        ReceivableList: {
+            /**
+             * Format: date
+             * @description Hoy en la zona de la barbería: el mes de lo cobrado.
+             */
+            today: string;
+            tab: components["schemas"]["ReceivableTabEnum"];
+            tabs: components["schemas"]["ReceivableTab"][];
+            portfolio: components["schemas"]["Portfolio"];
+            aging: components["schemas"]["Aging"][];
+            count: number;
+            page: number;
+            pages: number;
+            /** @description Fiados por página. */
+            page_size: number;
+            /** @description Los vivos por urgencia; los pagados, los más recientes. */
+            results: components["schemas"]["ReceivableRow"][];
+        };
+        ReceivableOrder: {
+            /** Format: uuid */
+            id: string;
+            number: number;
+        };
+        ReceivablePaymentRequest: {
+            /** Format: decimal */
+            amount: string;
+            /** @description Una forma de pago habilitada. */
+            method: string;
+            /**
+             * @description Nequi 4821: solo con los medios que no son efectivo.
+             * @default
+             */
+            reference: string;
+            /**
+             * @description Nota libre: queda en la descripción del movimiento de caja.
+             * @default
+             */
+            note: string;
+            /**
+             * Format: decimal
+             * @description El saldo que vio quien abona: un segundo envío del mismo abono se rechaza.
+             */
+            expected_balance: string;
+        };
+        ReceivableRow: {
+            /** Format: uuid */
+            id: string;
+            client: components["schemas"]["Named"];
+            /** @description Sin comanda, es un fiado manual. */
+            order: components["schemas"]["ReceivableOrder"] | null;
+            /** @description La sede de origen: solo ahí se abona. */
+            branch: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date */
+            due_date: string | null;
+            /** Format: decimal */
+            total: string;
+            /**
+             * Format: decimal
+             * @description Lo abonado: total − saldo.
+             */
+            paid: string;
+            /** Format: decimal */
+            balance: string;
+            status: components["schemas"]["ReceivableStatusEnum"];
+            /** @description «▾ Vencido hace 3 días», «Vence en 2 días», «Al día», «Pagado»… */
+            due_text: string;
+            /** @description overdue, soon, ok o done: el estado sin rojos. */
+            due_tone: string;
+        };
+        /**
+         * @description * `pendiente` - Pendiente
+         *     * `pagado` - Pagado
+         *     * `vencido` - Vencido
+         *     * `anulado` - Anulado
+         * @enum {string}
+         */
+        ReceivableStatusEnum: "pendiente" | "pagado" | "vencido" | "anulado";
+        ReceivableTab: {
+            value: components["schemas"]["ReceivableTabEnum"];
+            label: string;
+            count: number;
+        };
+        /**
+         * @description * `pendientes` - Pendientes
+         *     * `vencidos` - Vencidos
+         *     * `pagados` - Pagados en el mes
+         * @enum {string}
+         */
+        ReceivableTabEnum: "pendientes" | "vencidos" | "pagados";
         ReceivablesKpi: {
             pending_count: number;
             /** Format: decimal */
@@ -1448,6 +1951,209 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CashState"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    clients_list: {
+        parameters: {
+            query?: {
+                /**
+                 * @description * `debtor` - Deudor
+                 *     * `new` - Nuevo
+                 *     * `frequent` - Frecuente
+                 *     * `vip` - VIP
+                 *     * `inactive` - Inactivo
+                 */
+                nivel?: "debtor" | "new" | "frequent" | "vip" | "inactive" | "";
+                /**
+                 * @description * `ultima` - Última visita
+                 *     * `visitas` - Más visitas
+                 *     * `gasto` - Mayor gasto
+                 *     * `deuda` - Mayor deuda
+                 */
+                orden?: "ultima" | "visitas" | "gasto" | "deuda";
+                page?: number;
+                /** @description Nombre, celular o cédula. */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientList"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    clients_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    clients_edit_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    clients_create_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDetail"];
                 };
             };
             400: {
@@ -2234,6 +2940,153 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    receivables_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                /**
+                 * @description * `pendientes` - Pendientes
+                 *     * `vencidos` - Vencidos
+                 *     * `pagados` - Pagados en el mes
+                 */
+                pestana?: "pendientes" | "vencidos" | "pagados";
+                /** @description El nombre del cliente. */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivableList"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    receivables_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivableDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    receivables_pay_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceivablePaymentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivableDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

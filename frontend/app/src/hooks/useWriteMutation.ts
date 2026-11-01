@@ -5,20 +5,25 @@ import { DASHBOARD_KEY } from "./useDashboard";
 
 export const ORDERS_KEY = ["orders"] as const;
 export const CASH_KEY = ["cash"] as const;
+export const CLIENTS_KEY = ["clients"] as const;
+export const RECEIVABLES_KEY = ["receivables"] as const;
 
-/** Después de mover dinero se vuelven a pedir comandas, caja y tablero: nada se actualiza a mano en el cliente. */
-function refreshMoney(queryClient: QueryClient): Promise<unknown> {
+/** Después de escribir se vuelven a pedir comandas, caja, clientes, fiados y tablero: un cobro cambia la deuda y el
+ * nivel del cliente, un abono la caja, y un cliente editado sale en comandas y fiados. Nada se actualiza a mano. */
+function refreshAll(queryClient: QueryClient): Promise<unknown> {
   return Promise.all(
-    [ORDERS_KEY, CASH_KEY, DASHBOARD_KEY].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    [ORDERS_KEY, CASH_KEY, CLIENTS_KEY, RECEIVABLES_KEY, DASHBOARD_KEY].map((queryKey) =>
+      queryClient.invalidateQueries({ queryKey }),
+    ),
   );
 }
 
 /**
- * Una escritura de comandas o caja. `submit` ignora un segundo envío mientras el primero sigue en curso
+ * Una escritura de comandas, caja, fiados o clientes. `submit` ignora un segundo envío mientras el primero sigue en curso
  * (doble clic) y la mutación sigue pendiente hasta que llegan los datos nuevos, así que el botón queda
  * deshabilitado hasta entonces. El servidor igual bloquea la fila: dos pestañas no cobran dos veces.
  */
-export function useMoneyMutation<TVariables, TData>(mutationFn: (variables: TVariables) => Promise<TData>) {
+export function useWriteMutation<TVariables, TData>(mutationFn: (variables: TVariables) => Promise<TData>) {
   const queryClient = useQueryClient();
   const inFlight = useRef(false);
   // El aviso de éxito va antes de volver a pedir los datos: si los datos nuevos desmontan el formulario
@@ -31,7 +36,7 @@ export function useMoneyMutation<TVariables, TData>(mutationFn: (variables: TVar
     },
     onSettled: () => {
       inFlight.current = false;
-      return refreshMoney(queryClient);
+      return refreshAll(queryClient);
     },
   });
   const { mutate } = mutation;

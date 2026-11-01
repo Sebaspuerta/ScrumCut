@@ -4,6 +4,8 @@ total (salen del catálogo de la sede y del backend); las reglas están en `apps
 from rest_framework import serializers
 
 from apps.api.fields import MoneyInput, money
+from apps.cash.choices import PAYMENT_REFERENCE_MAX_LENGTH
+from apps.receivables.models import ReceivableStatus
 from apps.sales.board import OPEN, TABS
 from apps.sales.forms import MAX_LINE_QUANTITY
 from apps.sales.models import ItemType, OrderStatus
@@ -89,6 +91,12 @@ class CreditSerializer(serializers.Serializer):
     available = money(allow_null=True, help_text="Su cupo; sin límite en la barbería, null.")
 
 
+class OrderReceivableSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    balance = money()
+    status = serializers.ChoiceField(choices=ReceivableStatus.choices)
+
+
 class OrderActionsSerializer(serializers.Serializer):
     edit = serializers.BooleanField()
     discount = serializers.BooleanField()
@@ -109,6 +117,7 @@ class OrderDetailSerializer(OrderRowSerializer):
     balance = money()
     payments = OrderPaymentSerializer(many=True)
     credit = CreditSerializer(allow_null=True, help_text="Con cliente registrado; sin cliente no hay fiado.")
+    receivable = OrderReceivableSerializer(allow_null=True, help_text="El fiado que dejó; sin fiados.ver, null.")
     actions = OrderActionsSerializer(help_text="Lo que el rol puede hacer con la comanda en su estado.")
 
 
@@ -176,7 +185,9 @@ class DiscountSerializer(serializers.Serializer):
 class PaymentPartSerializer(serializers.Serializer):
     method = serializers.CharField(max_length=20, help_text="Una forma de pago habilitada o «fiado».")
     amount = MoneyInput(required=False, allow_null=True, default=None, help_text="Sin monto, todo el total.")
-    reference = serializers.CharField(required=False, allow_blank=True, max_length=80, default="")
+    reference = serializers.CharField(
+        required=False, allow_blank=True, max_length=PAYMENT_REFERENCE_MAX_LENGTH, default=""
+    )
 
 
 class CheckoutSerializer(serializers.Serializer):

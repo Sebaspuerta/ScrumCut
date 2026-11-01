@@ -1,7 +1,7 @@
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { OrderDetail } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { Button } from "../ui/Button";
 import { FormAlert } from "../ui/FormAlert";
 import { FormDialog } from "../ui/FormDialog";
@@ -15,7 +15,7 @@ interface ChangeClientDialogProps {
 
 /** Cambia el cliente de una comanda abierta o la deja de mostrador (sin cliente no puede quedar como fiado). */
 export function ChangeClientDialog({ order, onClose }: ChangeClientDialogProps) {
-  const change = useMoneyMutation((client: string | null) =>
+  const change = useWriteMutation((client: string | null) =>
     api.post("/api/v1/orders/{public_id}/client/", { client }, { public_id: order.id }),
   );
   const errors = formErrors(change.error);

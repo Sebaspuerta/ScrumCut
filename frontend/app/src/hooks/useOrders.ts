@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { api } from "../api/client";
-import { ORDERS_KEY } from "./useMoneyMutation";
+import { CLIENTS_KEY, ORDERS_KEY } from "./useWriteMutation";
 
 /** La lista de una pestaña con sus filtros (los de la URL); el servidor aplica el alcance de sede y del rol. */
 export function useOrders(query: Record<string, string>, enabled: boolean) {
@@ -31,7 +31,7 @@ export function useOrderCatalog(enabled = true) {
 export function useClientSearch(term: string) {
   const wanted = term.trim();
   return useQuery({
-    queryKey: ["clients", "search", wanted],
+    queryKey: [...CLIENTS_KEY, "search", wanted],
     queryFn: () => api.get("/api/v1/clients/search/", { q: wanted }),
     enabled: wanted.length > 0,
   });

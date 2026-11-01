@@ -1,8 +1,7 @@
-import { Link } from "react-router";
-
 import type { OrderList, OrderTab } from "../api/types";
-import { ORDER_PARAM, withFilter } from "./orderParams";
-import styles from "./OrderTabs.module.css";
+import { ORDER_PARAM } from "../lib/appRoutes";
+import { withFilter } from "../lib/searchParams";
+import { TabLinks } from "../ui/TabLinks";
 
 interface OrderTabsProps {
   tabs: OrderList["tabs"];
@@ -10,24 +9,12 @@ interface OrderTabsProps {
   params: URLSearchParams;
 }
 
-/** Abiertas, Cerradas y Anuladas con su conteo: enlaces con aria-current, el estado va en la URL. */
+/** Abiertas, Cerradas y Anuladas con su conteo; cambiar de pestaña cierra la comanda abierta. */
 export function OrderTabs({ tabs, current, params }: OrderTabsProps) {
-  return (
-    <nav className={styles.tabs} aria-label="Estado de las comandas">
-      {tabs.map((tab) => {
-        const next = withFilter(params, "estado", tab.value);
-        next.delete(ORDER_PARAM);
-        return (
-          <Link
-            key={tab.value}
-            className={styles.tab}
-            to={{ search: next.toString() }}
-            aria-current={tab.value === current ? "page" : undefined}
-          >
-            {tab.label} <b className={styles.count}>{tab.count}</b>
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  const searchFor = (value: string) => {
+    const next = withFilter(params, "estado", value);
+    next.delete(ORDER_PARAM);
+    return next.toString();
+  };
+  return <TabLinks tabs={tabs} current={current} label="Estado de las comandas" searchFor={searchFor} />;
 }

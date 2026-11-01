@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { OrderDetail, OrderLine } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { formatCop } from "../lib/format";
 import { FormAlert } from "../ui/FormAlert";
 import styles from "./OrderDetail.module.css";
@@ -20,7 +20,7 @@ function lineNote(line: OrderLine): string {
 
 /** Las líneas: ítem, tipo, barbero, cantidad y total; mientras esté abierta, cada una se puede quitar. */
 export function OrderLines({ order }: OrderLinesProps) {
-  const remove = useMoneyMutation((item: string) =>
+  const remove = useWriteMutation((item: string) =>
     api.post("/api/v1/orders/{public_id}/lines/{item}/remove/", undefined, { public_id: order.id, item }),
   );
   if (order.lines.length === 0) return <p className={styles.muted}>Todavía no tiene líneas.</p>;

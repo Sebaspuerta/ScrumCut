@@ -13,6 +13,22 @@ from apps.clients.selectors import ClientStatus
 MOBILE = re.compile(r"(57)?3\d{9}")
 INVALID_MOBILE = "Escribe un celular colombiano de 10 dígitos que empiece por 3 (por ejemplo, 300 123 4567)."
 LEVELS = [("", "Todos"), *ClientStatus.choices]
+ORDER_LABELS = (
+    ("ultima", "Última visita"),
+    ("visitas", "Más visitas"),
+    ("gasto", "Mayor gasto"),
+    ("deuda", "Mayor deuda"),
+)
+HIDDEN_ON_EDIT = ("phone", "document")
+
+
+def level_chips(counts: dict, selected: str) -> list[dict]:
+    """Los filtros por nivel con su conteo; "Todos" suma también a los encontrados sin visitas en la sede."""
+    total = sum(counts.values())
+    return [
+        {"value": value, "label": label, "count": counts.get(value, 0) if value else total, "on": value == selected}
+        for value, label in LEVELS
+    ]
 
 
 class ClientFilterForm(forms.Form):
@@ -58,6 +74,11 @@ class ClientForm(forms.Form):
 
     def client_data(self) -> dict:
         return {field: self.cleaned_data[field] for field in ("full_name", "phone", "document", "email", "notes")}
+
+    def update_data(self) -> dict:
+        """Celular y cédula no se muestran al editar: solo se cambian si se escribe un valor nuevo."""
+        data = self.client_data()
+        return {field: value for field, value in data.items() if field not in HIDDEN_ON_EDIT or value}
 
 
 class NewClientForm(ClientForm):

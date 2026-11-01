@@ -3,7 +3,7 @@ import { useState, type SubmitEvent } from "react";
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
 import type { ClientChoice } from "../api/types";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { useOrderCatalog } from "../hooks/useOrders";
 import { StatusMessage } from "../frame/StatusMessage";
 import { Button } from "../ui/Button";
@@ -27,7 +27,7 @@ export function NewOrderDialog({ onClose, onCreated }: NewOrderDialogProps) {
   const [client, setClient] = useState<ClientChoice | null>(null);
   const [barber, setBarber] = useState("");
   const [lines, setLines] = useState<LineDraft[]>([]);
-  const create = useMoneyMutation(() =>
+  const create = useWriteMutation(() =>
     api.post("/api/v1/orders/create/", {
       client: client?.id ?? null,
       barber: barber || null,

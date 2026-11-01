@@ -16,43 +16,19 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
 from apps.clients import services
-from apps.clients.board import ClientFilter, client_rows, client_stats
-from apps.clients.forms import LEVELS, ClientFilterForm, ClientForm, NewClientForm
+from apps.clients.board import client_rows, client_stats
+from apps.clients.forms import ORDER_LABELS, ClientFilterForm, ClientForm, NewClientForm, level_chips
 from apps.clients.models import Client
 from apps.clients.profile import client_card
 from apps.legal.models import LegalDocument
 from apps.legal.selectors import current_document
-from apps.sales.selectors import day_bounds, local_today
+from apps.sales.selectors import month_start
 from apps.tenancy.permissions import require_permission
 from apps.tenancy.roles import role_has_permission
 
 BOARD = "clients/board.html"
-ORDER_LABELS = (
-    ("ultima", "Última visita"),
-    ("visitas", "Más visitas"),
-    ("gasto", "Mayor gasto"),
-    ("deuda", "Mayor deuda"),
-)
 FORM = "clients/form.html"
 PERMISSIONS = {"create": "clientes.crear", "edit": "clientes.editar", "new_order": "comandas.crear"}
-
-
-def _month_start(membership):
-    today = local_today(membership)
-    return day_bounds(membership.barbershop.timezone, today.replace(day=1), today)[0]
-
-
-def _chips(counts: dict, filters: ClientFilter) -> list[dict]:
-    total = sum(counts.values())
-    return [
-        {
-            "value": value,
-            "label": label,
-            "count": counts.get(value, 0) if value else total,
-            "on": value == filters.level,
-        }
-        for value, label in LEVELS
-    ]
 
 
 def _board(request: HttpRequest) -> dict:
@@ -63,8 +39,8 @@ def _board(request: HttpRequest) -> dict:
         "filters": filters,
         "orderings": ORDER_LABELS,
         "page": page,
-        "chips": _chips(counts, filters),
-        "stats": client_stats(membership, scope=scope, now=now, month_start=_month_start(membership)),
+        "chips": level_chips(counts, filters.level),
+        "stats": client_stats(membership, scope=scope, now=now, month_start=month_start(membership)),
         "can": {name: role_has_permission(membership.role, code) for name, code in PERMISSIONS.items()},
     }
 
@@ -109,12 +85,8 @@ def create(request: HttpRequest) -> HttpResponse:
     if policy is None or request.method == "GET" or not form.is_valid():
         return _render_form(request, form, missing_policy=policy is None)
     try:
-        client = services.create_client(
-            request.membership,
-            form.client_data(),
-            data_consent_at=timezone.now(),
-            data_policy_version=policy.version,
-            force=form.cleaned_data["other_person"],
+        client = services.create_client_with_current_policy(
+            request.membership, form.client_data(), force=form.cleaned_data["other_person"]
         )
     except ValidationError as error:
         return _render_form(request, form, **_duplicate_notice(error))
@@ -134,14 +106,8 @@ def edit(request: HttpRequest, public_id: UUID) -> HttpResponse:
     if request.method == "GET" or not form.is_valid():
         return _render_form(request, form, client=client)
     try:
-        services.update_client(request.membership, public_id, data=_changed(form))
+        services.update_client(request.membership, public_id, data=form.update_data())
     except ValidationError as error:
         return _render_form(request, form, client=client, **_duplicate_notice(error))
     messages.success(request, "Datos del cliente actualizados.")
     return redirect(reverse("clients_detail", args=[public_id]))
-
-
-def _changed(form: ClientForm) -> dict:
-    """Celular y cédula no se muestran al editar: solo se cambian si se escribe un valor nuevo."""
-    data = form.client_data()
-    return {field: value for field, value in data.items() if field not in ("phone", "document") or value}

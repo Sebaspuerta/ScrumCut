@@ -1,8 +1,15 @@
-"""Apoyo de las pruebas de Comandas y Caja en la API: comandas abiertas con los services y peticiones JSON."""
+"""Apoyo de las pruebas de la API: comandas, clientes y fiados creados con los services, y peticiones JSON."""
+
+from decimal import Decimal
 
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 
+from apps.clients import services as clients
+from apps.clients.models import Client as ClientRecord
+from apps.receivables import services as receivables
+from apps.receivables.models import Receivable
 from apps.sales import services
 from apps.sales.models import Order
 from apps.tenancy.models import Branch, Membership
@@ -29,3 +36,25 @@ def choose_branch(client: Client, branch: Branch) -> None:
 
 def cash_only(amount: str) -> dict:
     return {"parts": [{"method": "efectivo"}], "received": amount}
+
+
+def sell(world, client: Client, *, customer=None) -> Order:
+    """Una comanda de Centro cobrada por Nequi: una visita del cliente en la sede."""
+    order = open_order(world, client=customer.public_id if customer else None)
+    assert (
+        post(client, "api_order_checkout", {"parts": [{"method": "nequi"}]}, public_id=order.public_id).status_code
+        == 200
+    )
+    return order
+
+
+def credit(world, customer, *, branch: Branch | None = None, total: str = "25000") -> Receivable:
+    """Un fiado manual del dueño en una sede (Centro por defecto), que queda como su sede de origen."""
+    scope = scope_of(world.owner, branch or world.branch)
+    return receivables.create_manual(world.owner, customer.public_id, scope=scope, total=Decimal(total))
+
+
+def new_client(world, name: str, phone: str = "") -> ClientRecord:
+    return clients.create_client(
+        world.owner, {"full_name": name, "phone": phone}, data_consent_at=timezone.now(), data_policy_version="1.0"
+    )

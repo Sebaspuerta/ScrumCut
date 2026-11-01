@@ -1,8 +1,10 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
 import type { OrderDetail } from "../api/types";
 import { useTimeZone } from "../hooks/useMe";
+import { clientPath } from "../lib/appRoutes";
 import { clock } from "../lib/format";
 import { Button } from "../ui/Button";
 import { Pill } from "../ui/Pill";
@@ -40,7 +42,13 @@ export function OrderHead({ order, titleId, onClose }: OrderHeadProps) {
       <div>
         <p className={styles.eyebrow}>Comanda #{order.number}</p>
         <h2 id={titleId} className={styles.client}>
-          {order.client?.name ?? "Cliente de mostrador"}
+          {order.client ? (
+            <Link className={styles.clientLink} to={clientPath(order.client.id)}>
+              {order.client.name}
+            </Link>
+          ) : (
+            "Cliente de mostrador"
+          )}
         </h2>
         <p className={styles.muted}>{opened.filter(Boolean).join(" · ")}</p>
         <p className={styles.muted}>{clientNote(order)}</p>

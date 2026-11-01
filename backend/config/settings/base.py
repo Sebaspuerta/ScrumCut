@@ -231,6 +231,9 @@ SPECTACULAR_SETTINGS = {
         "NavStatusEnum": "apps.api.serializers.NAV_STATUSES",
         "OrderStatusEnum": "apps.sales.models.OrderStatus",
         "OrderTabEnum": "apps.sales.board.TABS",
+        "ClientLevelEnum": "apps.clients.selectors.ClientStatus",
+        "ReceivableStatusEnum": "apps.receivables.models.ReceivableStatus",
+        "ReceivableTabEnum": "apps.receivables.forms.TABS",
     },
 }
 

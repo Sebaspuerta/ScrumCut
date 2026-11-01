@@ -137,6 +137,16 @@ class ApiErrorSerializer(serializers.Serializer):
     )
 
 
+def query_values(serializer_class: type[serializers.Serializer], params) -> dict:
+    """Los filtros de una lista; con uno inválido, todos vuelven al valor por defecto, como en Django."""
+    query = serializer_class(data=params)
+    if query.is_valid():
+        return query.validated_data
+    defaults = serializer_class(data={})
+    defaults.is_valid(raise_exception=True)
+    return defaults.validated_data
+
+
 def error_responses(*statuses: int) -> dict[int, type[ApiErrorSerializer]]:
     """Las respuestas de error de una operación en el esquema, todas con la misma forma."""
     return dict.fromkeys(statuses, ApiErrorSerializer)

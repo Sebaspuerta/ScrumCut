@@ -2,7 +2,7 @@ import { useState, type SubmitEvent } from "react";
 
 import { api } from "../api/client";
 import { formErrors } from "../api/errors";
-import { useMoneyMutation } from "../hooks/useMoneyMutation";
+import { useWriteMutation } from "../hooks/useWriteMutation";
 import { useOrderCatalog } from "../hooks/useOrders";
 import { cx } from "../lib/cx";
 import { Button } from "../ui/Button";
@@ -20,7 +20,7 @@ interface AddLineFormProps {
 export function AddLineForm({ orderId }: AddLineFormProps) {
   const catalog = useOrderCatalog();
   const [draft, setDraft] = useState(EMPTY_LINE);
-  const add = useMoneyMutation(() =>
+  const add = useWriteMutation(() =>
     api.post("/api/v1/orders/{public_id}/lines/", toNewLine(draft), { public_id: orderId }),
   );
   const errors = formErrors(add.error);

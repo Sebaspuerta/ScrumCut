@@ -3,8 +3,8 @@
 // vista previa (lo que falta por asignar, las vueltas) solo se muestra, en centavos enteros.
 import type { CheckoutRequest } from "../api/types";
 import { sumCents, toCents } from "../lib/money";
+import { CASH_METHOD } from "../lib/paymentMethods";
 
-export const CASH = "efectivo";
 export const CREDIT = "fiado";
 
 export interface PartDraft {
@@ -41,12 +41,12 @@ function methods(draft: CheckoutDraft): string[] {
 }
 
 export function usesCash(draft: CheckoutDraft): boolean {
-  return methods(draft).includes(CASH);
+  return methods(draft).includes(CASH_METHOD);
 }
 
 /** Con una sola forma de pago que no es efectivo ni fiado se puede anotar su referencia. */
 export function takesReference(draft: CheckoutDraft): boolean {
-  return !draft.split && draft.method !== CASH && draft.method !== CREDIT;
+  return !draft.split && draft.method !== CASH_METHOD && draft.method !== CREDIT;
 }
 
 export function usesCredit(draft: CheckoutDraft): boolean {
@@ -74,8 +74,8 @@ export function remainingCents(draft: CheckoutDraft, total: string): number | nu
 
 /** La parte en efectivo: todo el total con una sola forma, o la suma de las partes en efectivo. */
 export function cashCents(draft: CheckoutDraft, total: string): number {
-  if (!draft.split) return draft.method === CASH ? (toCents(total) ?? 0) : 0;
-  return sumCents(draft.parts.filter((part) => part.method === CASH).map((part) => part.amount));
+  if (!draft.split) return draft.method === CASH_METHOD ? (toCents(total) ?? 0) : 0;
+  return sumCents(draft.parts.filter((part) => part.method === CASH_METHOD).map((part) => part.amount));
 }
 
 /** Las vueltas de la vista previa (negativo: falta recibir); sin lo recibido, null. */

@@ -7,8 +7,11 @@ type Requests = components["schemas"];
 
 export const MAX_LENGTH = {
   CancelRequest: { reason: 300 },
+  ClientRequest: { full_name: 120, phone: 20, document: 20, email: 254, notes: 1000 },
+  ClientUpdateRequest: { full_name: 120, phone: 20, document: 20, email: 254, notes: 1000 },
   CloseCashRequest: { notes: 500 },
   DiscountRequest: { reason: 200 },
   ManualMovementRequest: { description: 200 },
   PaymentPartRequest: { reference: 80 },
+  ReceivablePaymentRequest: { reference: 80, note: 200 },
 } as const satisfies { [Name in keyof Requests]?: { [Field in keyof Requests[Name]]?: number } };
