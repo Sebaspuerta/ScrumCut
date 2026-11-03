@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.api import cash_views, client_views, order_views, receivable_views, views
+from apps.api import cash_views, client_views, my_cuts_views, order_views, receivable_views, views
 
 urlpatterns = [
     path("me/", views.MeView.as_view(), name="api_me"),
@@ -13,6 +13,8 @@ urlpatterns = [
     path("orders/", order_views.OrderListView.as_view(), name="api_orders"),
     path("orders/create/", order_views.OrderCreateView.as_view(), name="api_order_create"),
     path("orders/catalog/", order_views.OrderCatalogView.as_view(), name="api_order_catalog"),
+    path("orders/quick-charge/", order_views.QuickChargeView.as_view(), name="api_order_quick_charge"),
+    path("my-cuts/", my_cuts_views.MyCutsView.as_view(), name="api_my_cuts"),
     path("orders/<uuid:public_id>/", order_views.OrderDetailView.as_view(), name="api_order"),
     path("orders/<uuid:public_id>/client/", order_views.OrderClientView.as_view(), name="api_order_client"),
     path("orders/<uuid:public_id>/lines/", order_views.OrderLinesView.as_view(), name="api_order_lines"),

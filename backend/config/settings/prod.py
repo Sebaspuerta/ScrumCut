@@ -25,10 +25,16 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = env.as_list("CSRF_TRUSTED_ORIGINS")
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = env.require("EMAIL_HOST")
-EMAIL_PORT = env.as_int("EMAIL_PORT", 587)
-EMAIL_HOST_USER = env.require("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env.require("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = True
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": env.require("EMAIL_HOST"),
+            "port": env.as_int("EMAIL_PORT", 587),
+            "username": env.require("EMAIL_HOST_USER"),
+            "password": env.require("EMAIL_HOST_PASSWORD"),
+            "use_tls": True,
+        },
+    }
+}
 DEFAULT_FROM_EMAIL = env.require("DEFAULT_FROM_EMAIL")

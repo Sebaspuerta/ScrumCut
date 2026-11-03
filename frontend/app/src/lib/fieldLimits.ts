@@ -13,5 +13,6 @@ export const MAX_LENGTH = {
   DiscountRequest: { reason: 200 },
   ManualMovementRequest: { description: 200 },
   PaymentPartRequest: { reference: 80 },
+  QuickChargeRequest: { reference: 80 },
   ReceivablePaymentRequest: { reference: 80, note: 200 },
 } as const satisfies { [Name in keyof Requests]?: { [Field in keyof Requests[Name]]?: number } };

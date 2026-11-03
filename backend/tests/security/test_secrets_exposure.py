@@ -5,7 +5,7 @@ import os
 import pytest
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 from django.urls import reverse
 from django.utils.module_loading import import_string
 
@@ -16,6 +16,20 @@ pytestmark = pytest.mark.django_db
 
 PUBLIC_PAGES = ["account_login", "account_signup", "account_reset_password"]
 LEGAL_SLUGS = ["terminos", "tratamiento-de-datos", "privacidad", "cookies"]
+# Un mailer como el de producción, con una contraseña ficticia que se puede buscar en las páginas.
+FAKE_MAIL_PASSWORD = "contrasena-smtp-ficticia-" + "x" * 20
+SMTP_MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {"host": "smtp.example.test", "username": "ficticio", "password": FAKE_MAIL_PASSWORD},
+    }
+}
+
+
+def _mail_password() -> str:
+    """La contraseña SMTP del mailer por defecto. Con MAILERS, `settings.EMAIL_HOST_PASSWORD` ya no existe: leerla
+    con getattr devolvería "" en silencio. El runner de pruebas deja el mailer sin OPTIONS (locmem)."""
+    return settings.MAILERS["default"].get("OPTIONS", {}).get("password", "")
 
 
 def _secrets() -> list[str]:
@@ -25,7 +39,7 @@ def _secrets() -> list[str]:
         settings.FIELD_HASH_KEY,
         os.environ.get("DATABASE_URL", ""),
         settings.DATABASES["default"].get("PASSWORD", ""),
-        getattr(settings, "EMAIL_HOST_PASSWORD", ""),
+        _mail_password(),
     ]
     return [value for value in values if value]
 
@@ -42,6 +56,15 @@ def test_las_paginas_publicas_y_el_inicio_no_muestran_secretos(client, legal_doc
         _assert_no_secret(client.get(reverse("legal_document", args=[slug])).content.decode())
     client.force_login(make_member("barbero@example.com", make_shop("a"), Role.BARBER))
     _assert_no_secret(client.get(reverse("home")).content.decode())
+
+
+@override_settings(MAILERS=SMTP_MAILERS)
+def test_la_contrasena_del_correo_cuenta_como_secreto_y_no_llega_a_las_paginas_publicas(client, legal_documents):
+    assert FAKE_MAIL_PASSWORD in _secrets()
+    with pytest.raises(AssertionError):
+        _assert_no_secret(f"<p>{FAKE_MAIL_PASSWORD}</p>")  # el detector la encuentra si se filtra
+    for name in PUBLIC_PAGES:
+        _assert_no_secret(client.get(reverse(name)).content.decode())
 
 
 def test_ningun_context_processor_entrega_settings_ni_secretos(make_shop, make_member):

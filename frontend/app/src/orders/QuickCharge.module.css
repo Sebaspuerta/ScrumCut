@@ -1,0 +1,7 @@
+/* La confirmación del cobro: el mismo bloque del pago dividido ya asignado (positivo sobre el acento suave). */
+.done {
+  padding: var(--space-12);
+  background: var(--color-soft);
+  color: var(--color-positive);
+  font-weight: 700;
+}

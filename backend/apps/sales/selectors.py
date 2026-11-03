@@ -26,11 +26,15 @@ from apps.tenancy.roles import Role, role_has_permission
 
 DELETED_SUFFIX = " (eliminado)"
 DEFAULT_PERIOD_DAYS = 30
+MY_CUTS_PAGE_SIZE = 20
+NET_SALE = F("line_total") - F("line_discount")  # la venta de una línea, después de su parte del descuento
 _ZERO = Decimal("0.00")
 
 
-def _money_sum(expression) -> Coalesce:
-    return Coalesce(Sum(expression), Value(_ZERO), output_field=DecimalField(max_digits=14, decimal_places=2))
+def _money_sum(expression, condition: Q | None = None) -> Coalesce:
+    return Coalesce(
+        Sum(expression, filter=condition), Value(_ZERO), output_field=DecimalField(max_digits=14, decimal_places=2)
+    )
 
 
 def own_barber(membership: Membership) -> Barber | None:
@@ -162,14 +166,65 @@ def barber_performance(
         if mine is None or mine.pk != target.pk:
             raise PermissionDenied
     date_from, date_to = period_dates(membership, date_from, date_to)
+    totals = _production(membership, target, date_from, date_to, scope=scope)
+    return {"barber": target, "date_from": date_from, "date_to": date_to, **totals}
+
+
+def _production(membership: Membership, barber: Barber, date_from: date, date_to: date, *, scope: BranchScope) -> dict:
+    """Una sola consulta: comandas, servicios, venta neta y comisión copiada de las líneas del barbero."""
     start, end = day_bounds(membership.barbershop.timezone, date_from, date_to)
-    totals = scope.apply(_closed_lines(target, start, end), "order__branch").aggregate(
+    return scope.apply(_closed_lines(barber, start, end), "order__branch").aggregate(
         orders_count=Count("order", distinct=True),
         services_count=Coalesce(Sum("quantity", filter=Q(item_type=ItemType.SERVICE)), 0),
-        sales_total=_money_sum(F("line_total") - F("line_discount")),
+        sales_total=_money_sum(NET_SALE),
         commission_total=_money_sum("commission_amount"),
     )
-    return {"barber": target, "date_from": date_from, "date_to": date_to, **totals}
+
+
+def _my_orders(barber: Barber, lines: QuerySet[OrderItem]) -> QuerySet[Order]:
+    """Las comandas de esas líneas, cada una con solo lo del barbero: sus líneas, su venta y su comisión."""
+    mine = Q(items__barber=barber)
+    own_lines = OrderItem.objects.filter(barber=barber).select_related("service", "product").order_by("pk")
+    return (
+        Order.objects.filter(pk__in=lines.values("order"))
+        .annotate(
+            my_services=Coalesce(Sum("items__quantity", filter=mine & Q(items__item_type=ItemType.SERVICE)), 0),
+            my_sales=_money_sum(F("items__line_total") - F("items__line_discount"), mine),
+            my_commission=_money_sum("items__commission_amount", mine),
+        )
+        .prefetch_related(Prefetch("items", queryset=own_lines, to_attr="my_lines"))
+        .order_by("-closed_at", "-number")
+    )
+
+
+def my_cuts(membership: Membership, *, scope: BranchScope, day: date | None = None, page: int = 1) -> dict:
+    """«Mis cortes»: el barbero de la sesión, nunca otro, en la sede del alcance. Hoy, el mes en curso y una
+    página de sus comandas cerradas del día (por defecto, hoy). Todo sale de lo copiado al cerrar cada línea.
+
+    Sin un barbero propio (un cajero, un consultor), todo en cero y sin comandas.
+    """
+    ensure_permission(membership, "comandas.ver")
+    scope.check(membership)
+    today = local_today(membership)
+    day = day or today
+    barber = own_barber(membership)
+    if barber is None:
+        empty = {"orders_count": 0, "services_count": 0, "sales_total": _ZERO, "commission_total": _ZERO}
+        orders = Order.objects.none()
+        return {"barber": None, "day": day, "today": empty, "month": empty, "orders": _page(orders, page)}
+    start, end = day_bounds(membership.barbershop.timezone, day, day)
+    lines = scope.apply(_closed_lines(barber, start, end), "order__branch")
+    return {
+        "barber": barber,
+        "day": day,
+        "today": _production(membership, barber, today, today, scope=scope),
+        "month": _production(membership, barber, today.replace(day=1), today, scope=scope),
+        "orders": _page(_my_orders(barber, lines), page),
+    }
+
+
+def _page(orders: QuerySet[Order], page: int) -> Page:
+    return Paginator(orders, MY_CUTS_PAGE_SIZE).get_page(page)
 
 
 def my_cuts_today(membership: Membership, *, scope: BranchScope) -> dict:

@@ -4,6 +4,7 @@ import { StaleCashNotice } from "../cash/StaleCashNotice";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useDashboard } from "../hooks/useDashboard";
 import { useMe } from "../hooks/useMe";
+import { MyCutsPage } from "../myCuts/MyCutsPage";
 import { AlertsPanel } from "./AlertsPanel";
 import { BarbersPanel } from "./BarbersPanel";
 import { CashPanel } from "./CashPanel";
@@ -16,8 +17,11 @@ import { ProductsPanel } from "./ProductsPanel";
 import { SalesPanel } from "./SalesPanel";
 
 const REPORTS_PERMISSION = "reportes.ver";
+// Sin reportes, el tablero es «Mis cortes»: las comandas propias, que se leen con comandas.ver.
+const ORDERS_PERMISSION = "comandas.ver";
 
-/** Tablero "Resumen ejecutivo". El mes (?mes=) y la vista (?vista=3d) van en la URL, nunca en el navegador. */
+/** Tablero "Resumen ejecutivo"; sin reportes.ver, «Mis cortes». El mes (?mes=) y la vista (?vista=3d) van en la
+ * URL, nunca en el navegador. */
 export function DashboardPage() {
   const me = useMe();
   const [params] = useSearchParams();
@@ -25,12 +29,8 @@ export function DashboardPage() {
   const dashboard = useDashboard(params.get("mes"), allowed);
 
   if (!allowed) {
-    return (
-      <StatusMessage kind="empty">
-        El resumen ejecutivo es para quien ve los reportes. Tus cortes de hoy siguen en el{" "}
-        <a href="/">tablero actual</a>.
-      </StatusMessage>
-    );
+    if (me.data?.permissions.includes(ORDERS_PERMISSION)) return <MyCutsPage />;
+    return <StatusMessage kind="empty">El resumen ejecutivo es para quien ve los reportes.</StatusMessage>;
   }
   if (dashboard.isPending) return <DashboardSkeleton />;
   if (dashboard.isError) {

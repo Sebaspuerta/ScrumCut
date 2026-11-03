@@ -7,12 +7,14 @@ export const ORDERS_KEY = ["orders"] as const;
 export const CASH_KEY = ["cash"] as const;
 export const CLIENTS_KEY = ["clients"] as const;
 export const RECEIVABLES_KEY = ["receivables"] as const;
+export const MY_CUTS_KEY = ["my-cuts"] as const;
 
-/** Después de escribir se vuelven a pedir comandas, caja, clientes, fiados y tablero: un cobro cambia la deuda y el
- * nivel del cliente, un abono la caja, y un cliente editado sale en comandas y fiados. Nada se actualiza a mano. */
+/** Después de escribir se vuelven a pedir comandas, caja, clientes, fiados, tablero y «Mis cortes»: un cobro cambia
+ * la deuda y el nivel del cliente y la producción del barbero, un abono la caja, y un cliente editado sale en comandas
+ * y fiados. Nada se actualiza a mano. */
 function refreshAll(queryClient: QueryClient): Promise<unknown> {
   return Promise.all(
-    [ORDERS_KEY, CASH_KEY, CLIENTS_KEY, RECEIVABLES_KEY, DASHBOARD_KEY].map((queryKey) =>
+    [ORDERS_KEY, CASH_KEY, CLIENTS_KEY, RECEIVABLES_KEY, DASHBOARD_KEY, MY_CUTS_KEY].map((queryKey) =>
       queryClient.invalidateQueries({ queryKey }),
     ),
   );

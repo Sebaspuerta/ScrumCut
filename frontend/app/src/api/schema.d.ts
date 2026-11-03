@@ -267,6 +267,23 @@ export interface paths {
         patch: operations["me_preferences_partial_update"];
         trace?: never;
     };
+    "/api/v1/my-cuts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Hoy, el mes y sus comandas cerradas del día (?fecha=); un valor inválido vuelve a hoy, como en Comandas. */
+        get: operations["my_cuts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/navigation/": {
         parameters: {
             query?: never;
@@ -476,6 +493,27 @@ export interface paths {
         put?: never;
         /** @description Abre la comanda en la sede del alcance con sus líneas, al precio vigente de la sede. */
         post: operations["orders_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/quick-charge/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Regla 17 en la sede del alcance, con el precio vigente de la sede. Responde 201 con la comanda cobrada; un
+         *     reenvío con la misma llave y los mismos datos, 200 con la misma comanda sin cobrar otra vez, y con otros
+         *     datos, 409 sin registrar nada.
+         */
+        post: operations["orders_quick_charge_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1170,6 +1208,38 @@ export interface components {
             permissions: string[];
             branch: components["schemas"]["BranchState"] | null;
         };
+        MyCuts: {
+            /** @description El barbero de la sesión; sin uno propio, null. */
+            barber: string | null;
+            /**
+             * Format: date
+             * @description El día de la lista.
+             */
+            day: string;
+            today: components["schemas"]["Production"];
+            /** @description Del primer día del mes hasta hoy. */
+            month: components["schemas"]["Production"];
+            count: number;
+            page: number;
+            pages: number;
+            /** @description Comandas por página. */
+            page_size: number;
+            results: components["schemas"]["MyOrder"][];
+        };
+        MyOrder: {
+            /** Format: uuid */
+            id: string;
+            number: number;
+            /** Format: date-time */
+            closed_at: string;
+            /** @description Sus líneas en la comanda. */
+            items: string;
+            cuts: number;
+            /** Format: decimal */
+            production: string;
+            /** Format: decimal */
+            commission: string;
+        };
         Named: {
             /** Format: uuid */
             id: string;
@@ -1476,6 +1546,44 @@ export interface components {
             sales: string;
             /** Format: decimal */
             margin: string | null;
+        };
+        Production: {
+            /** @description Comandas cerradas en las que hizo alguna línea. */
+            orders: number;
+            /** @description Servicios hechos. */
+            cuts: number;
+            /**
+             * Format: decimal
+             * @description La venta neta de sus líneas.
+             */
+            production: string;
+            /**
+             * Format: decimal
+             * @description La comisión que quedó en cada comanda al cerrarla.
+             */
+            commission: string;
+        };
+        /**
+         * @description Un servicio o un producto, su barbero y la forma de pago: ni precio, ni cantidad, ni cliente, ni fiado. Un
+         *     campo que no es de aquí se rechaza en vez de ignorarse. Que venga un solo ítem y una forma de pago habilitada
+         *     lo valida `QuickChargeForm`, el formulario de la pantalla de Django.
+         */
+        QuickChargeRequest: {
+            /**
+             * Format: uuid
+             * @description La llave del intento de cobro: la misma en cada reintento.
+             */
+            request_key: string;
+            /** Format: uuid */
+            barber: string;
+            /** Format: uuid */
+            service?: string | null;
+            /** Format: uuid */
+            product?: string | null;
+            /** @description Una forma de pago habilitada; el fiado no lo es. */
+            method: string;
+            /** @default  */
+            reference: string;
         };
         ReceivableActions: {
             /** @description Con fiados.abonar, saldo vivo y una sede elegida. */
@@ -2374,6 +2482,45 @@ export interface operations {
             };
         };
     };
+    my_cuts_retrieve: {
+        parameters: {
+            query?: {
+                /** @description AAAA-MM-DD; si falta, hoy. */
+                fecha?: string | null;
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyCuts"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     navigation_retrieve: {
         parameters: {
             query?: never;
@@ -2940,6 +3087,69 @@ export interface operations {
                 };
             };
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    orders_quick_charge_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuickChargeRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

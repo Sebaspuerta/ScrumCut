@@ -134,7 +134,7 @@ Origen como `archivo.función` dentro de `services/`, salvo que se indique otro 
 51. Productos más vendidos, por cantidad. — `reports_service.top_products`
 52. Cierres de caja con el mismo criterio del arqueo. — `reports_service.cash_closings`
 53. Tablero: ingresos del día (pagos + abonos, todos los métodos), comandas cerradas hoy, comandas abiertas, caja abierta con su esperado, inventario crítico, fiados y alertas no leídas. — `dashboard_service.get_dashboard_summary`
-54. "Mis cortes de hoy": el barbero ve solo su conteo, sin dinero. — `dashboard_service.get_my_cuts_today`
+54. "Mis cortes": el barbero ve solo lo suyo en la sede activa: hoy y el mes en curso (cortes, comandas, lo que vendió y su comisión) y sus comandas cerradas de un día, con solo sus líneas. La venta y la comisión son las copiadas en cada línea al cerrar la comanda; nunca ve datos de otro barbero. En MAGNUS veía solo su conteo de hoy, sin dinero. — `dashboard_service.get_my_cuts_today` → `sales.selectors.my_cuts`
 55. Exportación contable: ventas con costo por línea de producto (los servicios no tienen costo directo; la comisión va aparte), comisiones, fiados, movimientos, cierres, estado de resultados y panorama. — `excel_report_service.generate_business_report_excel`
 
 Estado de resultados en ScrumCut: como gasto solo restan los movimientos de caja de tipo gasto; los retiros del dueño, los ingresos manuales y los ajustes no entran, y una comanda anulada deja de contar como venta.

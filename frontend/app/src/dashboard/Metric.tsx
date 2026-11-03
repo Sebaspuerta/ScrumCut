@@ -6,7 +6,8 @@ import { Sparkline } from "./Sparkline";
 interface MetricProps {
   label: string;
   value: string;
-  note: ReactNode;
+  /** Sin nota, la cifra va sola. */
+  note?: ReactNode;
   /** Los últimos días del período; sin serie, no hay mini tendencia. */
   trend?: number[];
 }
@@ -17,7 +18,7 @@ export function Metric({ label, value, note, trend }: MetricProps) {
       <span className={styles.label}>{label}</span>
       <strong className={styles.value}>{value}</strong>
       {trend && trend.length > 1 && <Sparkline values={trend} />}
-      <small className={styles.delta}>{note}</small>
+      {note !== undefined && <small className={styles.delta}>{note}</small>}
     </div>
   );
 }

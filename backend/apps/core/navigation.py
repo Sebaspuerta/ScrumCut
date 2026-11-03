@@ -125,7 +125,7 @@ ADMINISTRATION = (
 # "+ Nuevo": solo las acciones que ya tienen pantalla, cada una con su permiso.
 NEW_ACTIONS = (
     NavItem("Nueva comanda", "comandas.crear", "orders_new", "receipt", app_path="/comandas?nueva=1"),
-    NavItem("Cobro rápido", "comandas.cerrar", "orders_quick", "banknote"),
+    NavItem("Cobro rápido", "comandas.cerrar", "orders_quick", "banknote", app_path="/comandas?cobro=1"),
     NavItem(
         "Registrar gasto",
         "caja.movimiento",

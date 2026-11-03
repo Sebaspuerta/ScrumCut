@@ -23,6 +23,21 @@ def prod(monkeypatch):
     return importlib.import_module("config.settings.prod")
 
 
+def test_produccion_envia_correo_por_smtp_con_tls_y_las_credenciales_del_entorno(prod):
+    assert prod.MAILERS == {
+        "default": {
+            "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+            "OPTIONS": {
+                "host": "smtp.example.test",
+                "port": 587,
+                "username": "ficticio",
+                "password": "ficticio",
+                "use_tls": True,
+            },
+        }
+    }
+
+
 def test_produccion_fuerza_https_con_hsts_y_cookies_secure(prod):
     assert prod.SECURE_SSL_REDIRECT is True
     assert prod.SECURE_HSTS_SECONDS > 0

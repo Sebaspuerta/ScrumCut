@@ -1,10 +1,10 @@
 import type { OrderCatalog } from "../api/types";
 import type { FormErrors } from "../api/errors";
-import { formatCop } from "../lib/format";
 import { Field } from "../ui/Field";
 import form from "../ui/Form.module.css";
 import input from "../ui/Input.module.css";
-import { itemValue, PRODUCT, SERVICE, type LineDraft } from "./lineDraft";
+import { ItemOptions } from "./ItemOptions";
+import type { LineDraft } from "./lineDraft";
 
 interface LineInputsProps {
   catalog: OrderCatalog;
@@ -30,21 +30,7 @@ export function LineInputs({ catalog, draft, errors, defaultBarber, onChange }: 
               onChange({ ...draft, item: event.target.value });
             }}
           >
-            <option value="">Elige un servicio o un producto</option>
-            <optgroup label="Servicios">
-              {catalog.services.map((service) => (
-                <option key={service.id} value={itemValue(SERVICE, service.id)}>
-                  {service.name} · {formatCop(service.price)}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Productos">
-              {catalog.products.map((product) => (
-                <option key={product.id} value={itemValue(PRODUCT, product.id)}>
-                  {product.name} · {formatCop(product.price)} · {product.stock} en stock
-                </option>
-              ))}
-            </optgroup>
+            <ItemOptions catalog={catalog} />
           </select>
         )}
       </Field>

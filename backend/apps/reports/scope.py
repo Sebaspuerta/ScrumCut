@@ -16,10 +16,10 @@ from django.db.models.functions import Coalesce
 
 from apps.sales.models import Order, OrderItem, OrderStatus
 from apps.sales.selectors import DELETED_SUFFIX, day_bounds, period_dates, scoped_orders
+from apps.sales.selectors import NET_SALE as NET_SALE  # los reportes lo importan de aquí, junto con el período
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 
-NET_SALE = F("line_total") - F("line_discount")
 LINE_COST = F("unit_cost") * F("quantity") + F("consumables_cost")
 
 

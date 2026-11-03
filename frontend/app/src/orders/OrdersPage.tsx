@@ -6,9 +6,10 @@ import { useMe } from "../hooks/useMe";
 import { useOrders } from "../hooks/useOrders";
 import { Notice } from "../ui/Notice";
 import { NewOrderDialog } from "./NewOrderDialog";
+import { QuickChargeDialog } from "./QuickChargeDialog";
 import { ORDER_PARAM } from "../lib/appRoutes";
 import { withParam } from "../lib/searchParams";
-import { NEW_PARAM, orderListQuery } from "./orderParams";
+import { NEW_PARAM, orderListQuery, QUICK_PARAM } from "./orderParams";
 import { OrderDetailPanel } from "./OrderDetailPanel";
 import { OrderListPanel } from "./OrderListPanel";
 import { OrdersTitle } from "./OrdersTitle";
@@ -29,6 +30,7 @@ export function OrdersPage() {
   const selected = params.get(ORDER_PARAM);
   const oneBranch = me.data?.branch?.mode === "una";
   const canCreate = oneBranch && permissions.includes("comandas.crear");
+  const canQuickCharge = oneBranch && permissions.includes("comandas.cerrar");
 
   if (!allowed) return <StatusMessage kind="empty">Tu rol no tiene acceso a las comandas.</StatusMessage>;
   const open = (id: string | null) => {
@@ -40,9 +42,12 @@ export function OrdersPage() {
         branch={me.data?.branch?.current_label ?? ""}
         day={orders.data?.day ?? null}
         canCreate={canCreate}
-        canQuickCharge={oneBranch && permissions.includes("comandas.cerrar")}
+        canQuickCharge={canQuickCharge}
         onCreate={() => {
           setParams(withParam(params, NEW_PARAM, "1"));
+        }}
+        onQuickCharge={() => {
+          setParams(withParam(params, QUICK_PARAM, "1"));
         }}
       />
       {!oneBranch && <Notice>{ALL_BRANCHES_NOTICE}</Notice>}
@@ -69,6 +74,13 @@ export function OrdersPage() {
           }}
           onCreated={(id) => {
             setParams(withParam(withParam(params, NEW_PARAM, null), ORDER_PARAM, id));
+          }}
+        />
+      )}
+      {canQuickCharge && params.get(QUICK_PARAM) !== null && (
+        <QuickChargeDialog
+          onClose={() => {
+            setParams(withParam(params, QUICK_PARAM, null));
           }}
         />
       )}

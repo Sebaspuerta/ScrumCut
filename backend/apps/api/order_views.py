@@ -15,6 +15,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.api.exceptions import Conflict
 from apps.api.order_serializers import (
     CancelSerializer,
     ChangeClientSerializer,
@@ -29,6 +30,7 @@ from apps.api.order_serializers import (
     OrderDetailSerializer,
     OrderListQuerySerializer,
     OrderListSerializer,
+    QuickChargeSerializer,
 )
 from apps.api.orders import client_choice, order_catalog, order_detail, order_list
 from apps.api.permissions import HasRolePermission
@@ -37,13 +39,14 @@ from apps.api.serializers import (
     OBJECT_WRITE_ERRORS,
     READ_ERRORS,
     WRITE_ERRORS,
+    error_responses,
     query_values,
 )
 from apps.cash.selectors import payment_methods
 from apps.clients.selectors import list_clients
 from apps.sales import services
 from apps.sales.board import BoardFilter
-from apps.sales.forms import CheckoutForm
+from apps.sales.forms import PRODUCT_PREFIX, SERVICE_PREFIX, CheckoutForm, QuickChargeForm
 from apps.sales.services.checkout import MAX_PARTS
 
 CLIENT_RESULTS = 20  # como el buscador de "Cambiar cliente" en Django
@@ -164,6 +167,60 @@ class OrderCheckoutView(OrderWriteView):
         )
         detail = order_detail(request.membership, order.public_id, scope=request.branch_scope)
         return Response(CheckoutResultSerializer({"order": detail, "change": change}).data)
+
+
+def _quick_charge_form(data: dict) -> QuickChargeForm:
+    """El mismo formulario del cobro rápido de Django: un solo ítem y una forma de pago habilitada (el fiado no es
+    una). Sin ítem, o con servicio y producto a la vez, el formulario responde su propio mensaje."""
+    service, product = data["service"], data["product"]
+    item = ""
+    if (service is None) != (product is None):
+        item = f"{SERVICE_PREFIX}{service}" if service else f"{PRODUCT_PREFIX}{product}"
+    fields = {"item": item, "barbero": data["barber"], "metodo": data["method"], "referencia": data["reference"]}
+    form = QuickChargeForm(fields, methods=payment_methods())
+    if not form.is_valid():
+        raise ValidationError(form.errors.as_data())
+    return form
+
+
+class QuickChargeView(OrderWriteView):
+    """Regla 17 en la sede del alcance, con el precio vigente de la sede. Responde 201 con la comanda cobrada; un
+    reenvío con la misma llave y los mismos datos, 200 con la misma comanda sin cobrar otra vez, y con otros
+    datos, 409 sin registrar nada."""
+
+    required_permission = "comandas.cerrar"
+    error_fields = {
+        "item": "item",
+        "service": "item",
+        "product": "item",
+        "quantity": "item",
+        "barbero": "barber",
+        "barber": "barber",
+        "metodo": "method",
+        "payment_method": "method",
+        "referencia": "reference",
+    }
+
+    @extend_schema(
+        request=QuickChargeSerializer,
+        responses={201: OrderDetailSerializer, 200: OrderDetailSerializer, **error_responses(400, 403, 409, 429)},
+    )
+    def post(self, request: Request) -> Response:
+        data = self.valid(QuickChargeSerializer)
+        charge = _quick_charge_form(data).cleaned_data
+        try:
+            order, charged_now = services.quick_register_once(
+                request.membership,
+                request.branch_scope,
+                request_key=data["request_key"],
+                barber=charge["barbero"],
+                method=charge["metodo"],
+                reference=charge["referencia"],
+                **charge["item"],
+            )
+        except services.QuickChargeConflictError as exc:
+            raise Conflict from exc
+        return self.order(order.public_id, status.HTTP_201_CREATED if charged_now else status.HTTP_200_OK)
 
 
 class OrderCancelView(OrderWriteView):

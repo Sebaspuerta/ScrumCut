@@ -30,13 +30,14 @@ from apps.sales.services.open_orders import (
     set_discount,
     update_item_quantity,
 )
-from apps.sales.services.quick_charge import quick_register
+from apps.sales.services.quick_charge import QuickChargeConflictError, quick_register, quick_register_once
 
 __all__ = [
     "NOT_EDITABLE",
     "Checkout",
     "NewLine",
     "PaymentPart",
+    "QuickChargeConflictError",
     "cash_change",
     "change_order_client",
     "checkout_order",
@@ -47,6 +48,7 @@ __all__ = [
     "hold_order",
     "open_order_with_lines",
     "quick_register",
+    "quick_register_once",
     "remove_item",
     "resume_order",
     "set_discount",

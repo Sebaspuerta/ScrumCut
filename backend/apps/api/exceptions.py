@@ -10,7 +10,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -22,6 +22,7 @@ GENERIC_MESSAGES = {
     403: "No tienes permiso para esta acción.",
     404: "No encontramos lo que buscas.",
     405: "Esta acción no está disponible.",
+    409: "Esta solicitud ya se registró con otros datos. Revisa lo registrado antes de intentarlo de nuevo.",
     429: "Demasiadas solicitudes. Intenta de nuevo en un momento.",
 }
 DEFAULT_MESSAGE = "No pudimos completar la solicitud."
@@ -32,10 +33,18 @@ STATUS_CODES = {
     403: "permission_denied",
     404: "not_found",
     405: "method_not_allowed",
+    409: "conflict",
     429: "throttled",
 }
 DEFAULT_CODE = "error"
 NON_FIELD_KEYS = {"__all__", "non_field_errors"}
+
+
+class Conflict(APIException):
+    """La misma llave de una escritura llegó con otros datos (el cobro rápido): no se registra nada."""
+
+    status_code = 409
+    default_code = STATUS_CODES[409]
 
 
 class ServiceValidationError(ValidationError):

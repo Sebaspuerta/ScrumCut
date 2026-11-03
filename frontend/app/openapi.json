@@ -1027,6 +1027,73 @@
                 }
             }
         },
+        "/api/v1/my-cuts/": {
+            "get": {
+                "operationId": "my_cuts_retrieve",
+                "description": "Hoy, el mes y sus comandas cerradas del día (?fecha=); un valor inválido vuelve a hoy, como en Comandas.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "fecha",
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "nullable": true
+                        },
+                        "description": "AAAA-MM-DD; si falta, hoy."
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    }
+                ],
+                "tags": [
+                    "my-cuts"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MyCuts"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/navigation/": {
             "get": {
                 "operationId": "navigation_retrieve",
@@ -1895,6 +1962,92 @@
                         "description": ""
                     },
                     "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/orders/quick-charge/": {
+            "post": {
+                "operationId": "orders_quick_charge_create",
+                "description": "Regla 17 en la sede del alcance, con el precio vigente de la sede. Responde 201 con la comanda cobrada; un\nreenvío con la misma llave y los mismos datos, 200 con la misma comanda sin cobrar otra vez, y con otros\ndatos, 409 sin registrar nada.",
+                "tags": [
+                    "orders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QuickChargeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrderDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4099,6 +4252,104 @@
                     "user"
                 ]
             },
+            "MyCuts": {
+                "type": "object",
+                "properties": {
+                    "barber": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "El barbero de la sesión; sin uno propio, null."
+                    },
+                    "day": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "El día de la lista."
+                    },
+                    "today": {
+                        "$ref": "#/components/schemas/Production"
+                    },
+                    "month": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Production"
+                            }
+                        ],
+                        "description": "Del primer día del mes hasta hoy."
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Comandas por página."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MyOrder"
+                        }
+                    }
+                },
+                "required": [
+                    "barber",
+                    "count",
+                    "day",
+                    "month",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "results",
+                    "today"
+                ]
+            },
+            "MyOrder": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "number": {
+                        "type": "integer"
+                    },
+                    "closed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "items": {
+                        "type": "string",
+                        "description": "Sus líneas en la comanda."
+                    },
+                    "cuts": {
+                        "type": "integer"
+                    },
+                    "production": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "commission": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    }
+                },
+                "required": [
+                    "closed_at",
+                    "commission",
+                    "cuts",
+                    "id",
+                    "items",
+                    "number",
+                    "production"
+                ]
+            },
             "Named": {
                 "type": "object",
                 "properties": {
@@ -5095,6 +5346,78 @@
                     "name",
                     "sales",
                     "units"
+                ]
+            },
+            "Production": {
+                "type": "object",
+                "properties": {
+                    "orders": {
+                        "type": "integer",
+                        "description": "Comandas cerradas en las que hizo alguna línea."
+                    },
+                    "cuts": {
+                        "type": "integer",
+                        "description": "Servicios hechos."
+                    },
+                    "production": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "La venta neta de sus líneas."
+                    },
+                    "commission": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "La comisión que quedó en cada comanda al cerrarla."
+                    }
+                },
+                "required": [
+                    "commission",
+                    "cuts",
+                    "orders",
+                    "production"
+                ]
+            },
+            "QuickChargeRequest": {
+                "type": "object",
+                "description": "Un servicio o un producto, su barbero y la forma de pago: ni precio, ni cantidad, ni cliente, ni fiado. Un\ncampo que no es de aquí se rechaza en vez de ignorarse. Que venga un solo ítem y una forma de pago habilitada\nlo valida `QuickChargeForm`, el formulario de la pantalla de Django.",
+                "properties": {
+                    "request_key": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "La llave del intento de cobro: la misma en cada reintento."
+                    },
+                    "barber": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "service": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "product": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "method": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Una forma de pago habilitada; el fiado no lo es.",
+                        "maxLength": 20
+                    },
+                    "reference": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 80
+                    }
+                },
+                "required": [
+                    "barber",
+                    "method",
+                    "request_key"
                 ]
             },
             "ReceivableActions": {

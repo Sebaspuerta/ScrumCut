@@ -4,6 +4,5 @@ export const DJANGO_ROUTES = {
   logout: "/cuenta/logout/",
   logoutEverywhere: "/cuenta/cerrar-sesiones/",
   security: "/cuenta/2fa/",
-  quickCharge: "/comandas/cobro-rapido/",
   export: "/reportes/exportar/",
 } as const;

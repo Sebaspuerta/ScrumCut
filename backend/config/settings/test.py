@@ -8,7 +8,7 @@ load_local_dotenv()
 from .base import *  # noqa: E402, F403
 
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]  # solo para acelerar pruebas
-EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+MAILERS = {"default": {"BACKEND": "django.core.mail.backends.locmem.EmailBackend"}}
 AXES_ENABLED = True
 
 # Una espera por bloqueo (por ejemplo, otra corrida de pytest sobre la misma base) falla en 10 s

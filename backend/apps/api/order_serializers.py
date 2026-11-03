@@ -12,6 +12,7 @@ from apps.sales.models import ItemType, OrderStatus
 from apps.sales.services.checkout import MAX_PARTS
 
 TOO_MANY_PARTS = f"El pago se divide en {MAX_PARTS} partes como máximo."
+NOT_IN_QUICK_CHARGE = "El cobro rápido no lleva este dato."
 
 
 class OrderListQuerySerializer(serializers.Serializer):
@@ -205,3 +206,24 @@ class CheckoutResultSerializer(serializers.Serializer):
 
 class CancelSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=300)
+
+
+class QuickChargeSerializer(serializers.Serializer):
+    """Un servicio o un producto, su barbero y la forma de pago: ni precio, ni cantidad, ni cliente, ni fiado. Un
+    campo que no es de aquí se rechaza en vez de ignorarse. Que venga un solo ítem y una forma de pago habilitada
+    lo valida `QuickChargeForm`, el formulario de la pantalla de Django."""
+
+    request_key = serializers.UUIDField(help_text="La llave del intento de cobro: la misma en cada reintento.")
+    barber = serializers.UUIDField()
+    service = serializers.UUIDField(required=False, allow_null=True, default=None)
+    product = serializers.UUIDField(required=False, allow_null=True, default=None)
+    method = serializers.CharField(max_length=20, help_text="Una forma de pago habilitada; el fiado no lo es.")
+    reference = serializers.CharField(
+        required=False, allow_blank=True, max_length=PAYMENT_REFERENCE_MAX_LENGTH, default=""
+    )
+
+    def validate(self, attrs: dict) -> dict:
+        unknown = sorted(set(self.initial_data) - set(self.fields))
+        if unknown:
+            raise serializers.ValidationError(dict.fromkeys(unknown, NOT_IN_QUICK_CHARGE))
+        return attrs

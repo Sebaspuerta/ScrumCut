@@ -85,8 +85,13 @@ def create_order(
     *,
     client: UUID | str | None = None,
     barber: UUID | str | None = None,
+    request_key: UUID | None = None,
 ) -> Order:
-    """En la sede del alcance. El número sale del consecutivo de la barbería, bloqueado para que no se repita."""
+    """En la sede del alcance. El número sale del consecutivo de la barbería, bloqueado para que no se repita.
+
+    `request_key` es la llave del cobro rápido que la crea; su unicidad no se revisa aquí sino en la base
+    (`uq_order_request_key_per_barbershop`), que es la que garantiza un solo cobro entre envíos simultáneos.
+    """
     ensure_permission(membership, "comandas.crear")
     target_branch = scope.branch_for_write(membership)
     target_client = _order_client(client)
@@ -103,8 +108,9 @@ def create_order(
             client=target_client,
             barber=target_barber,
             created_by=membership.user,
+            request_key=request_key,
         )
-        order.full_clean()
+        order.full_clean(exclude=["request_key"])
         order.save()
         _audit(membership, "comanda.crear", order=order, before=None, after=_order_snapshot(order))
     return order

@@ -1,8 +1,7 @@
 import { Plus, Zap } from "lucide-react";
 
-import { DJANGO_ROUTES } from "../lib/djangoRoutes";
 import { longDate } from "../lib/format";
-import { Button, buttonClass } from "../ui/Button";
+import { Button } from "../ui/Button";
 import { PageTitle } from "../ui/PageTitle";
 
 interface OrdersTitleProps {
@@ -11,10 +10,11 @@ interface OrdersTitleProps {
   canCreate: boolean;
   canQuickCharge: boolean;
   onCreate: () => void;
+  onQuickCharge: () => void;
 }
 
-/** «Sede … · fecha · precios de la sede …», con Cobro rápido (aún en Django) y Nueva comanda. */
-export function OrdersTitle({ branch, day, canCreate, canQuickCharge, onCreate }: OrdersTitleProps) {
+/** «Sede … · fecha · precios de la sede …», con Cobro rápido y Nueva comanda. */
+export function OrdersTitle({ branch, day, canCreate, canQuickCharge, onCreate, onQuickCharge }: OrdersTitleProps) {
   const subtitle = [`Sede ${branch}`, day ? longDate(day) : null, canCreate ? `precios de la sede ${branch}` : null];
   return (
     <PageTitle
@@ -24,10 +24,10 @@ export function OrdersTitle({ branch, day, canCreate, canQuickCharge, onCreate }
       actions={
         <>
           {canQuickCharge && (
-            <a className={buttonClass("secondary")} href={DJANGO_ROUTES.quickCharge}>
+            <Button kind="secondary" onClick={onQuickCharge}>
               <Zap size={16} aria-hidden="true" />
               Cobro rápido
-            </a>
+            </Button>
           )}
           {canCreate && (
             <Button onClick={onCreate}>

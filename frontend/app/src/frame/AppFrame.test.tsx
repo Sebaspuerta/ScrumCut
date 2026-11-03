@@ -52,7 +52,7 @@ describe("marco de la app", () => {
     expect(screen.getByRole("link", { name: "Nueva comanda" }).getAttribute("href")).toBe("/comandas/nueva/");
   });
 
-  it("sin reportes.ver, el tablero manda al tablero actual en vez de pedir datos que no le tocan", async () => {
+  it("sin reportes.ver ni comandas.ver, el tablero no pide datos que no le tocan", async () => {
     const fetch = stubApi({
       "/api/v1/me/": { ...OWNER_ME, permissions: [] },
       "/api/v1/navigation/": { ...NAVIGATION, unread_alerts: null },

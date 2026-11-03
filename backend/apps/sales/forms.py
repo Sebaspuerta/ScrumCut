@@ -47,10 +47,13 @@ class ChangeClientForm(forms.Form):
     cliente = forms.UUIDField(required=False)
 
 
+PICK_ONE_ITEM = "Elige un servicio o un producto."
+
+
 class AddItemForm(forms.Form):
     """El ítem viaja como "servicio:<uuid>" o "producto:<uuid>"; el barbero es opcional."""
 
-    item = forms.CharField(max_length=60)
+    item = forms.CharField(max_length=60, error_messages={"required": PICK_ONE_ITEM})
     barbero = forms.UUIDField(required=False)
     cantidad = forms.IntegerField(min_value=1, max_value=MAX_LINE_QUANTITY, initial=1)
 
@@ -59,7 +62,7 @@ class AddItemForm(forms.Form):
         for prefix, kind in ((SERVICE_PREFIX, "service"), (PRODUCT_PREFIX, "product")):
             if value.startswith(prefix):
                 return {kind: forms.UUIDField().clean(value.removeprefix(prefix))}
-        raise ValidationError("Elige un servicio o un producto.")
+        raise ValidationError(PICK_ONE_ITEM)
 
 
 class DiscountForm(forms.Form):

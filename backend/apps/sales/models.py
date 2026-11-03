@@ -59,6 +59,8 @@ class Order(TenantScopedModel):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
     cancel_reason = models.TextField("motivo de anulación", blank=True)
+    # La llave del intento de cobro rápido que creó la comanda: un reenvío con la misma llave no cobra dos veces.
+    request_key = models.UUIDField("llave del cobro", null=True, blank=True, editable=False)
 
     class Meta:
         constraints = [
@@ -66,6 +68,11 @@ class Order(TenantScopedModel):
                 fields=["barbershop", "number"],
                 name="uq_order_number_per_barbershop",
                 violation_error_message="Ese número de comanda ya existe.",
+            ),
+            models.UniqueConstraint(
+                fields=["barbershop", "request_key"],
+                condition=models.Q(request_key__isnull=False),
+                name="uq_order_request_key_per_barbershop",
             ),
             models.CheckConstraint(condition=models.Q(status__in=OrderStatus.values), name="ck_order_status_valid"),
             models.CheckConstraint(
