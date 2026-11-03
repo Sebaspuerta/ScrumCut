@@ -132,7 +132,7 @@ Todas heredan de `TenantScopedModel`, terminan con `EnableTenantRLS` y llevan la
 | Un único ayudante de filtro | NUEVO | `apps/tenancy/branch_scope.py`, con `BranchScope` y `BranchScope.apply(queryset, lookup="branch")`. Reemplaza `_in_branch` (`apps/reports/selectors/cash.py`) y el filtro de `closed_orders` (`apps/reports/scope.py`). `reports.scope.Period.branch` pasa a llevar el `BranchScope`. Va en tenancy y no en reports porque caja, comandas e inventario también lo usan (decisión 10). |
 | Tablero y Excel | CAMBIA | Ver "Tablero y Excel", debajo de esta tabla. |
 | Escribir exige modo "una" | NUEVO | El servicio rechaza escrituras en modo "todas". |
-| Pestañas cruzadas | NUEVO | Todo formulario que escribe lleva oculta la sede con la que se abrió. Si no coincide con la sede activa, el servidor rechaza el envío con el mensaje "Cambiaste de sede en otra pestaña; revisa antes de guardar". |
+| Pestañas cruzadas | RETIRADO (R5) | Se pensó como un formulario de Django que llevara oculta la sede con la que se abrió (`BranchBoundForm`), pero ninguna pantalla llegó a usarlo y se retiró en R5. Las escrituras van por la API: el servidor toma la sede de `request.branch_scope` y el servicio la valida. |
 | "Hoy" y los períodos | YA EXISTE | Siguen con `Barbershop.timezone` (decisión 7). |
 | Claves de caché con la sede | YA EXISTE (no aplica) | Hoy no hay caché de datos; si se agrega, la clave lleva la sede. |
 
@@ -208,7 +208,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - `add_payment` y `current_session` rechazan una sede inactiva.
 - Un abono a un fiado de la sede A en la caja de la sede B se rechaza; en la caja de A funciona y el dinero queda en esa caja.
 - El consolidado (modo "todas") es igual a la suma de las sedes.
-- El rechazo por pestañas cruzadas.
+- El rechazo por pestañas cruzadas (retirado en R5 junto con `BranchBoundForm`; ver "Pestañas cruzadas").
 - Traslados: atomicidad, concurrencia y no negativos.
 - Las migraciones funcionan con datos existentes y son reversibles. Esto incluye: barberos con sede nula asignados a todas las activas, `origin_branch` de fiados con y sin comanda, `max_branches` y la eliminación de `current_stock`.
 - Las tablas nuevas tienen RLS con FORCE: se prueba con un rol sin privilegios (`tests/rls_support.py`) y aparecen en `tests/security/test_rls_coverage.py`.
@@ -266,7 +266,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 
 **Pasa a la fase de pantallas (S3)**
 - Las pantallas de existencias por sede y de traslado.
-- Usar `BranchBoundForm` (pestañas cruzadas) en cada formulario que escribe.
+- Las pantallas de sedes (existencias, traslados y Ajustes → Sedes) se harán en React y validarán por la API cuando existan: la sede sale de `request.branch_scope` y la valida el servicio, nunca un formulario de Django.
 - El selector de sede en la barra superior.
 - La pantalla que pide elegir una sede cuando Caja, Comandas o Agenda se abren en modo "todas".
 
@@ -307,7 +307,7 @@ Resuelven los conflictos que dejó el diagnóstico.
 9. **S2 se divide.**
    - Decisión: S2 es solo backend (alcance, middleware, cambio de sede y selectores). El selector visual y el modo "todas" del encabezado se diseñan y se aprueban junto con S3.
    - Hueco aceptado: entre S2 y S3 no hay forma visual de cambiar de sede (solo el POST de cambio de sede). S3 sigue inmediatamente después de S2.
-   - Motivo: no están en el diseño aprobado (`docs/diseno.md`) y la regla de diseño de `AGENTS.md` prohíbe inventarlos.
+   - Motivo: no están en el diseño aprobado (`docs/diseno/historico/diseno.md`) y la regla de diseño de `AGENTS.md` prohíbe inventarlos.
 10. **`?sede=` desaparece.**
     - Decisión: el tablero y el Excel usan `request.branch_scope`. En modo "todas", los indicadores suman las sedes permitidas desde S2; el comparativo por sede llega en S5. El filtro repetido (`_in_branch` y el de `closed_orders`) se unifica en un solo ayudante.
     - Motivo: una sola fuente para la sede activa, validada en el servidor en cada petición, en lugar de un parámetro que cada vista interpreta a su manera.

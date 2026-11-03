@@ -51,7 +51,7 @@ class NavigationView(APIView):
 
 
 class BranchView(APIView):
-    """Cambia la sede activa; una sede no permitida responde 403, como `switch_branch`."""
+    """Cambia la sede activa entre las permitidas al rol (`choose_branch`); una sede no permitida responde 403."""
 
     permission_classes = [IsAuthenticated, HasRolePermission]
 

@@ -58,6 +58,13 @@ _MONEY = DecimalField(max_digits=14, decimal_places=2)
 _ZERO = Value(Decimal("0.00"))
 
 
+def level_label(level: str) -> str:
+    """El nombre del nivel del cliente como lo define el backend (ClientStatus)."""
+    if level == NO_ACTIVITY:
+        return "Sin visitas en la sede"
+    return ClientStatus(level).label if level in ClientStatus.values else ""
+
+
 @dataclass(frozen=True)
 class ClientFilter:
     search: str = ""

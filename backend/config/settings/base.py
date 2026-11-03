@@ -80,7 +80,6 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.csp",
-                "apps.core.navigation.shell",
             ],
         },
     },
@@ -151,7 +150,8 @@ AXES_RESET_ON_SUCCESS = True
 AXES_USERNAME_FORM_FIELD = "login"
 
 LOGIN_URL = "account_login"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "react_app"
+LOGOUT_REDIRECT_URL = "account_login"
 
 # --- Sesión y cookies ------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True

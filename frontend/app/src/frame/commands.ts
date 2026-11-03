@@ -8,8 +8,8 @@ export interface Command {
   note: string;
   group: string;
   icon: string | null;
-  /** Ruta de la app de React o URL de una pantalla de Django; null mientras no exista. */
-  target: { app: string } | { url: string } | null;
+  /** Ruta de la app de React; null mientras la pantalla no exista. */
+  target: { app: string } | null;
 }
 
 const UPCOMING_SEARCHES: Command[] = [
@@ -25,8 +25,7 @@ const UPCOMING_SEARCHES: Command[] = [
 ];
 
 function targetOf(item: NavItem): Command["target"] {
-  if (item.app_path !== null) return { app: item.app_path };
-  return item.url === null ? null : { url: item.url };
+  return item.app_path === null ? null : { app: item.app_path };
 }
 
 function fromItem(item: NavItem, group: string, note: string): Command {

@@ -19,7 +19,8 @@ export function NewMenu({ actions }: NewMenuProps) {
   const menuId = useId();
   const { open, toggle, close, containerRef, triggerRef } = usePopover();
   useHotkey({ key: "n" }, toggle);
-  if (actions.length === 0) return null;
+  const ready = actions.flatMap(({ label, icon, app_path }) => (app_path ? [{ label, icon, path: app_path }] : []));
+  if (ready.length === 0) return null;
   return (
     <div className={styles.wrapper} ref={containerRef}>
       <button
@@ -36,19 +37,12 @@ export function NewMenu({ actions }: NewMenuProps) {
       </button>
       {open && (
         <ul id={menuId} className={styles.menu} aria-label="Crear">
-          {actions.map((action) => (
-            <li key={action.label}>
-              {action.app_path === null ? (
-                <a className={styles.item} href={action.url ?? undefined}>
-                  <NavIcon name={action.icon} size={18} />
-                  {action.label}
-                </a>
-              ) : (
-                <Link className={styles.item} to={action.app_path} onClick={close}>
-                  <NavIcon name={action.icon} size={18} />
-                  {action.label}
-                </Link>
-              )}
+          {ready.map(({ label, icon, path }) => (
+            <li key={label}>
+              <Link className={styles.item} to={path} onClick={close}>
+                <NavIcon name={icon} size={18} />
+                {label}
+              </Link>
             </li>
           ))}
         </ul>

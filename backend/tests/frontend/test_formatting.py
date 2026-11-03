@@ -1,28 +1,17 @@
-"""Formato colombiano de la interfaz: una sola implementación para plantillas y datos del JS."""
+"""Formato colombiano: lo que formatea el backend (API, Excel y alertas) es igual a lo de la app de React."""
 
 import json
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from zoneinfo import ZoneInfo
 
 import pytest
 from django.conf import settings
-from django.template import Context, Template
 
-from apps.core.formatting import (
-    clock,
-    day_label,
-    format_cop,
-    format_difference,
-    format_variation,
-    mask_phone,
-    month_label,
-    opened_since,
-    short_date,
-)
+from apps.core.formatting import day_label, format_cop, mask_phone, month_label, short_date
 
 D = Decimal
 # Los mismos casos prueba la app de React (frontend/app/src/lib/format.test.ts): un solo formato en los dos lados.
+# La hora y el "desde cuándo" de la caja solo los formatea React; sus casos los prueba solo Vitest.
 SHARED = json.loads((settings.FRONTEND_DIR / "app" / "src" / "lib" / "format-cases.json").read_text(encoding="utf-8"))
 
 
@@ -48,34 +37,6 @@ def test_dia_igual_que_en_la_app_de_react(value, expected):
 @pytest.mark.parametrize(("value", "expected"), SHARED["month_label"])
 def test_mes_igual_que_en_la_app_de_react(value, expected):
     assert month_label(date.fromisoformat(value)) == expected
-
-
-@pytest.mark.parametrize(("value", "zone", "expected"), SHARED["clock"])
-def test_hora_igual_que_en_la_app_de_react(value, zone, expected):
-    assert clock(datetime.fromisoformat(value).astimezone(ZoneInfo(zone))) == expected
-
-
-@pytest.mark.parametrize(("value", "today", "zone", "expected"), SHARED["opened_since"])
-def test_desde_cuando_esta_abierta_la_caja_igual_que_en_la_app_de_react(value, today, zone, expected):
-    moment = datetime.fromisoformat(value).astimezone(ZoneInfo(zone))
-    assert opened_since(moment, date.fromisoformat(today)) == expected
-
-
-def test_el_filtro_de_plantilla_usa_el_mismo_formato():
-    rendered = Template("{% load formatting %}{{ value|cop }}").render(Context({"value": D("2480000")}))
-    assert rendered == "$2.480.000"
-
-
-def test_variacion_con_flecha_signo_y_coma_decimal():
-    assert format_variation({"percent": D("12.4")}) == "▴ +12,4 %"
-    assert format_variation({"percent": D("-3.1")}) == "▾ −3,1 %"
-    assert format_variation(None) == "—"
-
-
-def test_diferencia_del_arqueo_sin_rojos():
-    assert format_difference(D("0")) == "Cuadrada"
-    assert format_difference(D("5000")) == "▴ +$5.000"
-    assert format_difference(D("-8000")) == "▾ −$8.000"
 
 
 @pytest.mark.parametrize(

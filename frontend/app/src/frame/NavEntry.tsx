@@ -19,7 +19,7 @@ interface NavEntryProps {
   onNavigate: () => void;
 }
 
-/** En React, enlace del enrutador; si aún vive en Django, enlace a esa pantalla; sin pantalla, nunca enlace. */
+/** Con pantalla, enlace del enrutador; sin pantalla, nunca enlace. */
 export function NavEntry({ item, onNavigate }: NavEntryProps) {
   const icon = <NavIcon name={item.icon} size={ICON_SIZE} strokeWidth={ICON_STROKE} />;
   if (item.app_path !== null) {
@@ -33,14 +33,6 @@ export function NavEntry({ item, onNavigate }: NavEntryProps) {
         {icon}
         {item.label}
       </NavLink>
-    );
-  }
-  if (item.url !== null) {
-    return (
-      <a className={styles.entry} href={item.url}>
-        {icon}
-        {item.label}
-      </a>
     );
   }
   return (

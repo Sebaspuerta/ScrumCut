@@ -9,7 +9,6 @@ from apps.core.navigation import (
     SIDEBAR,
     NavGroup,
     NavItem,
-    item_url,
     unread_alerts,
     visible_actions,
     visible_items,
@@ -55,13 +54,11 @@ def me(user: User, membership: Membership | None, scope: BranchScope | None) -> 
 
 
 def _nav_item(item: NavItem, without_screen: str) -> dict:
-    url = item_url(item)
     return {
         "label": item.label,
         "icon": item.icon,
-        "url": url,
         "app_path": item.app_path,
-        "status": LINK if url else without_screen,
+        "status": LINK if item.app_path else without_screen,
     }
 
 

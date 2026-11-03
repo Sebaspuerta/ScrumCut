@@ -1,3 +1,4 @@
+import json
 import secrets
 from datetime import timedelta
 from decimal import Decimal
@@ -23,6 +24,11 @@ from apps.tenancy.roles import Role
 
 # Se genera en cada corrida: una contraseña literal en el código la marca gitleaks como secreto.
 TEST_PASSWORD = secrets.token_urlsafe(18)
+# Un manifest de Vite mínimo: la compilación real (frontend/static/app) no está en el repositorio.
+VITE_MANIFEST = {
+    "src/main.tsx": {"file": "assets/main-abc.js", "isEntry": True, "css": ["assets/main-abc.css"], "imports": ["_v"]},
+    "_v": {"file": "assets/vendor-def.js", "css": ["assets/vendor-def.css"]},
+}
 
 
 def scope_of(membership: Membership, branch: Branch | None = None, *, everything: bool = False) -> BranchScope:
@@ -175,3 +181,12 @@ def publish(kind: str, version: str, days_ago: int = 1) -> LegalDocument:
 @pytest.fixture
 def legal_documents(db) -> dict[str, LegalDocument]:
     return {kind: publish(kind, "1.0") for kind in LegalDocument.Kind.values}
+
+
+@pytest.fixture
+def built_app(tmp_path, settings):
+    """La app de React "compilada", para pedir /app/ en las pruebas."""
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps(VITE_MANIFEST), encoding="utf-8")
+    settings.REACT_APP_MANIFEST = manifest
+    return manifest

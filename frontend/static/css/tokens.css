@@ -1,132 +1,29 @@
-/* Variables del diseño aprobado (docs/diseno.md). Solo variables y fuentes: los estilos de las pantallas van en sus propios archivos. */
-
-/* Variable: pesos 200 a 800 y tamaño óptico 12 a 96, que el navegador ajusta solo (font-optical-sizing: auto). */
-@font-face {
-  font-family: "Bricolage Grotesque";
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url("../fonts/bricolage-grotesque-latin-opsz-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Hanken Grotesk";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fonts/hanken-grotesk-latin-400-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Hanken Grotesk";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("../fonts/hanken-grotesk-latin-500-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Hanken Grotesk";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("../fonts/hanken-grotesk-latin-600-normal.woff2") format("woff2");
-}
+/* Variables de diseño de las pantallas de Django (la entrada). Sus colores propios viven en
+   modules/login.css; las fuentes, en identity-fonts.css (identidad R1, docs/diseno/identidad-r1.md). */
 
 :root {
-  /* Café espresso y sus tonos */
+  /* Café espresso y sus tonos: avisos y errores de formulario */
   --color-espresso: #2e211a;
-  --color-espresso-800: #3a2b22;
-  --color-espresso-700: #4a382d;
   --color-espresso-600: #6b5444;
-  --color-espresso-400: #a68b76;
-  --color-espresso-300: #cbb8a6;
   --color-espresso-200: #e4dad0;
 
-  /* Acento salvia: lo positivo y lo activo. Sin rojos: lo negativo se marca con signo y flecha. */
+  /* Acento salvia: lo positivo y el foco. Sin rojos: lo negativo se marca con signo y flecha. */
   --color-accent: #5e7361;
-  --color-accent-on-dark: #9db09f;
 
   /* Superficies, líneas y texto */
   --color-background: #eeebe6;
-  --color-sidebar: #f3f0eb;
   --color-panel: #f8f6f3;
   --color-line: #d9d2c8;
-  --color-control-border: #cfc6ba;
   --color-text: #1e1915;
   --color-text-muted: #6e655d;
-  --color-nav-text: #4a4039;
-  --color-on-dark: #f2ede7;
-  --color-on-dark-muted: #bfae9f;
-  --color-field: #ffffff;
-
-  /* Marco de la aplicación (fase F1) */
-  --color-brand-cell: #241912;
-  --color-topbar-edge: #1b130e;
-  --color-surface: #fbfaf8; /* paneles y menús */
-  --color-surface-line: #e4dcd2;
-  --color-alert-badge: #5e7361; /* el acento, con texto blanco: contraste 5,1:1 (AA). Sin rojos. */
-  --color-badge-text: #ffffff;
-
-  /* Tabla calendario de ventas: cinco tonos, de menos a más vendido frente al mejor día del mes */
-  --calendar-0: #f6f3ef;
-  --calendar-1: #ede6dd;
-  --calendar-2: #e2d6c8;
-  --calendar-3: #d4c2b0;
-  --calendar-4: #c4ad97;
-
-  /* Inicio de sesión */
-  --color-login-light: #f7f1e9;
-  --color-login-line: #c4ae99;
-  --color-login-field: rgba(255, 252, 247, 0.6);
-  --color-login-field-autofill: #f3ebe2; /* el campo crema tal como se ve sobre el degradado, opaco */
-  --color-login-cream: #efe6da;
-  --shadow-login-claim: 0 1px 12px rgba(46, 33, 26, 0.45);
-  --shadow-login-logo: 0 8px 14px rgba(46, 33, 26, 0.35);
-  /* Capas del logo 3D, del frente al fondo */
-  --color-logo-1: #2e211a;
-  --color-logo-2: #3a2b22;
-  --color-logo-3: #46352a;
-  --color-logo-4: #523f32;
-  --color-logo-5: #5e4a3b;
-  --color-logo-6: #6b5444;
-  --color-logo-7: #7a614f;
-  --color-logo-8: #89705c;
-  --color-logo-9: #987f69;
-  --color-logo-10: #a68b76;
-  --color-logo-11: #b39a86;
-  --color-logo-12: #c4ae99;
-  --gradient-login: linear-gradient(100deg, #6b5444 0%, #8e7461 30%, #b89f89 52%, #d8c7b5 72%, #efe6da 100%);
-
-  /* Torres 3D de ventas: caras de arriba, frente y lado en cinco niveles, de menos a más vendido */
-  --tower-top-0: #e4dad0;
-  --tower-top-1: #cbb8a6;
-  --tower-top-2: #a68b76;
-  --tower-top-3: #6b5444;
-  --tower-top-4: #2e211a;
-  --tower-front-0: #d3c6ba;
-  --tower-front-1: #b9a390;
-  --tower-front-2: #927663;
-  --tower-front-3: #5a4638;
-  --tower-front-4: #241913;
-  --tower-side-0: #c4b5a7;
-  --tower-side-1: #a9917d;
-  --tower-side-2: #806653;
-  --tower-side-3: #4c3b2f;
-  --tower-side-4: #1b130e;
-  --color-floor-outside: #ddd6cc;
-  --color-floor-closed: #a99e92;
 
   /* Tipografía */
-  --font-display: "Bricolage Grotesque", sans-serif;
-  --font-body: "Hanken Grotesk", sans-serif;
-  --font-numeric: tabular-nums lining-nums;
+  --font-display: "Libre Baskerville", Georgia, serif;
+  --font-body: Manrope, system-ui, sans-serif;
   --text-h1: 40px;
   --text-h2: 20px;
-  --text-figure: 30px;
   --text-login-title: 34px;
   --text-login-pitch: 30px;
-  --text-brand: 16px;
   --text-input: 15px;
   --text-body: 14px;
   --text-meta: 13px;
@@ -137,70 +34,23 @@
   --tracking-heading: -0.02em;
   --tracking-label: 0.14em;
   --tracking-group: 0.18em;
-  --tracking-field: 0.08em;
 
   /* Forma */
-  --radius: 4px; /* radio único (docs/diseno.md) */
-  --radius-chart: 2px;
+  --radius: 4px; /* radio único */
   --line-width: 1px;
   --icon-stroke: 1.5;
   --icon-sm: 16px;
   --icon-md: 18px;
   --icon-lg: 20px;
   --marker-width: 3px;
-  --badge-size: 18px;
-  --opacity-disabled: 0.5;
-  --shadow-floating: 0 12px 32px rgba(46, 33, 26, 0.16);
 
-  /* Espacios: la única escala para margin, padding y gap (docs/diseno.md, "Espacios").
+  /* Espacios: la única escala para margin, padding y gap (docs/diseno/identidad-r1.md, "Espacios").
      Ningún espacio fuera de ella: lo revisa tests/frontend/test_spacing_scale.py. */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
-  --space-8: 32px;
   --space-10: 40px;
   --space-14: 56px;
-  --space-18: 72px;
-
-  /* Medidas que no son espacios (alto de una barra, tamaño del monograma, posición de una etiqueta) */
-  --size-6: 6px;
-  --size-28: 28px;
-  --size-36: 36px;
-  --size-48: 48px;
-
-  /* Contenido: 40 px de margen en escritorio (16 en el celular, layout-mobile.css) y 56 px entre secciones */
-  --gap-section: var(--space-14);
-  --content-padding: var(--space-10);
-  --content-padding-bottom: var(--space-18);
-  --kpi-padding: var(--space-4) var(--space-6);
-  --kpi-min-width: 190px;
-  --text-readout: 26px;
-
-  /* Medidas de la estructura */
-  --touch-target: 44px;
-  --control-height: 40px;
-  --control-height-login: 48px;
-  --topbar-height: 64px;
-  --sidebar-width: 248px;
-  --sidebar-width-collapsed: 72px;
-  --avatar-size: 34px;
-  --assistant-width: 340px;
-  /* 1920 − 248 del menú = 1672 px útiles; 1600 (40 × --space-10) deja aire a los lados sin estirar tablas. */
-  --content-max-width: 1600px;
-  --account-text-max-width: 160px; /* 10 × --space-4 */
-  --menu-width: 280px;
-}
-
-/* Portátiles: menos ancho útil que la maqueta (1440 px). Los márgenes y el espacio entre secciones no
-   cambian; solo se compactan los indicadores y las cifras grandes. */
-@media (max-width: 1400px) {
-  :root {
-    --kpi-padding: var(--space-4) var(--space-4);
-    --kpi-min-width: 170px;
-    --text-h1: 34px;
-    --text-figure: 26px;
-    --text-readout: 22px;
-  }
 }

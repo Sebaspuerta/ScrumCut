@@ -13,7 +13,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Cambia la sede activa; una sede no permitida responde 403, como `switch_branch`. */
+        /** @description Cambia la sede activa entre las permitidas al rol (`choose_branch`); una sede no permitida responde 403. */
         post: operations["branch_create"];
         delete?: never;
         options?: never;
@@ -1253,9 +1253,7 @@ export interface components {
             label: string;
             /** @description Nombre del ícono de Lucide. */
             icon: string | null;
-            /** @description La pantalla en plantillas; solo con el estado «enlace». */
-            url: string | null;
-            /** @description La ruta en la app de React, si ya existe allí. */
+            /** @description La ruta en la app de React; solo con el estado «enlace». */
             app_path: string | null;
             status: components["schemas"]["NavStatusEnum"];
         };

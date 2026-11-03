@@ -105,4 +105,4 @@ def test_un_dia_de_barberia(world):
     assert before["commission_total"] == after["commission_total"] == D("9166.66")
     assert after["sales_total"] == D("22916.66")
     assert (after["services_count"], after["orders_count"]) == (1, 1)
-    assert selectors.my_cuts_today(w.ana_login, scope=scope_of(w.ana_login)) == {"cuts_today": 1}
+    assert selectors.my_cuts(w.ana_login, scope=scope_of(w.ana_login))["today"]["services_count"] == 1

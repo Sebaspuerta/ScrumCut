@@ -1,0 +1,3 @@
+{% load allauth %}
+{# El QR del 2FA lleva su superficie clara con zona tranquila (auth-qr, en login.css) para que lo lea cualquier celular. #}
+<img src="{{ attrs.src }}"{% if attrs.alt %} alt="{{ attrs.alt }}"{% endif %}{% if "qr" in attrs.tags %} class="auth-qr"{% endif %}>

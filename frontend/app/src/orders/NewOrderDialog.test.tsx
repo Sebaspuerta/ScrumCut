@@ -104,9 +104,7 @@ describe("formulario de comanda", () => {
       },
     ],
   ])("%s abre el formulario de React", async (_, open) => {
-    const action = { label: "Nueva comanda", icon: "receipt", url: "/comandas/nueva/", status: "enlace" as const };
-    const navigation = { ...NAVIGATION, new_actions: [{ ...action, app_path: "/comandas?nueva=1" }] };
-    stubSalesApi({ "/api/v1/navigation/": navigation });
+    stubSalesApi({ "/api/v1/navigation/": NAVIGATION });
     renderApp("/");
 
     await open();

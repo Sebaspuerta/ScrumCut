@@ -25,7 +25,8 @@ def _logged_in(user) -> Client:
 
 
 def _is_authenticated(client: Client) -> bool:
-    return client.get(reverse("home")).status_code == 200
+    """La API de la app de React responde 200 solo con una sesión válida."""
+    return client.get(reverse("api_me")).status_code == 200
 
 
 def test_cerrar_en_todos_los_dispositivos(barber, make_member):
@@ -86,4 +87,13 @@ def test_el_logout_invalida_la_sesion_en_el_servidor(barber):
 def test_el_logout_por_get_no_cierra_la_sesion(barber):
     client = _logged_in(barber)
     client.get(reverse("account_logout"))
+    assert _is_authenticated(client)
+
+
+@pytest.mark.parametrize("url_name", ["account_logout", "logout_everywhere"])
+def test_los_cierres_de_sesion_sin_token_csrf_se_rechazan(barber, url_name):
+    client = Client(enforce_csrf_checks=True)
+    client.force_login(barber)
+
+    assert client.post(reverse(url_name)).status_code == 403
     assert _is_authenticated(client)

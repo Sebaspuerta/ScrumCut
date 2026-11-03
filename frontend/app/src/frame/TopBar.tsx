@@ -37,8 +37,7 @@ export function TopBar({ me, barbershop, branch, navigation, menuOpen, onToggleM
   });
   const run = (command: Command) => {
     setPalette(false);
-    if (command.target && "app" in command.target) void navigate(command.target.app);
-    else if (command.target) window.location.assign(command.target.url);
+    if (command.target) void navigate(command.target.app);
   };
 
   return (

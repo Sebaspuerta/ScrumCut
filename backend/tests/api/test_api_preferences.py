@@ -48,11 +48,7 @@ def test_sin_sesion_no_se_puede(client):
     assert _patch(client, "dark").status_code in {401, 403}
 
 
-def test_la_pagina_de_la_app_llega_con_el_tema_de_la_persona(world, cashier_client, settings, tmp_path):
-    manifest = tmp_path / "manifest.json"
-    manifest.write_text('{"src/main.tsx": {"file": "assets/main.js"}}', encoding="utf-8")
-    settings.REACT_APP_MANIFEST = manifest
-
+def test_la_pagina_de_la_app_llega_con_el_tema_de_la_persona(world, cashier_client, built_app):
     system = cashier_client.get(reverse("react_app")).content.decode()
     _patch(cashier_client, "dark")
     dark = cashier_client.get(reverse("react_app")).content.decode()

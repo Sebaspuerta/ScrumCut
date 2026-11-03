@@ -10,7 +10,7 @@ from apps.catalog import services as catalog
 from apps.inventory import services as inventory
 from apps.sales import services as sales
 from apps.sales.models import OrderItem
-from apps.sales.selectors import barber_performance, my_cuts_today
+from apps.sales.selectors import barber_performance, my_cuts
 from apps.sales.services.open_orders import BARBER_OTHER_BRANCH
 from apps.staff import services as staff
 from apps.tenancy.roles import Role
@@ -156,8 +156,8 @@ def test_mis_cortes_de_hoy_y_el_rendimiento_van_por_la_sede(world, norte):
         )
     ana = world.ana_login
 
-    assert my_cuts_today(ana, scope=scope_of(ana, world.branch))["cuts_today"] == 1
-    assert my_cuts_today(ana, scope=scope_of(ana, norte))["cuts_today"] == 2
+    assert my_cuts(ana, scope=scope_of(ana, world.branch))["today"]["services_count"] == 1
+    assert my_cuts(ana, scope=scope_of(ana, norte))["today"]["services_count"] == 2
     in_norte = barber_performance(world.owner, world.ana.public_id, scope=scope_of(world.owner, norte))
     everywhere = barber_performance(world.owner, world.ana.public_id, scope=scope_of(world.owner, everything=True))
     assert (in_norte["orders_count"], everywhere["orders_count"]) == (2, 3)

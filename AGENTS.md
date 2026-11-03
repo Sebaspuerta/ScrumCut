@@ -29,17 +29,17 @@ Todo el código es de nivel senior: limpio, sin nada de sobra, duradero en el ti
 
 ## Diseño de interfaz
 
-- La identidad aprobada para la app de React y la entrada es la de la fase R1: docs/diseno/identidad-r1.md, a partir de docs/diseno/figma-make/ (se copia en fidelidad, no su estructura de código). Las pantallas que siguen en plantillas usan docs/diseno.md y sus maquetas en docs/diseno/maquetas/ hasta que pasen a React.
+- La única identidad aprobada es la de la fase R1: docs/diseno/identidad-r1.md, a partir de docs/diseno/figma-make/ (se copia en fidelidad, no su estructura de código). La usan la app de React y lo que sigue en Django (la entrada: login, registro, recuperación y 2FA). docs/diseno/historico/ es solo historia: no se implementa nada de ahí.
 - Ningún diseño se inventa. Pantallas, colores, tipografía, espaciado, íconos y componentes visuales solo se implementan cuando Sebastián los aprueba. Si falta una definición, se pregunta antes de escribir HTML o CSS; no se rellena con valores supuestos.
 - Prohibido: fuente Inter (y Geist, Space Grotesk), degradados violeta, glassmorphism, tarjetas dentro de tarjetas, emojis como íconos, el rojo-azul-blanco del poste de barbería y cualquier diseño genérico de IA.
-- Fuentes aprobadas: Libre Baskerville y Manrope (identidad R1: app de React y entrada) y Bricolage Grotesque y Hanken Grotesk (pantallas en plantillas hasta su migración). Alojadas: @fontsource en frontend/app y frontend/static/fonts/ en Django; nunca desde Google.
+- Fuentes aprobadas: Libre Baskerville y Manrope. Alojadas: @fontsource en frontend/app y frontend/static/fonts/ en Django; nunca desde Google.
 - Toda pantalla contempla sus estados vacío, cargando y error; su aspecto también requiere aprobación.
 - La identidad de cada barbería (nombre, logo, color) es dato de tenancy.Barbershop, nunca fija en el código.
 - El asistente se muestra sin funcionalidad hasta que el backend esté completo.
 
 ## Frontend
 
-La parte interna migra a React + TypeScript (`frontend/app/`, servida en `/app/`) módulo por módulo; login, registro, recuperación y 2FA siguen en Django. Decisión y motivos: `docs/decisiones/frontend-react.md`.
+La parte interna es React + TypeScript (`frontend/app/`, servida en `/app/`). En Django siguen solo la entrada (login, registro, recuperación, 2FA y cierre de sesión), los textos legales y la descarga del Excel. Decisión y motivos: `docs/decisiones/frontend-react.md`.
 
 ### Reglas de la app de React (no se negocian)
 
@@ -47,7 +47,7 @@ La parte interna migra a React + TypeScript (`frontend/app/`, servida en `/app/`
 - La sesión sigue en la cookie HttpOnly del mismo dominio: nada de tokens, ni JWT, ni datos en localStorage o sessionStorage.
 - CSRF en toda escritura: la API usa solo `SessionAuthentication`; el token se pide a `/api/v1/csrf/` y vive solo en memoria.
 - La CSP estricta se mantiene en producción. Cualquier relajación, solo con DEBUG=True y documentada.
-- Migración por módulos: las pantallas en plantillas siguen funcionando hasta que su versión en React las reemplace.
+- Toda pantalla nueva de la parte interna se hace en React. Las direcciones de las pantallas de plantillas retiradas redirigen para siempre a su equivalente en `/app/` (`apps/core/legacy_urls.py`).
 - Los tipos de TypeScript se generan del esquema OpenAPI (`npm run gen:types`), nunca se escriben a mano.
 - API en `apps/api`: vistas DRF delgadas, permiso `HasRolePermission` (reutiliza `role_has_permission`), alcance de sede de `request.branch_scope`, errores genéricos. Toda vista nueva declara `required_permission` o tiene su motivo en `tests/security/url_inventory.py`.
 - Un solo cliente HTTP (`src/api/client.ts`); el formato COP y de fechas solo en `src/lib/format.ts`, con los casos compartidos con el backend en `format-cases.json`.
@@ -64,14 +64,13 @@ La parte interna migra a React + TypeScript (`frontend/app/`, servida en `/app/`
 - Accesible: roles y aria correctos, foco visible y objetivos de 44 px.
 - TypeScript strict, sin `any` ni `ts-ignore`. ESLint y Prettier sin errores.
 
-### Pantallas en plantillas (hasta que React las reemplace)
+### Pantallas de Django (la entrada)
 
 - Django genera las vistas; todo lo visual vive en frontend/. Nada de HTML, CSS o JS dentro de backend/.
-- HTML: plantillas de Django con partials ({% partialdef %}), una subcarpeta por módulo en frontend/templates/.
-- Interacción con el servidor: HTMX. Interacción en pantalla: JavaScript propio sobre elementos nativos (<details> para menús), sin frameworks.
-- JavaScript propio: vanilla, ES modules, sin compilación, en frontend/static/js/ con core/, components/ y modules/.
-- CSS propio con variables de diseño (tokens.css, base.css, components/, modules/). Sin Bootstrap ni Tailwind.
-- Gráficas: Chart.js. Íconos: Lucide. Librerías de terceros descargadas en frontend/static/vendor/ con su licencia; sin CDN.
+- HTML: plantillas de Django con partials ({% partialdef %}) en frontend/templates/; allauth usa las suyas a través de frontend/templates/allauth/.
+- JavaScript propio: vanilla, ES modules, sin compilación, en frontend/static/js/modules/. Sin frameworks.
+- CSS propio con los tokens de la identidad R1 (tokens.css, base.css, identity-fonts.css, components/states.css y modules/login.css), con clases propias (`entrance*`, `auth-*`). Sin Bootstrap ni Tailwind.
+- Íconos: los SVG de Lucide en frontend/templates/icons/. Librerías de terceros, si alguna vez hacen falta, descargadas en frontend/static/vendor/ con su licencia; sin CDN.
 - Nada de <script> dentro de las plantillas ni atributos onclick: todo el JS en archivos .js (compatible con CSP estricta).
 
 ## Seguridad y legal

@@ -1,7 +1,7 @@
 /*
  * Entrada (login, registro, recuperar contraseña y 2FA) con la identidad de la fase R1
  * (docs/diseno/figma-make): los mismos colores, fuentes y logo que la app de React.
- * Todo vive aquí y con clases propias (entrance*, auth-*): las pantallas internas en plantillas no cambian.
+ * Todo vive aquí y con clases propias (entrance*, auth-*): las reglas generales de base.css no la alcanzan.
  * Sin elección guardada (nadie ha iniciado sesión), el tema sigue prefers-color-scheme.
  * Las fuentes llegan aparte, en css/identity-fonts.css.
  */
@@ -274,6 +274,18 @@
   letter-spacing: 0;
   text-transform: none;
   color: var(--auth-text);
+}
+
+/* El QR va oscuro sobre blanco en los dos modos, con su zona tranquila: así lo lee cualquier celular. */
+.entrance__panel .auth-qr {
+  --auth-qr-surface: #fff;
+
+  width: 100%;
+  max-width: 240px;
+  padding: var(--space-4);
+  background: var(--auth-qr-surface);
+  border: var(--line-width) solid var(--auth-line);
+  border-radius: var(--radius);
 }
 
 .entrance__panel .auth-field__help {

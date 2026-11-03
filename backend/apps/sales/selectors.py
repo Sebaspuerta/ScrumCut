@@ -225,20 +225,3 @@ def my_cuts(membership: Membership, *, scope: BranchScope, day: date | None = No
 
 def _page(orders: QuerySet[Order], page: int) -> Page:
     return Paginator(orders, MY_CUTS_PAGE_SIZE).get_page(page)
-
-
-def my_cuts_today(membership: Membership, *, scope: BranchScope) -> dict:
-    """Regla 54: el barbero ve cuántos servicios hizo hoy en la sede del alcance, sin cifras de dinero."""
-    ensure_member(membership)
-    scope.check(membership)
-    barber = own_barber(membership)
-    if barber is None:
-        return {"cuts_today": 0}
-    today = local_today(membership)
-    start, end = day_bounds(membership.barbershop.timezone, today, today)
-    cuts = (
-        scope.apply(_closed_lines(barber, start, end), "order__branch")
-        .filter(item_type=ItemType.SERVICE)
-        .aggregate(total=Coalesce(Sum("quantity"), 0))["total"]
-    )
-    return {"cuts_today": cuts}

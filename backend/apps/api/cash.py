@@ -1,4 +1,4 @@
-"""Caja en la app de React: lo mismo que lee la pantalla de Django (`cash.board.cash_register`), en JSON.
+"""Caja en la app de React: lo que lee `cash.board.cash_register`, en JSON.
 
 Siempre de una sede: en "todas" no se mezclan cajas. El esperado sale de `expected_cash`, el mismo cálculo
 del arqueo; el contado lo suma el servidor al cerrar. Qué acciones permite el rol lo decide el backend.

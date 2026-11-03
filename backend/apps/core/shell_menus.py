@@ -1,10 +1,8 @@
-"""Los menús de la barra superior (fase F1): selector de sede, panel de Administración y cuenta.
+"""Los datos de la barra superior de la app de React: selector de sede y resumen de Administración.
 
 Cada dato sale de un selector y se muestra solo con su permiso. Las sedes salen del alcance de
 la petición (`BranchScope.choices`), nunca de un filtro escrito aquí.
 """
-
-from django.urls import reverse
 
 from apps.audit.selectors import latest_event
 from apps.tenancy.branch_scope import ALL, BranchScope
@@ -66,23 +64,3 @@ def admin_summary(membership: Membership) -> dict:
     if role_has_permission(role, "auditoria.ver"):
         summary["audit"] = _audit_summary(membership)
     return summary
-
-
-def admin_panel(membership: Membership, groups: list[dict]) -> dict | None:
-    """None si el rol no ve nada del panel: entonces el botón de Administración no aparece."""
-    if not groups:
-        return None
-    return {"groups": groups, "summary": admin_summary(membership)}
-
-
-def account_menu(user, membership: Membership | None, scope: BranchScope | None) -> dict:
-    """Solo lo que tiene pantalla: la verificación en dos pasos. Cerrar sesión va por POST en la plantilla."""
-    name = user.full_name or user.email
-    return {
-        "name": name,
-        "initials": initials(name),
-        "role": membership.get_role_display() if membership else "",
-        "shop": membership.barbershop.trade_name if membership else "",
-        "scope": scope_label(scope),
-        "links": [{"label": "Seguridad · verificación en dos pasos", "url": reverse("mfa_index")}],
-    }

@@ -50,23 +50,23 @@ def test_el_estado_dice_si_hay_pantalla_pronto_o_proximamente(navigation_as):
     assert sidebar["Comandas"] == {
         "label": "Comandas",
         "icon": "receipt",
-        "url": "/comandas/",
-        "app_path": "/comandas",  # desde la fase R2, en la app de React; la de Django queda de respaldo
+        "app_path": "/comandas",
         "status": "enlace",
     }
     assert sidebar["Agenda"] == {
         "label": "Agenda",
         "icon": "calendar",
-        "url": None,
         "app_path": None,
         "status": "pronto",
     }
-    assert sidebar["Tablero"]["app_path"] == "/"  # el tablero ya existe en la app de React
-    # Desde la fase R3, en la app de React; las de Django quedan de respaldo.
-    assert (sidebar["Clientes"]["app_path"], sidebar["Clientes"]["url"]) == ("/clientes", "/clientes/")
-    assert (sidebar["Fiados"]["app_path"], sidebar["Fiados"]["url"]) == ("/fiados", "/fiados/")
+    assert [sidebar[label]["app_path"] for label in ("Tablero", "Caja", "Clientes", "Fiados")] == [
+        "/",
+        "/caja",
+        "/clientes",
+        "/fiados",
+    ]
     assert {item["status"] for item in administration} == {"proximamente"}
-    assert all(item["url"] is None for item in administration)
+    assert all(item["app_path"] is None for item in administration)
 
 
 def test_el_contador_de_alertas_solo_llega_con_alertas_ver(navigation_as):

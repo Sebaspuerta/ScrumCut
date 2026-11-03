@@ -135,10 +135,10 @@ describe("cobro rápido", () => {
     const action = {
       label: "Cobro rápido",
       icon: "banknote",
-      url: "/comandas/cobro-rapido/",
+      app_path: "/comandas?cobro=1",
       status: "enlace" as const,
     };
-    const navigation = { ...NAVIGATION, new_actions: [{ ...action, app_path: "/comandas?cobro=1" }] };
+    const navigation = { ...NAVIGATION, new_actions: [action] };
     stubSalesApi({ "/api/v1/navigation/": navigation });
     renderApp(start);
 

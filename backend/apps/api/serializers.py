@@ -56,8 +56,9 @@ class MeSerializer(serializers.Serializer):
 class NavItemSerializer(serializers.Serializer):
     label = serializers.CharField()
     icon = serializers.CharField(allow_null=True, help_text="Nombre del ícono de Lucide.")
-    url = serializers.CharField(allow_null=True, help_text="La pantalla en plantillas; solo con el estado «enlace».")
-    app_path = serializers.CharField(allow_null=True, help_text="La ruta en la app de React, si ya existe allí.")
+    app_path = serializers.CharField(
+        allow_null=True, help_text="La ruta en la app de React; solo con el estado «enlace»."
+    )
     status = serializers.ChoiceField(choices=NAV_STATUSES)
 
 

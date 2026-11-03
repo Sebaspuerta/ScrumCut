@@ -35,8 +35,8 @@ def test_dueno_o_administrador_sin_2fa_no_entra_a_ninguna_vista_de_negocio(clien
         assert (response.status_code, response.url) == (302, reverse("mfa_activate_totp")), path
 
 
-def test_el_barbero_entra_sin_2fa_obligatorio(client, make_shop, make_member):
+def test_el_barbero_entra_sin_2fa_obligatorio(client, make_shop, make_member, built_app):
     client.force_login(make_member("barbero@example.com", make_shop("a"), Role.BARBER))
-    response = client.get(reverse("home"))
+    response = client.get(reverse("react_app"))
     assert response.status_code == 200
     assert response.wsgi_request.barbershop.slug == "a"

@@ -1,7 +1,5 @@
 """La página de la app de React (/app/): con sesión, el HTML con los archivos del manifest de Vite y nada en línea."""
 
-import json
-
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
@@ -10,19 +8,6 @@ from apps.core.vite_manifest import read_entry
 from tests.frontend.test_csp_markup import _assert_csp_friendly
 
 pytestmark = pytest.mark.django_db
-
-MANIFEST = {
-    "src/main.tsx": {"file": "assets/main-abc.js", "isEntry": True, "css": ["assets/main-abc.css"], "imports": ["_v"]},
-    "_v": {"file": "assets/vendor-def.js", "css": ["assets/vendor-def.css"]},
-}
-
-
-@pytest.fixture
-def built_app(tmp_path, settings):
-    manifest = tmp_path / "manifest.json"
-    manifest.write_text(json.dumps(MANIFEST), encoding="utf-8")
-    settings.REACT_APP_MANIFEST = manifest
-    return manifest
 
 
 def test_el_lector_devuelve_el_script_y_los_estilos_de_lo_que_importa_primero(built_app):

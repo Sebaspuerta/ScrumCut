@@ -5,7 +5,6 @@ from django.urls import include, path
 from apps.accounts import views as account_views
 from apps.core import views as core_views
 from apps.reports import views as report_views
-from apps.tenancy import views as tenancy_views
 
 urlpatterns = [
     path(f"{settings.ADMIN_URL.strip('/')}/", admin.site.urls),
@@ -16,11 +15,6 @@ urlpatterns = [
     path("api/v1/", include("apps.api.urls")),
     path("app/", core_views.react_app, name="react_app"),
     path("app/<path:subpath>", core_views.react_app, name="react_app_route"),
-    path("sede/cambiar/", tenancy_views.switch_branch, name="switch_branch"),
     path("reportes/exportar/", report_views.export, name="reports_export"),
-    path("comandas/", include("apps.sales.urls")),
-    path("caja/", include("apps.cash.urls")),
-    path("clientes/", include("apps.clients.urls")),
-    path("fiados/", include("apps.receivables.urls")),
-    path("", report_views.dashboard, name="home"),
+    path("", include("apps.core.legacy_urls")),
 ]

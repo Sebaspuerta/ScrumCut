@@ -1,5 +1,5 @@
-// Pantallas y acciones que siguen en Django mientras no existan en la app de React. Las rutas que
-// dependen de permisos o de datos llegan por la API (navigation); estas son fijas de la cuenta y del tablero.
+// Lo que sigue en Django a propósito (docs/decisiones/frontend-react.md): la cuenta, con sus límites de
+// intentos de allauth y axes, y la descarga del Excel del tablero.
 export const DJANGO_ROUTES = {
   logout: "/cuenta/logout/",
   logoutEverywhere: "/cuenta/cerrar-sesiones/",

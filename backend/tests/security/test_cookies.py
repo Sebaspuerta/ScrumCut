@@ -24,8 +24,9 @@ def test_una_visita_anonima_solo_recibe_la_cookie_de_csrf(client, legal_document
     assert set(client.cookies) == {"csrftoken"}
 
 
-def test_al_iniciar_sesion_se_suma_solo_la_de_sesion(client, legal_documents, make_shop, make_member):
+def test_al_iniciar_sesion_se_suma_solo_la_de_sesion(client, legal_documents, make_shop, make_member, built_app):
     make_member("barbero@example.com", make_shop("a"), Role.BARBER)
     client.post(reverse("account_login"), {"login": "barbero@example.com", "password": TEST_PASSWORD})
-    client.get(reverse("home"))
+    for name in ("react_app", "api_me", "api_navigation"):  # la app de React y su API
+        client.get(reverse(name))
     assert set(client.cookies) == {"csrftoken", "sessionid"}

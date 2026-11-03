@@ -15,7 +15,8 @@ from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 
-# Cascada del cuadre (docs/diseno.md): lo que suma y lo que resta al efectivo, en el orden de la maqueta.
+# Cascada del cuadre (docs/diseno/historico/diseno.md): lo que suma y lo que resta al efectivo, en el orden
+# de la maqueta.
 # "Otros" recoge ingresos manuales, devoluciones y ajustes para que la cascada siempre llegue al esperado.
 _CASCADE = (
     ("Ventas en efectivo", "sales", 1),

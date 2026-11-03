@@ -37,15 +37,15 @@ export const NAVIGATION: Navigation = {
     {
       title: "Operación",
       items: [
-        { label: "Tablero", icon: "layout-dashboard", url: "/", app_path: "/", status: "enlace" },
-        { label: "Agenda", icon: "calendar", url: null, app_path: null, status: "pronto" },
-        { label: "Comandas", icon: "receipt", url: "/comandas/", app_path: null, status: "enlace" },
+        { label: "Tablero", icon: "layout-dashboard", app_path: "/", status: "enlace" },
+        { label: "Agenda", icon: "calendar", app_path: null, status: "pronto" },
+        { label: "Comandas", icon: "receipt", app_path: "/comandas", status: "enlace" },
       ],
     },
   ],
   administration: [],
   administration_summary: null,
-  new_actions: [{ label: "Nueva comanda", icon: "receipt", url: "/comandas/nueva/", app_path: null, status: "enlace" }],
+  new_actions: [{ label: "Nueva comanda", icon: "receipt", app_path: "/comandas?nueva=1", status: "enlace" }],
   unread_alerts: 3,
 };
 

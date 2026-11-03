@@ -13,14 +13,13 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.api.receivables import receivable_row
-from apps.clients.board import NO_ACTIVITY, ClientFilter, client_rows, client_stats
+from apps.clients.board import NO_ACTIVITY, ClientFilter, client_rows, client_stats, level_label
 from apps.clients.forms import ORDER_LABELS, level_chips
 from apps.clients.models import Client
 from apps.clients.profile import client_card
 from apps.clients.services import DUPLICATE_CLIENT, POSSIBLE_DUPLICATE
 from apps.core.formatting import mask_phone
 from apps.core.shell_menus import initials
-from apps.core.templatetags.formatting import level_label
 from apps.legal.models import LegalDocument
 from apps.legal.selectors import current_document
 from apps.legal.views import DOCUMENT_SLUGS

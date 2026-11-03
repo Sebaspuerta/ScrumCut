@@ -9,7 +9,6 @@ from django.utils import timezone
 
 from apps.cash import services as cash
 from apps.cash.selectors import expected_cash
-from apps.core.formatting import format_variation
 from apps.receivables import services as receivables
 from apps.reports.selectors.dashboard import executive_dashboard
 from apps.sales.selectors import local_today
@@ -53,7 +52,6 @@ def test_antes_de_la_primera_venta_no_hay_referencia(world):
 
     assert kpis["income"]["value"] == 0
     assert kpis["income"]["variation"] is None and kpis["orders"]["variation"] is None
-    assert format_variation(kpis["income"]["variation"], "Sin referencia") == "Sin referencia"
 
 
 def test_a_mitad_del_dia_se_compara_hasta_la_misma_hora_de_la_semana_anterior(world):

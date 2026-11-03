@@ -9,7 +9,7 @@
 - Correo verificado obligatorio; 2FA obligatorio para Dueño, Administrador y equipo de plataforma.
 - Bloqueo por usuario + IP (axes) y límites de allauth en login, registro y recuperación.
 - La app no arranca si falta un secreto.
-- La parte interna migra a React + TypeScript en `/app/` sobre una API DRF en `/api/v1/` (solo sesión y CSRF); login, registro, recuperación y 2FA siguen en Django. Ver [decisiones/frontend-react.md](decisiones/frontend-react.md) y "Frontend en React".
+- La parte interna es React + TypeScript en `/app/` sobre una API DRF en `/api/v1/` (solo sesión y CSRF). En Django siguen la entrada (login, registro, recuperación, 2FA y cierre de sesión, con allauth y axes), los textos legales y la descarga del Excel. Ver [decisiones/frontend-react.md](decisiones/frontend-react.md) y "Frontend en React".
 
 ## Hallazgos de seguridad de MAGNUS v1
 
@@ -45,7 +45,7 @@ Especificación, diagnóstico y conflictos por decidir en [sedes.md](sedes.md). 
 
 - S1. Modelo de datos — hecho.
 - S2. Alcance por petición, solo backend — hecho.
-- S3. Ajustes → Sedes, selector de sede y modo "todas" — el selector de sede de la barra superior y la vista consolidada están hechos (frontend F1); falta la pantalla de Ajustes → Sedes.
+- S3. Ajustes → Sedes, selector de sede y modo "todas" — el selector de sede de la barra superior y la vista consolidada están hechos (en React, por `/api/v1/branch/`); falta la pantalla de Ajustes → Sedes.
 - S4a. Caja, comandas, gastos y precios por sede — hecho (backend).
 - S4b. Inventario por sede y traslados — hecho (backend).
 - S5. Consolidado y comparativo — hecho (backend: comparativo y Excel por sede); falta su pantalla.
@@ -56,27 +56,37 @@ Decisión, razones, costos y reglas en [decisiones/frontend-react.md](decisiones
 
 | Pieza | Dónde |
 |---|---|
-| API (DRF + drf-spectacular) | `backend/apps/api`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`) y `csrf`, en `/api/v1/`. Solo `SessionAuthentication`, permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
+| API (DRF + drf-spectacular) | `backend/apps/api`, en `/api/v1/`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`), `csrf`, el tablero, notificaciones, comandas, cobro rápido, Mis cortes, caja, clientes y fiados. Solo `SessionAuthentication`, permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
 | Esquema y tipos | `frontend/app/openapi.json` (de `manage.py spectacular`) y `frontend/app/src/api/schema.d.ts` (de `npm run gen:types`). `tests/api/test_openapi_schema.py` y `src/api/schema.test.ts` fallan si alguno quedó desactualizado. |
 | App | `frontend/app/`: Vite, React Router (base `/app`), TanStack Query. Compila en `frontend/static/app/`. |
-| Página | `apps.core.views.react_app` (`login_required`) en `/app/` y subrutas; lee el manifest de Vite con `apps/core/vite_manifest.py` y pinta `frontend/templates/app/index.html`, sin nada en línea. |
-| Tokens | `frontend/app/src/styles/tokens.css`, provisionales hasta R1. |
+| Página | `apps.core.views.react_app` (`login_required`) en `/app/` y subrutas; lee el manifest de Vite con `apps/core/vite_manifest.py` y pinta `frontend/templates/app/index.html`, sin nada en línea. Al iniciar sesión se llega aquí (`LOGIN_REDIRECT_URL`). |
+| Direcciones viejas | `apps/core/legacy_urls.py`: `/`, `/comandas/`, `/caja/`, `/clientes/` y `/fiados/` (con sus fichas, nueva comanda, cobro rápido y nuevo cliente) redirigen con 301 a su pantalla en `/app/`, con sus filtros. Las acciones POST de esas pantallas ya no existen: son de la API. |
+| Tokens | `frontend/app/src/styles/tokens.css` (identidad R1). |
 
 | Tablero y marco (R1) | `apps/api`: `dashboard` (sobre `executive_dashboard`, `reportes.ver`, consultas constantes), `notifications` (alertas, solo lectura, `alertas.ver`) y `me/preferences` (tema, PATCH con CSRF). `User.theme` (migración `accounts` 0003). En React: marco, paleta de comandos, notificaciones, Administración, tema y tablero en `/app/`. |
 
-Fases: R0 (base técnica) — hecha. R1 (identidad nueva, marco y tablero en React; entrada de Django con la identidad nueva) — hecha. Identidad: [diseno/identidad-r1.md](diseno/identidad-r1.md).
+Fases:
+
+- R0. Base técnica — hecha.
+- R1. Identidad nueva, marco y tablero en React; entrada de Django con la identidad nueva — hecha.
+- R2. Comandas y Caja en React — hecha.
+- R3. Clientes y Fiados en React — hecha.
+- R4. Cobro rápido y Mis cortes en React — hecha.
+- R5. Retiro de las pantallas de plantillas ya reemplazadas (tablero, comandas, cobro rápido, caja, clientes, fiados y su marco), redirecciones permanentes, htmx retirado y la entrada solo con la identidad R1 — hecha.
+
+Identidad: [diseno/identidad-r1.md](diseno/identidad-r1.md); la anterior queda como historia en [diseno/historico/](diseno/historico/diseno.md).
 
 ## Pendientes de seguridad
 
 | Pendiente | Fase | Estado |
 |---|---|---|
-| Botón "cerrar sesión en todos los dispositivos", con prueba | 1 | Hecho (lógica y prueba; el botón visual llega con la interfaz) |
+| Botón "cerrar sesión en todos los dispositivos", con prueba | 1 | Hecho (en el menú de cuenta de React) |
 | Honeypot en registro y recuperación de contraseña | 1 | Hecho |
 | Prueba de que el logout invalida la sesión en el servidor | 1 | Hecho |
 | Textos legales redactados, aprobados y publicados; aceptación al registrarse | 1 | Lógica hecha (aceptación, registro cerrado sin documentos, chequeo de despliegue); textos pendientes de Sebastián |
 | Meta títulos y descripciones, datos estructurados (schema.org), sitemap y robots.txt en páginas públicas | Frontend | Pendiente |
 | Favicon completo (.ico, apple-touch-icon, 192 y 512 px) con el logo definitivo | Frontend | Pendiente |
-| Desactivar la caché de historial de htmx (sessionStorage) al montar el frontend | Frontend | Pendiente |
+| Desactivar la caché de historial de htmx (sessionStorage) al montar el frontend | Frontend | Resuelto en R5: htmx se retiró con las pantallas de plantillas |
 | Honeypot en reservas públicas | 3 | Pendiente |
 | Usuario de base de datos de la app sin BYPASSRLS ni dueño de las tablas, con prueba | 4 | Pendiente |
 | HSTS de 1 día a 1 año | 4 | Pendiente |

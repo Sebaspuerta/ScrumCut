@@ -1,4 +1,4 @@
-/* Base: reset mínimo, tipografía, enlaces, íconos y foco visible. */
+/* Base de las pantallas de Django (la entrada): reset mínimo, tipografía, enlaces, íconos y foco visible. */
 
 *,
 *::before,
@@ -72,10 +72,6 @@ img {
   outline-offset: 2px;
 }
 
-.num {
-  font-variant-numeric: var(--font-numeric);
-}
-
 .icon {
   display: inline-flex;
   flex: none;
@@ -89,18 +85,9 @@ img {
   stroke-width: var(--icon-stroke);
 }
 
-/* `hidden` gana sobre cualquier display de un componente (paneles que el JS abre y cierra). */
+/* `hidden` gana sobre cualquier display (el botón de cerrar de los avisos, que notices.js muestra). */
 [hidden] {
   display: none !important;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

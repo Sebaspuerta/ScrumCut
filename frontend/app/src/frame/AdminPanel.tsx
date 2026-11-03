@@ -1,4 +1,5 @@
 import { ChevronRight, X } from "lucide-react";
+import { Link } from "react-router";
 
 import type { AdministrationSummary, NavGroup } from "../api/types";
 import { clock, shortDate, zonedDate } from "../lib/format";
@@ -30,9 +31,15 @@ export function AdminPanel({ groups, summary, timeZone, onClose }: AdminPanelPro
               <h3 className={styles.groupTitle}>{group.title}</h3>
               <ul className={styles.items}>
                 {group.items.map((item) => (
-                  <li key={item.label} className={item.url ? "" : styles.soon}>
-                    {item.url ? <a href={item.url}>{item.label}</a> : <span>{item.label}</span>}
-                    {item.url ? <ChevronRight size={14} aria-hidden="true" /> : <small>Próximamente</small>}
+                  <li key={item.label} className={item.app_path ? "" : styles.soon}>
+                    {item.app_path ? (
+                      <Link to={item.app_path} onClick={onClose}>
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <span>{item.label}</span>
+                    )}
+                    {item.app_path ? <ChevronRight size={14} aria-hidden="true" /> : <small>Próximamente</small>}
                   </li>
                 ))}
               </ul>

@@ -3,12 +3,12 @@
 Software de gestión para barberías, por [ScrumTech Solutions](https://www.instagram.com/scrumtech_solutions/).
 Multi-barbería, 100 % web, con agenda, comandas, caja, inventario, fiados y reportes gerenciales.
 
-Estado: **lógica de negocio de MAGNUS portada por completo** (pasos 1 a 9 de `docs/migracion-magnus.md`), sin interfaz todavía. Sobre las fundaciones de la fase 0: identidad segura, multi-barbería, auditoría y base legal.
+Estado: **lógica de negocio de MAGNUS portada por completo** (pasos 1 a 9 de `docs/migracion-magnus.md`), sobre las fundaciones de la fase 0: identidad segura, multi-barbería, auditoría y base legal. La interfaz interna está en React (`/app/`): tablero, Mis cortes, comandas, cobro rápido, caja, clientes y fiados (fases R0 a R4). En la fase R5 se retiraron las pantallas de plantillas que React reemplazó; sus direcciones viejas redirigen a `/app/`. En Django siguen solo la entrada (login, registro, recuperación, 2FA y cierre de sesión), los textos legales y la descarga del Excel.
 
 ## Stack
 
 Django 6 · PostgreSQL (Row-Level Security por barbería) · django-allauth (correo verificado + 2FA) · django-axes · Argon2.
-API: Django REST Framework + drf-spectacular. App interna: React + TypeScript (Vite, React Router, TanStack Query), en migración desde las plantillas ([decisión](docs/decisiones/frontend-react.md)).
+API: Django REST Framework + drf-spectacular. App interna: React + TypeScript (Vite, React Router, TanStack Query) ([decisión](docs/decisiones/frontend-react.md)).
 
 ## Arranque local
 
@@ -43,7 +43,7 @@ npm ci
 npm run dev
 ```
 
-Abre `http://localhost:5173/app/`. Vite atiende `/app/` y pasa todo lo demás (API, `/cuenta/`, estáticos y pantallas en plantillas) a Django, así que el inicio de sesión es el de Django en el mismo origen. No hace falta relajar la CSP: la página de desarrollo la sirve Vite y las de Django conservan la suya.
+Abre `http://localhost:5173/app/`. Vite atiende `/app/` y pasa todo lo demás (API, `/cuenta/`, `/legal/`, el Excel y los estáticos) a Django, así que el inicio de sesión es el de Django en el mismo origen. No hace falta relajar la CSP: la página de desarrollo la sirve Vite y las de Django conservan la suya.
 
 Compilación para producción (Django la sirve en `/app/` desde `frontend/static/app/`):
 
@@ -78,7 +78,7 @@ Nunca corras dos procesos de pytest a la vez: comparten la base de pruebas.
 ```
 backend/
   config/          settings por ambiente (base, dev, test, prod) y lectura de entorno
-  apps/core/       modelos base, contexto de barbería activa, operación RLS
+  apps/core/       modelos base, contexto de barbería activa, operación RLS, página de /app/ y direcciones viejas
   apps/accounts/   usuario por correo, 2FA obligatorio para roles privilegiados
   apps/tenancy/    barberías, sedes, membresías, roles y matriz de permisos
   apps/audit/      registro de auditoría solo-agregar
@@ -92,13 +92,13 @@ backend/
   apps/receivables/ fiados y abonos
   apps/alerts/     alertas automáticas (comando generar_alertas para cron)
   apps/reports/    reportes, tablero y exportación a Excel (solo lecturas)
-  apps/api/        API de la app de React (DRF): me, navigation, branch y csrf
+  apps/api/        API de la app de React (DRF)
   tests/           pruebas (pytest se corre desde backend/)
   requirements/    dependencias fijadas
 frontend/
   app/             app de React + TypeScript (Vite); compila en static/app/
-  templates/       plantillas de Django
-  static/          marca, fuentes y librerías de terceros con su licencia
+  templates/       plantillas de Django: la entrada (allauth) y la página de /app/
+  static/          marca, fuentes, CSS y JS de la entrada, y la compilación de la app (static/app/)
 docs/              arquitectura y decisiones
 ```
 

@@ -1,6 +1,8 @@
 # Identidad R1
 
-Referencia aprobada: `docs/diseno/figma-make/src` (`App.tsx` e `index.css`). Se aplica a la app de React (`frontend/app`) y a la entrada de Django (login, registro, recuperación y 2FA). Las pantallas internas que siguen en plantillas conservan la identidad anterior (`docs/diseno.md`) hasta que pasen a React.
+Referencia aprobada: `docs/diseno/figma-make/src` (`App.tsx` e `index.css`). Es la única identidad vigente: se aplica a la app de React (`frontend/app`) y a la entrada de Django (login, registro, recuperación y 2FA), lo único que sigue en plantillas. La identidad anterior y sus maquetas quedan como historia en [historico/](historico/diseno.md).
+
+Lo que no esté aquí no está aprobado: se pregunta antes de construirlo.
 
 ## Color
 
@@ -20,7 +22,7 @@ Referencia aprobada: `docs/diseno/figma-make/src` (`App.tsx` e `index.css`). Se 
 | Atención (`--color-attention`) | `#8a5b28` | `#d6a363` |
 | Deshabilitado (`--color-disabled`) | `#a8aaa5` | `#666b64` |
 
-Sin rojos: lo negativo va con signo y flecha (`▾ −3,1 %`). Radio de 4 px y la escala de espacios del proyecto (4, 8, 12, 16, 24, 32, 40, 56 y 72 px).
+**Sin rojos.** Lo negativo se marca con signo y flecha, no con color: `▴ +12,4 %`, `▾ −3,1 %`, `▾ −$8.000 · faltante`. Lo positivo usa el tono positivo o el acento.
 
 ## Tema
 
@@ -42,4 +44,34 @@ Barra superior de 72 px, barra lateral de 224 px (260 px como panel en el celula
 
 ## Entrada (Django)
 
-La referencia no trae la entrada; se le aplican los mismos tokens, fuentes y logo sin cambiar su estructura (foto a la izquierda, formulario a la derecha) ni sus clases propias (`entrance*`, `auth-*`, en `static/css/modules/login.css`; fuentes en `static/css/identity-fonts.css`). En el celular (bajo 900 px) la foto no se muestra. El logo 3D de texto y su `login-logo.js` se retiran: los reemplaza el logo SVG.
+La referencia no trae la entrada; se le aplican los mismos tokens, fuentes y logo sin cambiar su estructura (foto a la izquierda, formulario a la derecha) ni sus clases propias (`entrance*`, `auth-*`, en `static/css/modules/login.css`; fuentes en `static/css/identity-fonts.css`). En el celular (bajo 900 px) la foto no se muestra. El logo 3D de texto y su `login-logo.js` se retiran: los reemplaza el logo SVG. Foto: `frontend/static/img/login-barbero.webp`, de Tim Collins Photography, con uso autorizado: su crédito se conserva.
+
+## Formato
+
+- Pesos colombianos sin decimales, con punto de miles y el signo menos tipográfico: `$1.250.000`, `−$8.000`. Sin dato, `—`.
+- Fechas cortas `19 oct`, día `Lun 19 oct`, mes `Octubre 2026` y hora `8:00 a. m.`, en la zona horaria de la barbería.
+- Una sola implementación por lado: `frontend/app/src/lib/format.ts` en React y `apps/core/formatting.py` en el backend (API, Excel y alertas). Los casos compartidos están en `frontend/app/src/lib/format-cases.json` y los prueban Vitest y pytest.
+
+## Espacios
+
+Escala única para margin, padding y gap: 4, 8, 12, 16, 24, 32, 40, 56 y 72 px (`--space-*`). Ningún espacio fuera de ella, ni en la app de React ni en la entrada; lo revisa `backend/tests/frontend/test_spacing_scale.py`. Solo se suman a la escala las medidas del marco fijo (alto de la barra superior, ancho de la lateral), y las excepciones van en esa prueba con su motivo.
+
+## Forma
+
+- Radio único de 4 px; líneas de 1 px.
+- Sin tarjetas dentro de tarjetas.
+- Sin sombras, salvo lo que flota: menús, la paleta de comandos y los avisos sobre una gráfica.
+- Cifras tabulares (`tabular-nums lining-nums`) en toda cifra.
+
+## Íconos
+
+Lucide (`lucide-react` en la app), trazo 1,5, con `currentColor`. En la entrada, los SVG de `frontend/templates/icons/` (`lucide-static`, licencia ISC).
+
+## Estados
+
+Toda pantalla contempla sus estados vacío, cargando y error, y su aspecto también requiere aprobación. Los errores llevan un mensaje genérico (regla 12 de `AGENTS.md`).
+
+## Gráficas del tablero
+
+- Calendario de ventas por día (vista por defecto) y torres 3D (`?vista=3d`). La vista y el mes van en la URL, nunca en el navegador.
+- Cada día con ventas toma uno de cinco tonos según lo vendido frente al mejor día del mes; los días futuros van con borde punteado.

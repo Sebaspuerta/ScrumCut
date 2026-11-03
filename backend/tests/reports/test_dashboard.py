@@ -93,7 +93,7 @@ def test_mis_cortes_de_hoy_solo_cuenta_lo_del_barbero_y_sin_dinero(world):
     sell(w, w.ana, service=w.corte, quantity=2)
     sell(w, w.beto, service=w.barba)
 
-    assert sales_selectors.my_cuts_today(w.ana_login, scope=scope_of(w.ana_login)) == {"cuts_today": 3}
-    assert sales_selectors.my_cuts_today(w.beto_login, scope=scope_of(w.beto_login)) == {"cuts_today": 1}
+    assert sales_selectors.my_cuts(w.ana_login, scope=scope_of(w.ana_login))["today"]["services_count"] == 3
+    assert sales_selectors.my_cuts(w.beto_login, scope=scope_of(w.beto_login))["today"]["services_count"] == 1
     with pytest.raises(PermissionDenied):
         dashboard_summary(w.ana_login, scope=scope_of(w.ana_login))

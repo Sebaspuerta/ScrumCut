@@ -5,7 +5,6 @@ o una lista: el número de consultas no crece con el número de movimientos.
 """
 
 from decimal import Decimal
-from zoneinfo import ZoneInfo
 
 from django.core.paginator import Page, Paginator
 from django.db.models import Count, DecimalField, Q, QuerySet, Sum, Value
@@ -14,7 +13,6 @@ from django.db.models.functions import Coalesce
 from apps.cash.choices import PaymentMethod
 from apps.cash.models import CashMovement, CashSession, MovementKind
 from apps.cash.selectors import current_session, expected_cash, is_from_previous_day
-from apps.core.formatting import opened_since
 from apps.receivables.models import Receivable
 from apps.sales.selectors import day_bounds, local_today
 from apps.tenancy.branch_scope import BranchScope
@@ -22,7 +20,6 @@ from apps.tenancy.models import Membership
 from apps.tenancy.permissions import ensure_permission
 from apps.tenancy.roles import role_has_permission
 
-LAST_CLOSINGS = 5
 CLOSINGS_PAGE_SIZE = 20
 STRIP = (MovementKind.SALE, MovementKind.RECEIVABLE_PAYMENT, MovementKind.EXPENSE, MovementKind.WITHDRAWAL)
 _CASH = Q(payment_method=PaymentMethod.CASH)
@@ -68,12 +65,6 @@ def _other_media(membership: Membership, session: CashSession, scope: BranchScop
     return {"transfers": transfers, "credit": credit}
 
 
-def _opened(membership: Membership, session: CashSession) -> dict:
-    """Desde cuándo está abierta y si viene de otro día (entonces la acción principal es el arqueo)."""
-    local = session.opened_at.astimezone(ZoneInfo(membership.barbershop.timezone))
-    return {"since": opened_since(local, local_today(membership)), "stale": is_from_previous_day(session)}
-
-
 def stale_session(membership: Membership, *, scope: BranchScope) -> CashSession | None:
     """La caja de la sede del alcance si viene de otro día; para el aviso del tablero y de Comandas.
 
@@ -90,10 +81,6 @@ def _closed(scope: BranchScope) -> QuerySet[CashSession]:
     return closed.order_by("-closed_at", "-pk")
 
 
-def last_closings(scope: BranchScope) -> QuerySet[CashSession]:
-    return _closed(scope)[:LAST_CLOSINGS]
-
-
 def closings_page(membership: Membership, *, scope: BranchScope, page: int = 1) -> Page:
     """El historial de cierres de las sedes del alcance, del más reciente al más antiguo, por páginas."""
     ensure_permission(membership, "caja.ver")
@@ -108,12 +95,12 @@ def cash_register(membership: Membership, *, scope: BranchScope, kind: str | Non
     if scope.is_all:
         return {"needs_branch": True}
     session = current_session(membership, scope=scope)
-    data = {"needs_branch": False, "session": session, "closings": list(last_closings(scope))}
+    data = {"needs_branch": False, "session": session}
     if session is None:
         return data
     return {
         **data,
-        **_opened(membership, session),
+        "stale": is_from_previous_day(session),  # de otro día: solo se cierra
         **_strip(session),
         "movements": list(_movements(session, kind)),
         "other_media": _other_media(membership, session, scope),

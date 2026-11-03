@@ -49,13 +49,14 @@ def _assert_no_secret(content: str) -> None:
     assert leaked == []
 
 
-def test_las_paginas_publicas_y_el_inicio_no_muestran_secretos(client, legal_documents, make_shop, make_member):
+def test_las_paginas_publicas_y_la_app_no_muestran_secretos(client, legal_documents, make_shop, make_member, built_app):
     for name in PUBLIC_PAGES:
         _assert_no_secret(client.get(reverse(name)).content.decode())
     for slug in LEGAL_SLUGS:
         _assert_no_secret(client.get(reverse("legal_document", args=[slug])).content.decode())
     client.force_login(make_member("barbero@example.com", make_shop("a"), Role.BARBER))
-    _assert_no_secret(client.get(reverse("home")).content.decode())
+    for name in ("react_app", "api_me", "api_navigation", "api_csrf"):
+        _assert_no_secret(client.get(reverse(name)).content.decode())
 
 
 @override_settings(MAILERS=SMTP_MAILERS)

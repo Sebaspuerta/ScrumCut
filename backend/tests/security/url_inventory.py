@@ -5,6 +5,8 @@ import re
 from django.conf import settings
 from django.urls import URLResolver, get_resolver
 
+from apps.core import legacy_urls
+
 # Fuera del inventario, con su motivo.
 ALLAUTH_MODULE = "allauth."  # login, registro, recuperación y 2FA: sus límites y mensajes se prueban aparte
 ADMIN_PREFIX = settings.ADMIN_URL.strip("/") + "/"  # admin de Django: exige is_staff con su propio login
@@ -12,12 +14,13 @@ ADMIN_PREFIX = settings.ADMIN_URL.strip("/") + "/"  # admin de Django: exige is_
 PUBLIC_VIEWS = {
     "health": "Monitoreo: responde un JSON fijo sin datos.",
     "legal_document": "Los documentos legales se leen antes de registrarse.",
+} | {
+    pattern.name: "Dirección vieja de una pantalla ya en React: solo redirige a /app/, que exige sesión."
+    for pattern in legacy_urls.urlpatterns
 }
 
 LOGIN_ONLY_VIEWS = {
-    "home": "Tablero: con reportes.ver muestra todo; sin ese permiso, solo los cortes propios del barbero.",
     "logout_everywhere": "Actúa sobre la propia cuenta, no sobre datos de una barbería.",
-    "switch_branch": "Cambia el alcance propio; la sede se valida contra las permitidas del rol (403 si no).",
     "react_app": "Solo el HTML de la app de React; los datos y sus permisos llegan por la API.",
     "react_app_route": "Igual que react_app, en las subrutas del enrutador del navegador.",
     "api_me": "La propia persona, su rol y sus permisos; sin barbería activa, solo la persona.",

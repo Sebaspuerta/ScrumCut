@@ -9,11 +9,8 @@ from django.conf import settings
 
 BROWSER_STORAGE = re.compile(r"\b(localStorage|sessionStorage)\b")
 
-# Librerías de terceros que lo usan, con su motivo.
+# Archivos que los nombran sin usarlos, con su motivo.
 ALLOWED = {
-    # Caché del historial de htmx: copias de páginas ya vistas, no credenciales. Se desactiva al montar
-    # el frontend (pendiente en docs/arquitectura.md).
-    "static/vendor/htmx-2.0.11.min.js": "caché de historial de htmx",
     # La regla de ESLint que prohíbe localStorage y sessionStorage en la app de React los nombra.
     "app/eslint.config.js": "regla de ESLint que los prohíbe",
 }

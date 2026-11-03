@@ -1,13 +1,9 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { stubOwnerApi } from "../test/fakeApi";
 import { renderApp } from "../test/renderApp";
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
 
 async function openPalette() {
   stubOwnerApi();
@@ -60,14 +56,13 @@ describe("paleta de comandos", () => {
   });
 
   it("filtra sin mayúsculas ni tildes y Enter abre la pantalla elegida", async () => {
-    const assign = vi.fn();
-    vi.stubGlobal("location", { assign, pathname: "/app/", search: "" });
     const dialog = await openPalette();
 
     await userEvent.type(within(dialog).getByRole("combobox"), "COMÁNDAS");
     await userEvent.keyboard("{Enter}");
 
-    expect(assign).toHaveBeenCalledWith("/comandas/");
+    const nav = screen.getByRole("navigation", { name: "Navegación principal" });
+    expect(within(nav).getByRole("link", { name: "Comandas" }).getAttribute("aria-current")).toBe("page");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

@@ -8,7 +8,7 @@
         "/api/v1/branch/": {
             "post": {
                 "operationId": "branch_create",
-                "description": "Cambia la sede activa; una sede no permitida responde 403, como `switch_branch`.",
+                "description": "Cambia la sede activa entre las permitidas al rol (`choose_branch`); una sede no permitida responde 403.",
                 "tags": [
                     "branch"
                 ],
@@ -4395,15 +4395,10 @@
                         "nullable": true,
                         "description": "Nombre del ícono de Lucide."
                     },
-                    "url": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "La pantalla en plantillas; solo con el estado «enlace»."
-                    },
                     "app_path": {
                         "type": "string",
                         "nullable": true,
-                        "description": "La ruta en la app de React, si ya existe allí."
+                        "description": "La ruta en la app de React; solo con el estado «enlace»."
                     },
                     "status": {
                         "$ref": "#/components/schemas/NavStatusEnum"
@@ -4413,8 +4408,7 @@
                     "app_path",
                     "icon",
                     "label",
-                    "status",
-                    "url"
+                    "status"
                 ]
             },
             "NavStatusEnum": {

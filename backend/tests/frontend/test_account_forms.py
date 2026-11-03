@@ -36,6 +36,14 @@ def test_el_secreto_del_2fa_va_en_columna_con_su_ayuda_debajo(client, make_shop,
     assert re.match(r'[^<]*>\s*<div class="auth-field__help">', page[field.end() :])
 
 
+def test_el_qr_del_2fa_lleva_su_superficie_clara_y_las_demas_imagenes_no(client, make_shop, make_member):
+    _recently_authenticated(client, make_member("admin@example.com", make_shop("a"), Role.ADMIN))
+    page = client.get(reverse("mfa_activate_totp")).content.decode()
+
+    assert re.search(r'<img src="data:image/svg\+xml;base64,[^"]+" alt="[A-Z2-7]+" class="auth-qr">', page)
+    assert page.count('class="auth-qr"') == 1
+
+
 def test_los_codigos_de_recuperacion_van_en_columna(client, make_shop, make_member):
     owner = make_member("dueno@example.com", make_shop("a"), Role.OWNER)
     TOTP.activate(owner, generate_totp_secret())
@@ -55,4 +63,4 @@ def test_los_codigos_de_recuperacion_llevan_al_tablero_con_el_boton_principal(cl
 
     page = client.get(reverse("mfa_view_recovery_codes")).content.decode()
 
-    assert f'<a class="button--primary" href="{reverse("home")}">Continuar al tablero</a>' in page
+    assert f'<a class="button--primary" href="{reverse("react_app")}">Continuar al tablero</a>' in page

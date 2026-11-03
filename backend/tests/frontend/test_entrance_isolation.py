@@ -16,8 +16,8 @@ from tests.frontend.html_support import elements
 pytestmark = pytest.mark.django_db
 
 CSS = settings.FRONTEND_DIR / "static/css"
-# Compartidos a propósito con la entrada: los botones y los avisos de error.
-SHARED = {"components/buttons.css", "components/states.css", "components/fields.css", "modules/login.css"}
+# Compartidos a propósito con la entrada: los avisos y el error de formulario.
+SHARED = {"components/states.css", "modules/login.css"}
 CLASS = re.compile(r"\.([a-zA-Z][\w-]*)")
 ENTRANCE_PAGES = ["account_login", "account_signup", "account_reset_password"]
 

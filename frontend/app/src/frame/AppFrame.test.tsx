@@ -21,7 +21,7 @@ describe("marco de la app", () => {
     expect(await within(banner).findByRole("button", { name: "Notificaciones: 3 sin leer" })).toBeDefined();
     const nav = screen.getByRole("navigation", { name: "Navegación principal" });
     expect(within(nav).getByRole("link", { name: "Tablero" }).getAttribute("aria-current")).toBe("page");
-    expect(within(nav).getByRole("link", { name: "Comandas" }).getAttribute("href")).toBe("/comandas/");
+    expect(within(nav).getByRole("link", { name: "Comandas" }).getAttribute("href")).toBe("/comandas");
     expect(within(nav).queryByRole("link", { name: /Agenda/ })).toBeNull();
     expect(within(nav).getByText("Pronto")).toBeDefined();
   });
@@ -49,7 +49,7 @@ describe("marco de la app", () => {
 
     await userEvent.keyboard("n");
 
-    expect(screen.getByRole("link", { name: "Nueva comanda" }).getAttribute("href")).toBe("/comandas/nueva/");
+    expect(screen.getByRole("link", { name: "Nueva comanda" }).getAttribute("href")).toBe("/comandas?nueva=1");
   });
 
   it("sin reportes.ver ni comandas.ver, el tablero no pide datos que no le tocan", async () => {

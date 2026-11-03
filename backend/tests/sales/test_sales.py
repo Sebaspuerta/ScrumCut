@@ -526,16 +526,16 @@ def test_rendimiento_por_defecto_son_30_dias_contando_hoy(world):
     assert performance["orders_count"] == 1
 
 
-def test_mis_cortes_cuenta_servicios_sin_dinero(world):
+def test_mis_cortes_cuenta_solo_los_servicios_del_barbero(world):
     order = _order(world)
     services.add_item(
         world.cashier, order.public_id, service=world.corte.public_id, quantity=2, scope=scope_of(world.cashier)
     )
     services.add_item(world.cashier, order.public_id, product=world.cera.public_id, scope=scope_of(world.cashier))
     services.close_order(world.cashier, order.public_id, payments=_cash("70000"), scope=scope_of(world.cashier))
-    assert selectors.my_cuts_today(world.ana_login, scope=scope_of(world.ana_login)) == {"cuts_today": 2}
-    assert selectors.my_cuts_today(world.beto_login, scope=scope_of(world.beto_login)) == {"cuts_today": 0}
-    assert selectors.my_cuts_today(world.cashier, scope=scope_of(world.cashier)) == {"cuts_today": 0}
+    assert selectors.my_cuts(world.ana_login, scope=scope_of(world.ana_login))["today"]["services_count"] == 2
+    assert selectors.my_cuts(world.beto_login, scope=scope_of(world.beto_login))["today"]["services_count"] == 0
+    assert selectors.my_cuts(world.cashier, scope=scope_of(world.cashier))["today"]["services_count"] == 0
 
 
 # ── Aislamiento ──────────────────────────────────────────────────────────────

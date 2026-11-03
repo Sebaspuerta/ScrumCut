@@ -50,18 +50,22 @@ def _manual(world, kind: str, session=None):
     )
 
 
-def _status(world) -> str:
+def _cashier(world) -> Client:
     client = Client()
     client.force_login(world.cashier.user)
-    return client.get(reverse("cash_register")).context["since"]
+    return client
 
 
-def test_el_estado_dice_desde_cuando_esta_abierta(world):
-    assert _status(world).startswith("desde las ")
+def _stale(world) -> bool:
+    return _cashier(world).get(reverse("api_cash")).json()["session"]["stale"]
+
+
+def test_el_estado_dice_si_la_caja_viene_de_otro_dia(world):
+    assert _stale(world) is False
     _age(world, 1)
-    assert _status(world).startswith("desde ayer, ")
+    assert _stale(world) is True
     _age(world, 3)
-    assert _status(world).startswith("desde el ")
+    assert _stale(world) is True
 
 
 @pytest.mark.parametrize("operation", ["cobro", "gasto", "retiro"])
@@ -93,10 +97,9 @@ def test_al_cerrarla_y_abrir_la_de_hoy_todo_vuelve_a_funcionar(world):
     assert today.movements.count() == 2
 
 
-def test_el_tablero_y_comandas_avisan_con_un_enlace_a_caja(world):
+def test_el_tablero_y_comandas_avisan_de_la_caja_de_otro_dia(world):
+    client = _cashier(world)
+    urls = (reverse("api_dashboard"), reverse("api_orders"))
+    assert [client.get(url).json()["stale_cash"] for url in urls] == [False, False]
     _age(world, 1)
-    client = Client()
-    client.force_login(world.cashier.user)
-    for url in (reverse("home"), reverse("orders_board")):
-        html = client.get(url).content.decode()
-        assert "viene de otro día" in html and reverse("cash_register") in html
+    assert [client.get(url).json()["stale_cash"] for url in urls] == [True, True]

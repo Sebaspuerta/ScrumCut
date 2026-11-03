@@ -15,12 +15,7 @@ def logged_in_with_mfa(user) -> Client:
 
 
 @pytest.fixture
-def owner_page(make_shop, make_member):
+def owner_page(make_shop, make_member, built_app):
+    """La página de la app de React para un dueño con 2FA."""
     owner = make_member("dueno@example.com", make_shop("a"), Role.OWNER)
-    return logged_in_with_mfa(owner).get(reverse("home"))
-
-
-@pytest.fixture
-def barber_page(client, make_shop, make_member):
-    client.force_login(make_member("barbero@example.com", make_shop("a"), Role.BARBER))
-    return client.get(reverse("home"))
+    return logged_in_with_mfa(owner).get(reverse("react_app"))
