@@ -9,15 +9,31 @@ from datetime import timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from django.db.models import F, IntegerField, OuterRef, Q, QuerySet, Subquery, Sum, Value
+from django.db.models import (
+    BooleanField,
+    ExpressionWrapper,
+    F,
+    IntegerField,
+    OuterRef,
+    Prefetch,
+    Q,
+    QuerySet,
+    Subquery,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Coalesce, Lower
 from django.utils import timezone
 
 from apps.catalog.models import Service
 from apps.inventory.models import Product, ProductCategory, ServiceConsumable, StockLevel, StockMovement
 from apps.tenancy.branch_scope import BranchScope
-from apps.tenancy.models import Membership
+from apps.tenancy.models import Branch, Membership
 from apps.tenancy.permissions import ensure_permission
+
+# Una existencia en o por debajo del mínimo del producto (incluye la agotada con mínimo): la misma regla para la
+# lista de stock bajo y para el aviso de cada producto.
+AT_OR_BELOW_MINIMUM = Q(product__minimum_stock__isnull=False, quantity__lte=F("product__minimum_stock"))
 
 
 def _live_products() -> QuerySet[Product]:
@@ -34,18 +50,18 @@ def list_products(
     membership: Membership,
     *,
     scope: BranchScope,
-    active_only: bool = True,
+    active: bool | None = True,
     category: UUID | str | None = None,
     uncategorized: bool = False,
     product_type: str | None = None,
     search: str | None = None,
 ) -> QuerySet[Product]:
-    """El catálogo común, cada producto con `stock` del alcance."""
+    """El catálogo común, cada producto con `stock` del alcance. `active`: True activos, False inactivos, None todos."""
     ensure_permission(membership, "inventario.ver")
     scope.check(membership)
     products = _live_products()
-    if active_only:
-        products = products.filter(is_active=True)
+    if active is not None:
+        products = products.filter(is_active=active)
     if uncategorized:
         products = products.filter(category__isnull=True)
     elif category is not None:
@@ -88,9 +104,7 @@ def low_stock(membership: Membership, *, scope: BranchScope) -> QuerySet[StockLe
     ensure_permission(membership, "inventario.ver")
     return (
         _levels(membership, scope)
-        .filter(
-            product__is_active=True, product__minimum_stock__isnull=False, quantity__lte=F("product__minimum_stock")
-        )
+        .filter(AT_OR_BELOW_MINIMUM, product__is_active=True)
         .order_by("quantity", Lower("product__name"))
     )
 
@@ -109,6 +123,29 @@ def expiring(membership: Membership, *, scope: BranchScope, days: int = 30) -> Q
         )
         .order_by("product__expiration_date", Lower("product__name"))
     )
+
+
+def with_scope_levels(membership: Membership, products: QuerySet[Product], *, scope: BranchScope) -> QuerySet[Product]:
+    """Cada producto con `scope_levels`: sus existencias en las sedes del alcance, por nombre de sede, cada una con
+    `is_low` (en o bajo el mínimo). Una sola consulta más para toda la lista."""
+    low = ExpressionWrapper(AT_OR_BELOW_MINIMUM, output_field=BooleanField())
+    levels = scope.readable(membership, StockLevel.objects.select_related("branch").annotate(is_low=low))
+    return products.prefetch_related(Prefetch("stock_levels", levels.order_by("branch__name"), to_attr="scope_levels"))
+
+
+def transfer_destinations(membership: Membership, product: Product, *, scope: BranchScope) -> QuerySet[Branch]:
+    """Las sedes activas a las que se puede trasladar desde la sede del alcance, cada una con el `stock` del producto.
+
+    Las mismas que acepta `services.transfer_stock`: activas, de la barbería y distintas del origen. En «todas»,
+    ninguna (no hay origen).
+    """
+    ensure_permission(membership, "inventario.ajustar")
+    scope.check(membership)
+    if scope.branch is None:
+        return Branch.objects.none()
+    here = Q(stock_levels__product=product)
+    stock = Coalesce(Sum("stock_levels__quantity", filter=here), Value(0), output_field=IntegerField())
+    return Branch.objects.filter(is_active=True).exclude(pk=scope.branch.pk).annotate(stock=stock).order_by("name")
 
 
 def list_categories(membership: Membership) -> QuerySet[ProductCategory]:

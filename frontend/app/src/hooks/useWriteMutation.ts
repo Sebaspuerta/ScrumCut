@@ -8,20 +8,21 @@ export const CASH_KEY = ["cash"] as const;
 export const CLIENTS_KEY = ["clients"] as const;
 export const RECEIVABLES_KEY = ["receivables"] as const;
 export const MY_CUTS_KEY = ["my-cuts"] as const;
+export const INVENTORY_KEY = ["inventory"] as const;
 
-/** Después de escribir se vuelven a pedir comandas, caja, clientes, fiados, tablero y «Mis cortes»: un cobro cambia
- * la deuda y el nivel del cliente y la producción del barbero, un abono la caja, y un cliente editado sale en comandas
- * y fiados. Nada se actualiza a mano. */
+/** Después de escribir se vuelven a pedir comandas, caja, clientes, fiados, inventario, tablero y «Mis cortes»: un
+ * cobro cambia la deuda y el nivel del cliente, el stock y la producción del barbero, un abono la caja, un cliente
+ * editado sale en comandas y fiados, y un producto en el catálogo de las comandas. Nada se actualiza a mano. */
 function refreshAll(queryClient: QueryClient): Promise<unknown> {
   return Promise.all(
-    [ORDERS_KEY, CASH_KEY, CLIENTS_KEY, RECEIVABLES_KEY, DASHBOARD_KEY, MY_CUTS_KEY].map((queryKey) =>
+    [ORDERS_KEY, CASH_KEY, CLIENTS_KEY, RECEIVABLES_KEY, INVENTORY_KEY, DASHBOARD_KEY, MY_CUTS_KEY].map((queryKey) =>
       queryClient.invalidateQueries({ queryKey }),
     ),
   );
 }
 
 /**
- * Una escritura de comandas, caja, fiados o clientes. `submit` ignora un segundo envío mientras el primero sigue en curso
+ * Una escritura de comandas, caja, fiados, clientes o inventario. `submit` ignora un segundo envío mientras el primero sigue en curso
  * (doble clic) y la mutación sigue pendiente hasta que llegan los datos nuevos, así que el botón queda
  * deshabilitado hasta entonces. El servidor igual bloquea la fila: dos pestañas no cobran dos veces.
  */

@@ -117,19 +117,16 @@ function csrfTokenSource(options: ApiClientOptions): CsrfTokenSource {
 
 const isCsrfFailure = (error: unknown) => error instanceof ApiError && error.body?.code === CSRF_FAILED;
 
-async function writeInit(csrf: CsrfTokenSource, method: string, body: string): Promise<RequestInit> {
-  return {
-    method,
-    headers: { ...JSON_ACCEPT, "Content-Type": "application/json", [CSRF_HEADER]: await csrf.get() },
-    body,
-  };
+/** JSON o multipart (la foto de un producto): con FormData el navegador pone el Content-Type con su límite. */
+async function writeInit(csrf: CsrfTokenSource, method: string, body: string | FormData): Promise<RequestInit> {
+  const type = typeof body === "string" ? { "Content-Type": "application/json" } : {};
+  return { method, headers: { ...JSON_ACCEPT, ...type, [CSRF_HEADER]: await csrf.get() }, body };
 }
 
 /** Con el token vencido y la sesión viva, pide otro y repite una sola vez la misma petición: el mismo cuerpo, así
  * que una escritura de dinero conserva su `request_key` y no se duplica. Un segundo fallo llega a la pantalla. */
 function writer(options: ApiClientOptions, csrf: CsrfTokenSource) {
-  return async (method: string, path: string, payload: unknown): Promise<unknown> => {
-    const body = JSON.stringify(payload);
+  return async (method: string, path: string, body: string | FormData): Promise<unknown> => {
     try {
       return await send(options, path, await writeInit(csrf, method, body));
     } catch (error) {
@@ -140,9 +137,32 @@ function writer(options: ApiClientOptions, csrf: CsrfTokenSource) {
   };
 }
 
+/** Las escrituras: JSON (post y patch) o multipart (upload), todas con CSRF y su único reintento. */
+function writes(write: ReturnType<typeof writer>) {
+  return {
+    async post<P extends PathWith<"post">>(
+      path: P,
+      body: BodyOf<P, "post">,
+      params?: ParamsOf<P, "post">,
+    ): Promise<ResponseOf<P, "post">> {
+      return (await write("POST", fill(path, params), JSON.stringify(body))) as ResponseOf<P, "post">;
+    },
+    /** Un archivo por multipart (la foto de un producto), con el mismo token CSRF y el mismo reintento. */
+    async upload<P extends PathWith<"post">>(
+      path: P,
+      form: FormData,
+      params?: ParamsOf<P, "post">,
+    ): Promise<ResponseOf<P, "post">> {
+      return (await write("POST", fill(path, params), form)) as ResponseOf<P, "post">;
+    },
+    async patch<P extends PathWith<"patch">>(path: P, body: RequestOf<P, "patch">): Promise<ResponseOf<P, "patch">> {
+      return (await write("PATCH", path, JSON.stringify(body))) as ResponseOf<P, "patch">;
+    },
+  };
+}
+
 export function createApiClient(options: ApiClientOptions) {
   const csrf = csrfTokenSource(options);
-  const write = writer(options, csrf);
   return {
     async get<P extends PathWith<"get">>(
       path: P,
@@ -152,16 +172,7 @@ export function createApiClient(options: ApiClientOptions) {
       const url = withQuery(fill(path, params), query);
       return (await send(options, url, { method: "GET", headers: JSON_ACCEPT })) as ResponseOf<P, "get">;
     },
-    async post<P extends PathWith<"post">>(
-      path: P,
-      body: BodyOf<P, "post">,
-      params?: ParamsOf<P, "post">,
-    ): Promise<ResponseOf<P, "post">> {
-      return (await write("POST", fill(path, params), body)) as ResponseOf<P, "post">;
-    },
-    async patch<P extends PathWith<"patch">>(path: P, body: RequestOf<P, "patch">): Promise<ResponseOf<P, "patch">> {
-      return (await write("PATCH", path, body)) as ResponseOf<P, "patch">;
-    },
+    ...writes(writer(options, csrf)),
     /** Para los formularios POST a Django (cerrar sesión): el mismo token, solo en memoria. */
     csrfToken: csrf.get,
   };

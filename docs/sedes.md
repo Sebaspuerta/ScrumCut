@@ -265,7 +265,7 @@ En el formato de `MODULE_ACTIONS` (`apps/tenancy/roles.py`):
 - Excel: hoja "Resumen por sede" (después de "Panorama") con el comparativo, el Total y la producción; columna "Sede" en Ventas, Comisiones y Fiados (Movimientos y Cierres ya la tenían). El dinero va como número con formato `#,##0`, sin decimales.
 
 **Pasa a la fase de pantallas (S3)**
-- Las pantallas de existencias por sede y de traslado.
+- Las pantallas de existencias por sede y de traslado. Hechas en R7 (Inventario en React).
 - Las pantallas de sedes (existencias, traslados y Ajustes → Sedes) se harán en React y validarán por la API cuando existan: la sede sale de `request.branch_scope` y la valida el servicio, nunca un formulario de Django.
 - El selector de sede en la barra superior.
 - La pantalla que pide elegir una sede cuando Caja, Comandas o Agenda se abren en modo "todas".

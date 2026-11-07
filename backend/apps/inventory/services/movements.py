@@ -53,7 +53,8 @@ def _record(level: StockLevel, delta: int, *, movement_type: str, unit_cost: Dec
         unit_cost=unit_cost,
         **details,
     )
-    movement.full_clean()
+    # La unicidad de la llave no se revisa aquí sino en la base: entre dos envíos simultáneos decide la restricción.
+    movement.full_clean(exclude=["request_key"])
     movement.save()
     return movement
 
@@ -69,6 +70,7 @@ def apply_stock_movement(
     unit_cost: Decimal | None = None,
     reference: str = "",
     transfer_id: UUID | None = None,
+    request_key: UUID | None = None,
 ) -> StockMovement:
     """Única forma de cambiar una existencia: la del producto en `branch`.
 
@@ -95,6 +97,7 @@ def apply_stock_movement(
             reason=reason,
             reference=reference,
             transfer_id=transfer_id,
+            request_key=request_key,
             created_by=actor.user,
         )
         StockLevel.objects.filter(pk=level.pk).update(quantity=F("quantity") + delta, updated_at=timezone.now())
@@ -113,6 +116,7 @@ def register_entry(
     quantity: int,
     reason: str,
     unit_cost: Decimal | None = None,
+    request_key: UUID | None = None,
 ) -> StockMovement:
     """Regla 33: entrada con cantidad > 0 y motivo, en la sede del alcance."""
     ensure_permission(membership, "inventario.ajustar")
@@ -128,11 +132,18 @@ def register_entry(
             reason=reason,
             actor=membership,
             unit_cost=unit_cost,
+            request_key=request_key,
         )
 
 
 def register_adjustment(
-    membership: Membership, product: UUID | str, *, scope: BranchScope, quantity: int, reason: str
+    membership: Membership,
+    product: UUID | str,
+    *,
+    scope: BranchScope,
+    quantity: int,
+    reason: str,
+    request_key: UUID | None = None,
 ) -> StockMovement:
     """Regla 34: ajuste con signo y motivo en la sede del alcance; nunca deja la existencia negativa."""
     ensure_permission(membership, "inventario.ajustar")
@@ -145,6 +156,7 @@ def register_adjustment(
             movement_type=MovementType.ADJUSTMENT,
             reason=reason,
             actor=membership,
+            request_key=request_key,
         )
 
 
@@ -177,11 +189,12 @@ def transfer_stock(
     destination: UUID | str,
     quantity: int,
     reason: str,
+    request_key: UUID | None = None,
 ) -> tuple[StockMovement, StockMovement]:
     """Lleva unidades de la sede del alcance a otra sede activa de la barbería, en una sola transacción.
 
-    Deja una salida en el origen y una entrada en el destino con el mismo `transfer_id`.
-    No deja el origen en negativo.
+    Deja una salida en el origen y una entrada en el destino con el mismo `transfer_id`; la llave del intento,
+    si la hay, va solo en la salida. No deja el origen en negativo.
     """
     ensure_permission(membership, "inventario.ajustar")
     if not isinstance(quantity, int) or quantity <= 0:
@@ -193,7 +206,9 @@ def transfer_stock(
         item = _live_product(product)
         _lock_both(item, origin, destination=target)
         common = {"reason": reason, "actor": membership, "transfer_id": transfer_id}
-        out = apply_stock_movement(item, -quantity, branch=origin, movement_type=MovementType.TRANSFER_OUT, **common)
+        out = apply_stock_movement(
+            item, -quantity, branch=origin, movement_type=MovementType.TRANSFER_OUT, request_key=request_key, **common
+        )
         into = apply_stock_movement(item, quantity, branch=target, movement_type=MovementType.TRANSFER_IN, **common)
         _audit_transfer(membership, item, origin=origin, destination=target, quantity=quantity, transfer_id=transfer_id)
     return out, into

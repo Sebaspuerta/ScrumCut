@@ -56,7 +56,7 @@ Decisión, razones, costos y reglas en [decisiones/frontend-react.md](decisiones
 
 | Pieza | Dónde |
 |---|---|
-| API (DRF + drf-spectacular) | `backend/apps/api`, en `/api/v1/`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`), `csrf`, el tablero, notificaciones, comandas, cobro rápido, Mis cortes, caja, clientes y fiados. Solo la sesión (`apps/api/authentication.py`: `SessionAuthentication` con el rechazo por CSRF como `csrf_failed`), permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
+| API (DRF + drf-spectacular) | `backend/apps/api`, en `/api/v1/`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`), `csrf`, el tablero, notificaciones, comandas, cobro rápido, Mis cortes, caja, clientes, fiados e inventario. Solo la sesión (`apps/api/authentication.py`: `SessionAuthentication` con el rechazo por CSRF como `csrf_failed`), permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
 | Esquema y tipos | `frontend/app/openapi.json` (de `manage.py spectacular`) y `frontend/app/src/api/schema.d.ts` (de `npm run gen:types`). `tests/api/test_openapi_schema.py` y `src/api/schema.test.ts` fallan si alguno quedó desactualizado. |
 | App | `frontend/app/`: Vite, React Router (base `/app`), TanStack Query. Compila en `frontend/static/app/`. |
 | Página | `apps.core.views.react_app` (`login_required`) en `/app/` y subrutas; lee el manifest de Vite con `apps/core/vite_manifest.py` y pinta `frontend/templates/app/index.html`, sin nada en línea. Al iniciar sesión se llega aquí (`LOGIN_REDIRECT_URL`). |
@@ -75,6 +75,7 @@ Fases:
 - R4. Cobro rápido y Mis cortes en React — hecha.
 - R5. Retiro de las pantallas de plantillas ya reemplazadas (tablero, comandas, cobro rápido, caja, clientes, fiados y su marco), redirecciones permanentes, htmx retirado y la entrada solo con la identidad R1 — hecha.
 - R6. Páginas de error y de bloqueo, estados de pérdida de acceso y cierre del hallazgo S4 — hecha.
+- R7. Inventario en React: catálogo con stock y precio de la sede, categorías, foto servida solo por la API (`inventario.ver`, 404 fuera de la barbería, `Cache-Control: private`; se guarda en WEBP, derecha según su EXIF y sin metadatos), entradas, ajustes y traslados con llave del intento (`StockMovement.request_key`, migración `inventory` 0007) y avisos de stock bajo y por vencer — hecha.
 
 Pendiente para la fase de Configuración: el selector de barbería para quien tiene varias (hoy ve una pantalla que lo explica, con «Cerrar sesión»). El motivo «falta de pago» de una barbería suspendida llega con las suscripciones (v3).
 

@@ -59,11 +59,12 @@ def test_el_estado_dice_si_hay_pantalla_pronto_o_proximamente(navigation_as):
         "app_path": None,
         "status": "pronto",
     }
-    assert [sidebar[label]["app_path"] for label in ("Tablero", "Caja", "Clientes", "Fiados")] == [
+    assert [sidebar[label]["app_path"] for label in ("Tablero", "Caja", "Clientes", "Fiados", "Inventario")] == [
         "/",
         "/caja",
         "/clientes",
         "/fiados",
+        "/inventario",
     ]
     assert {item["status"] for item in administration} == {"proximamente"}
     assert all(item["app_path"] is None for item in administration)

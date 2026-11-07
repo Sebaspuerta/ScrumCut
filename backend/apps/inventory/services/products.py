@@ -9,7 +9,7 @@ from uuid import UUID
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import transaction
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 from apps.catalog import branch_prices
 from apps.inventory.models import MovementType, Product, ProductBranchPrice, ProductCategory, StockLevel
@@ -26,8 +26,12 @@ from apps.tenancy.permissions import ensure_permission
 
 PHOTO_MAX_BYTES = 5 * 1024 * 1024
 PHOTO_MAX_PIXELS = 40_000_000  # tope de descompresión antes de cargar la imagen
-PHOTO_FORMATS = {"PNG", "JPEG", "WEBP"}
+# MPO: el JPEG de varias imágenes que guardan muchos celulares; se usa la primera.
+PHOTO_FORMATS = {"PNG", "JPEG", "MPO", "WEBP"}
 PHOTO_SIZE = 200
+# Calidad de la recodificación a WEBP: la foto se ve bien en la lista y pesa poco en el celular.
+PHOTO_QUALITY = 82
+PHOTO_TOO_LARGE = "La foto no puede pesar más de 5 MB."
 
 
 class ProductData(TypedDict, total=False):
@@ -154,18 +158,8 @@ def soft_delete_product(membership: Membership, public_id: UUID | str) -> Produc
     return product
 
 
-def upload_product_photo(membership: Membership, public_id: UUID | str, *, upload) -> Product:
-    """Regla 36: el formato se decide con Pillow sobre el contenido, nunca por la extensión.
-
-    `upload` es un archivo (por ejemplo `UploadedFile`). Se guarda recortado al
-    centro como PNG de 200 × 200; al recodificar se descartan los metadatos.
-    """
-    ensure_permission(membership, "inventario.editar")
-    raw = upload.read(PHOTO_MAX_BYTES + 1)
-    if not raw:
-        raise ValidationError({"photo": "El archivo está vacío."})
-    if len(raw) > PHOTO_MAX_BYTES:
-        raise ValidationError({"photo": "La foto no puede pesar más de 5 MB."})
+def _decoded_image(raw: bytes) -> Image.Image:
+    """La imagen del archivo, ya derecha según su orientación EXIF. El formato lo decide Pillow sobre el contenido."""
     try:
         image = Image.open(io.BytesIO(raw))
         if image.format not in PHOTO_FORMATS:
@@ -174,25 +168,44 @@ def upload_product_photo(membership: Membership, public_id: UUID | str, *, uploa
         if width * height > PHOTO_MAX_PIXELS:
             raise ValidationError({"photo": "La imagen es demasiado grande."})
         image.load()
+        return ImageOps.exif_transpose(image)
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
         raise ValidationError({"photo": "El archivo no es una imagen válida."}) from exc
 
+
+def _thumbnail(image: Image.Image) -> bytes:
+    """Recortada al centro, de 200 × 200, en WEBP. Sin metadatos: WEBP solo escribe los que se le pasan al guardar."""
     if image.mode not in ("RGB", "RGBA"):
         image = image.convert("RGBA")
+    width, height = image.size
     side = min(width, height)
     left, top = (width - side) // 2, (height - side) // 2
-    thumbnail = image.crop((left, top, left + side, top + side)).resize(
-        (PHOTO_SIZE, PHOTO_SIZE), Image.Resampling.LANCZOS
-    )
+    square = image.crop((left, top, left + side, top + side)).resize((PHOTO_SIZE, PHOTO_SIZE), Image.Resampling.LANCZOS)
     buffer = io.BytesIO()
-    thumbnail.save(buffer, format="PNG")
+    square.save(buffer, format="WEBP", quality=PHOTO_QUALITY)
+    return buffer.getvalue()
+
+
+def upload_product_photo(membership: Membership, public_id: UUID | str, *, upload) -> Product:
+    """Regla 36: el formato se decide con Pillow sobre el contenido, nunca por la extensión.
+
+    `upload` es un archivo (por ejemplo `UploadedFile`). Se guarda derecha según su EXIF, recortada al centro
+    como WEBP de 200 × 200 y sin metadatos (ni EXIF, ni ICC, ni XMP).
+    """
+    ensure_permission(membership, "inventario.editar")
+    raw = upload.read(PHOTO_MAX_BYTES + 1)
+    if not raw:
+        raise ValidationError({"photo": "El archivo está vacío."})
+    if len(raw) > PHOTO_MAX_BYTES:
+        raise ValidationError({"photo": PHOTO_TOO_LARGE})
+    content = _thumbnail(_decoded_image(raw))
 
     with transaction.atomic():
         product = _live_product_for_update(public_id)
         before = _product_snapshot(product)
         if product.photo:
             product.photo.delete(save=False)
-        product.photo.save("foto.png", ContentFile(buffer.getvalue()), save=False)
+        product.photo.save("foto.webp", ContentFile(content), save=False)
         product.save(update_fields=["photo", "updated_at"])
         _audit(membership, "producto.foto", obj=product, before=before, after=_product_snapshot(product))
     return product

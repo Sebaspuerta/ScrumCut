@@ -121,6 +121,24 @@ describe("cliente HTTP", () => {
     expect(typeof retry === "string" ? JSON.parse(retry) : null).toMatchObject({ request_key: charge.request_key });
   });
 
+  it("sube un archivo por multipart con el token CSRF y lo reintenta igual si el token venció", async () => {
+    const form = new FormData();
+    form.append("photo", new File(["foto"], "foto.png", { type: "image/png" }));
+    const { client, fetch } = clientWith(
+      jsonResponse({ csrf_token: "viejo" }),
+      jsonResponse(CSRF_FAILED, 403),
+      jsonResponse({ csrf_token: "nuevo" }),
+      jsonResponse({}),
+    );
+
+    await client.upload("/api/v1/inventory/products/{public_id}/photo/upload/", form, { public_id: "p1" });
+
+    expect(fetch.mock.calls[3]?.[0]).toBe("/api/v1/inventory/products/p1/photo/upload/");
+    expect(fetch.mock.calls[3]?.[1]?.body).toBe(form);
+    expect(headersOf(fetch, 3).get("X-CSRFToken")).toBe("nuevo");
+    expect(headersOf(fetch, 3).has("Content-Type")).toBe(false);
+  });
+
   it("sin conexión rechaza con OfflineError y no navega", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>().mockRejectedValue(new TypeError("Failed to fetch"));
     const navigate = vi.fn<(url: string) => void>();

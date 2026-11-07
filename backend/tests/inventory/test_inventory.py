@@ -6,7 +6,7 @@ import pytest
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-from PIL import Image
+from PIL import ExifTags, Image, ImageCms
 
 from apps.audit.models import AuditLog
 from apps.catalog.models import Service
@@ -99,7 +99,7 @@ def test_desactivar_y_activar(owner):
     product = make_product(owner)
     services.deactivate_product(owner, product.public_id)
     assert list(selectors.list_products(owner, scope=scope_of(owner))) == []
-    assert list(selectors.list_products(owner, active_only=False, scope=scope_of(owner))) == [product]
+    assert list(selectors.list_products(owner, active=None, scope=scope_of(owner))) == [product]
     services.activate_product(owner, product.public_id)
     assert list(selectors.list_products(owner, scope=scope_of(owner))) == [product]
 
@@ -108,15 +108,30 @@ def test_desactivar_y_activar(owner):
 
 
 @pytest.mark.parametrize("fmt", ["PNG", "JPEG", "WEBP"])
-def test_la_foto_se_recorta_a_200_y_se_guarda_por_barberia(owner, settings, tmp_path, fmt):
+def test_la_foto_se_recorta_a_200_y_se_guarda_en_webp_por_barberia(owner, settings, tmp_path, fmt):
     settings.MEDIA_ROOT = tmp_path
     product = make_product(owner)
     services.upload_product_photo(owner, product.public_id, upload=_image(fmt, size=(400, 300)))
 
     product.refresh_from_db()
-    assert product.photo.name == f"barbershops/{owner.barbershop.public_id}/products/{product.public_id}.png"
+    assert product.photo.name == f"barbershops/{owner.barbershop.public_id}/products/{product.public_id}.webp"
     with Image.open(product.photo.path) as saved:
-        assert (saved.format, saved.size) == ("PNG", (200, 200))
+        assert (saved.format, saved.size) == ("WEBP", (200, 200))
+
+
+def test_una_foto_mpo_del_celular_se_acepta_y_se_guarda_en_webp(owner, settings, tmp_path):
+    settings.MEDIA_ROOT = tmp_path
+    product = make_product(owner)
+    buffer = io.BytesIO()
+    first, second = Image.new("RGB", (400, 300), (120, 80, 40)), Image.new("RGB", (400, 300), (10, 10, 10))
+    first.save(buffer, format="MPO", save_all=True, append_images=[second])
+    assert Image.open(io.BytesIO(buffer.getvalue())).format == "MPO"
+
+    services.upload_product_photo(owner, product.public_id, upload=SimpleUploadedFile("IMG.jpg", buffer.getvalue()))
+
+    product.refresh_from_db()
+    with Image.open(product.photo.path) as saved:
+        assert (saved.format, saved.size) == ("WEBP", (200, 200))
 
 
 def test_cambiar_la_foto_reemplaza_el_archivo(owner, settings, tmp_path):
@@ -125,8 +140,36 @@ def test_cambiar_la_foto_reemplaza_el_archivo(owner, settings, tmp_path):
     services.upload_product_photo(owner, product.public_id, upload=_image("PNG"))
     services.upload_product_photo(owner, product.public_id, upload=_image("JPEG"))
     product.refresh_from_db()
-    assert product.photo.name.endswith(f"{product.public_id}.png")
-    assert len(list(tmp_path.rglob("*.png"))) == 1
+    assert product.photo.name.endswith(f"{product.public_id}.webp")
+    assert len(list(tmp_path.rglob("*.webp"))) == 1
+
+
+def _phone_photo() -> SimpleUploadedFile:
+    """Un JPEG como los del celular: guardado de lado (ancho > alto), con la orientación «girar 90°» en su EXIF,
+    su GPS y un perfil de color. La mitad de arriba de la foto derecha es oscura."""
+    image = Image.new("RGB", (400, 200), (240, 240, 240))
+    image.paste((10, 10, 10), (0, 0, 200, 200))  # la izquierda guardada es la parte de arriba de la foto
+    exif = Image.Exif()
+    exif[ExifTags.Base.Orientation] = 6  # girar 90° a la derecha para verla derecha
+    exif[ExifTags.Base.Make] = "Teléfono"
+    exif.get_ifd(ExifTags.IFD.GPSInfo)[ExifTags.GPS.GPSLatitude] = (4.0, 36.0, 0.0)
+    buffer = io.BytesIO()
+    profile = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+    image.save(buffer, format="JPEG", exif=exif, icc_profile=profile)
+    return SimpleUploadedFile("IMG_0001.jpg", buffer.getvalue())
+
+
+def test_la_foto_del_celular_queda_derecha_y_sin_metadatos(owner, settings, tmp_path):
+    settings.MEDIA_ROOT = tmp_path
+    product = make_product(owner)
+    services.upload_product_photo(owner, product.public_id, upload=_phone_photo())
+
+    product.refresh_from_db()
+    with Image.open(product.photo.path) as saved:
+        top, bottom = saved.convert("L").getpixel((100, 20)), saved.convert("L").getpixel((100, 180))
+        assert (top < 64, bottom > 192) == (True, True)
+        assert len(saved.getexif()) == 0
+        assert not {"exif", "icc_profile", "xmp"} & set(saved.info)
 
 
 @pytest.mark.parametrize(

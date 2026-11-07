@@ -46,7 +46,10 @@ SIDEBAR = (
     ),
     NavGroup(
         "Catálogo",
-        (NavItem("Servicios", "servicios.ver", icon="tag"), NavItem("Inventario", "inventario.ver", icon="package")),
+        (
+            NavItem("Servicios", "servicios.ver", icon="tag"),
+            NavItem("Inventario", "inventario.ver", "package", app_path="/inventario"),
+        ),
     ),
     NavGroup(
         "Análisis",
@@ -123,6 +126,7 @@ NEW_ACTIONS = (
     NavItem("Registrar gasto", "caja.movimiento", "banknote", app_path="/caja?registrar=gasto"),
     NavItem("Nuevo cliente", "clientes.crear", "users", app_path="/clientes?nuevo=1"),
     NavItem("Abono a fiado", "fiados.abonar", "notebook-pen", app_path="/fiados"),
+    NavItem("Nuevo producto", "inventario.crear", "package", app_path="/inventario?nuevo=1"),
 )
 
 

@@ -4,7 +4,8 @@ import { CashPage } from "./cash/CashPage";
 import { ClientsPage } from "./clients/ClientsPage";
 import { DashboardPage } from "./dashboard/DashboardPage";
 import { AppFrame } from "./frame/AppFrame";
-import { CASH_PATH, CLIENTS_PATH, ORDERS_PATH, RECEIVABLES_PATH } from "./lib/appRoutes";
+import { InventoryPage } from "./inventory/InventoryPage";
+import { CASH_PATH, CLIENTS_PATH, INVENTORY_PATH, ORDERS_PATH, RECEIVABLES_PATH } from "./lib/appRoutes";
 import { OrdersPage } from "./orders/OrdersPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ReceivablesPage } from "./receivables/ReceivablesPage";
@@ -22,6 +23,7 @@ export const routes: RouteObject[] = [
       { path: CASH_PATH, element: <CashPage /> },
       { path: CLIENTS_PATH, element: <ClientsPage /> },
       { path: RECEIVABLES_PATH, element: <ReceivablesPage /> },
+      { path: INVENTORY_PATH, element: <InventoryPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

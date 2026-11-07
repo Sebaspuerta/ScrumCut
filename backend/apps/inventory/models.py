@@ -15,12 +15,16 @@ from django.db.models.functions import Lower
 from apps.core.models import AppendOnlyModel, SoftDeleteModel, TenantScopedModel
 
 _ALIVE = models.Q(deleted_at__isnull=True)
+# Tope de unidades en un solo movimiento o mínimo de stock: cabe de sobra en la columna entera y frena un número
+# sin sentido. La API lo publica como `maximum` en su esquema y de ahí lo toma la app.
+MAX_QUANTITY = 1_000_000
 _MONEY = {"max_digits": 14, "decimal_places": 2, "validators": [MinValueValidator(Decimal("0"))]}
 
 
 def product_photo_path(product: "Product", filename: str) -> str:
-    # Ruta por barbería y producto; el nombre que manda el usuario se descarta.
-    return f"barbershops/{product.barbershop.public_id}/products/{product.public_id}.png"
+    # Ruta por barbería y producto; el nombre que manda el usuario se descarta. Las fotos guardadas antes
+    # de WEBP conservan su nombre .png.
+    return f"barbershops/{product.barbershop.public_id}/products/{product.public_id}.webp"
 
 
 class ProductCategory(TenantScopedModel, SoftDeleteModel):
@@ -107,6 +111,9 @@ class StockMovement(AppendOnlyModel):
     reference = models.CharField("referencia", max_length=64, blank=True, db_index=True)
     # Las dos patas de un traslado entre sedes comparten este valor; nulo en todo lo demás.
     transfer_id = models.UUIDField("traslado", null=True, blank=True, db_index=True)
+    # La llave del intento que lo registró desde la app (entrada, ajuste o la salida de un traslado): un reenvío
+    # con la misma llave no mueve el stock otra vez. Nula en lo demás.
+    request_key = models.UUIDField("llave del intento", null=True, blank=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
 
     class Meta:
@@ -125,6 +132,11 @@ class StockMovement(AppendOnlyModel):
                 condition=models.Q(transfer_id__isnull=True)
                 | models.Q(movement_type__in=[MovementType.TRANSFER_OUT, MovementType.TRANSFER_IN]),
                 name="ck_stockmovement_transfer_id_only_on_transfers",
+            ),
+            models.UniqueConstraint(
+                fields=["barbershop", "request_key"],
+                condition=models.Q(request_key__isnull=False),
+                name="uq_stockmovement_request_key_per_barbershop",
             ),
         ]
         indexes = [

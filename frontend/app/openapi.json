@@ -916,6 +916,1477 @@
                 }
             }
         },
+        "/api/v1/inventory/alerts/": {
+            "get": {
+                "operationId": "inventory_alerts_retrieve",
+                "description": "Stock bajo y perecederos por vencer de las sedes del alcance, cada uno con su producto para abrirlo.",
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockAlerts"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/categories/": {
+            "get": {
+                "operationId": "inventory_categories_list",
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/categories/{public_id}/delete/": {
+            "post": {
+                "operationId": "inventory_categories_delete_create",
+                "description": "Regla 37: sus productos quedan sin categoría o se borran con ella, según `delete_products`.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryDeleteRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/categories/{public_id}/edit/": {
+            "post": {
+                "operationId": "inventory_categories_edit_create",
+                "description": "Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/categories/create/": {
+            "post": {
+                "operationId": "inventory_categories_create_create",
+                "description": "Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance.",
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CategoryList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/": {
+            "get": {
+                "operationId": "products_list",
+                "description": "El catálogo con la existencia y el precio de la sede (?q=, ?categoria=, ?tipo=, ?estado=, ?page=).",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "categoria",
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        },
+                        "description": "El id de una categoría o «sin»."
+                    },
+                    {
+                        "in": "query",
+                        "name": "estado",
+                        "schema": {
+                            "enum": [
+                                "activos",
+                                "inactivos",
+                                "todos"
+                            ],
+                            "type": "string",
+                            "default": "activos",
+                            "minLength": 1
+                        },
+                        "description": "* `activos` - Activos\n* `inactivos` - Inactivos\n* `todos` - Todos"
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string",
+                            "minLength": 1,
+                            "default": "",
+                            "maxLength": 60
+                        },
+                        "description": "Nombre o proveedor."
+                    },
+                    {
+                        "in": "query",
+                        "name": "tipo",
+                        "schema": {
+                            "enum": [
+                                "venta",
+                                "consumible",
+                                "perecedero",
+                                ""
+                            ],
+                            "type": "string",
+                            "default": ""
+                        },
+                        "description": "* `venta` - Venta\n* `consumible` - Consumible interno\n* `perecedero` - Perecedero"
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/": {
+            "get": {
+                "operationId": "inventory_products_retrieve",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1
+                        },
+                        "description": "La página de movimientos."
+                    },
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/active/": {
+            "post": {
+                "operationId": "inventory_products_active_create",
+                "description": "Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ActiveRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/adjustment/": {
+            "post": {
+                "operationId": "inventory_products_adjustment_create",
+                "description": "Regla 34: con signo y motivo obligatorio; nunca deja la existencia negativa.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdjustmentRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/branch-price/": {
+            "post": {
+                "operationId": "inventory_products_branch_price_create",
+                "description": "Decisión 17: el precio de venta propio de la sede del alcance; sin él, rige el del catálogo.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BranchPriceRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/branch-price/remove/": {
+            "post": {
+                "operationId": "inventory_products_branch_price_remove_create",
+                "description": "Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/delete/": {
+            "post": {
+                "operationId": "inventory_products_delete_create",
+                "description": "Regla 35: borrado lógico; sus ventas y movimientos quedan.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDeleted"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/edit/": {
+            "post": {
+                "operationId": "inventory_products_edit_create",
+                "description": "Los datos del catálogo; las existencias no: las cambian solo las entradas, los ajustes y los traslados.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/entry/": {
+            "post": {
+                "operationId": "inventory_products_entry_create",
+                "description": "Regla 33: cantidad mayor que cero, costo unitario (sin él, el del producto) y motivo.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EntryRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/photo/": {
+            "get": {
+                "operationId": "inventory_products_photo_retrieve",
+                "description": "La foto, solo con sesión e inventario.ver y solo de la barbería de la sesión (si no, 404). Nunca por MEDIA.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "image/webp": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/photo/upload/": {
+            "post": {
+                "operationId": "inventory_products_photo_upload_create",
+                "description": "Multipart con CSRF. Una petición más grande que la foto permitida se rechaza antes de leerla.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhotoUploadRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/{public_id}/transfer/": {
+            "post": {
+                "operationId": "inventory_products_transfer_create",
+                "description": "Sale de la sede del alcance y entra en otra sede activa de la barbería, en una sola transacción.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "public_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransferRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/products/create/": {
+            "post": {
+                "operationId": "inventory_products_create_create",
+                "description": "Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance.",
+                "tags": [
+                    "inventory"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/me/": {
             "get": {
                 "operationId": "me_retrieve",
@@ -2345,6 +3816,43 @@
                 "type": "string",
                 "description": "* `active` - active\n* `no_barbershop` - no_barbershop\n* `membership_inactive` - membership_inactive\n* `barbershop_suspended` - barbershop_suspended\n* `barbershop_closed` - barbershop_closed\n* `several_barbershops` - several_barbershops"
             },
+            "ActiveRequest": {
+                "type": "object",
+                "properties": {
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "active"
+                ]
+            },
+            "AdjustmentRequest": {
+                "type": "object",
+                "properties": {
+                    "request_key": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "La llave del intento: la misma en cada reintento, otra para un movimiento nuevo."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Obligatorio.",
+                        "maxLength": 200
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "maximum": 1000000,
+                        "minimum": -1000000,
+                        "description": "Con signo: + suma, − resta. Nunca cero."
+                    }
+                },
+                "required": [
+                    "quantity",
+                    "reason",
+                    "request_key"
+                ]
+            },
             "AdministrationSummary": {
                 "type": "object",
                 "properties": {
@@ -2473,6 +3981,45 @@
                 ],
                 "type": "string",
                 "description": "* `agotado` - Agotado\n* `stock_bajo` - Stock bajo\n* `por_vencer` - Por vencer\n* `fiado_vencido` - Fiado vencido"
+            },
+            "AlertLevel": {
+                "type": "object",
+                "properties": {
+                    "product": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "branch": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer"
+                    },
+                    "minimum_stock": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "expiration_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "expired": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "branch",
+                    "expiration_date",
+                    "expired",
+                    "minimum_stock",
+                    "name",
+                    "product",
+                    "quantity"
+                ]
             },
             "ApiError": {
                 "type": "object",
@@ -2613,6 +4160,20 @@
                     "current",
                     "label",
                     "token"
+                ]
+            },
+            "BranchPriceRequest": {
+                "type": "object",
+                "properties": {
+                    "price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El precio de venta en la sede del alcance."
+                    }
+                },
+                "required": [
+                    "price"
                 ]
             },
             "BranchState": {
@@ -3106,6 +4667,60 @@
                     "receivable_payments",
                     "sales",
                     "withdrawals"
+                ]
+            },
+            "CategoryDeleteRequest": {
+                "type": "object",
+                "properties": {
+                    "delete_products": {
+                        "type": "boolean",
+                        "description": "True borra sus productos; False los deja sin categoría."
+                    }
+                },
+                "required": [
+                    "delete_products"
+                ]
+            },
+            "CategoryList": {
+                "type": "object",
+                "properties": {
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryRef"
+                        }
+                    }
+                },
+                "required": [
+                    "results"
+                ]
+            },
+            "CategoryRef": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
+                ]
+            },
+            "CategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 80
+                    }
+                },
+                "required": [
+                    "name"
                 ]
             },
             "ChangeClientRequest": {
@@ -4036,6 +5651,27 @@
                     "total"
                 ]
             },
+            "Destination": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "stock": {
+                        "type": "integer",
+                        "description": "Lo que ya hay del producto en esa sede."
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "stock"
+                ]
+            },
             "DiscountRequest": {
                 "type": "object",
                 "properties": {
@@ -4052,6 +5688,38 @@
                 },
                 "required": [
                     "amount"
+                ]
+            },
+            "EntryRequest": {
+                "type": "object",
+                "properties": {
+                    "request_key": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "La llave del intento: la misma en cada reintento, otra para un movimiento nuevo."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Obligatorio.",
+                        "maxLength": 200
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "maximum": 1000000,
+                        "description": "Mayor que cero."
+                    },
+                    "unit_cost": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "description": "Sin él, el costo del producto."
+                    }
+                },
+                "required": [
+                    "quantity",
+                    "reason",
+                    "request_key"
                 ]
             },
             "FavoriteBarber": {
@@ -4089,6 +5757,75 @@
                 "required": [
                     "value",
                     "variation"
+                ]
+            },
+            "InventoryProduct": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "product_type": {
+                        "$ref": "#/components/schemas/ProductTypeEnum"
+                    },
+                    "type_label": {
+                        "type": "string"
+                    },
+                    "photo": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "La ruta de la foto en la API; sin foto, null."
+                    },
+                    "stock": {
+                        "type": "integer",
+                        "description": "En la sede del alcance; en «todas», la suma de las sedes."
+                    },
+                    "price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El precio efectivo: el de la sede o el del catálogo; en «todas», el del catálogo."
+                    },
+                    "minimum_stock": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "low_stock": {
+                        "type": "boolean",
+                        "description": "Alguna sede del alcance está en o bajo el mínimo."
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "levels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StockLevel"
+                        },
+                        "description": "Las existencias de cada sede del alcance."
+                    }
+                },
+                "required": [
+                    "category",
+                    "id",
+                    "is_active",
+                    "levels",
+                    "low_stock",
+                    "minimum_stock",
+                    "name",
+                    "photo",
+                    "price",
+                    "product_type",
+                    "stock",
+                    "type_label"
                 ]
             },
             "KindTotal": {
@@ -4290,6 +6027,92 @@
                     "permissions",
                     "role",
                     "user"
+                ]
+            },
+            "Movement": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "kind_label": {
+                        "type": "string"
+                    },
+                    "branch": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "description": "Con signo: + entra, − sale."
+                    },
+                    "stock_before": {
+                        "type": "integer"
+                    },
+                    "stock_after": {
+                        "type": "integer"
+                    },
+                    "unit_cost": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "by": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "at",
+                    "branch",
+                    "by",
+                    "id",
+                    "kind",
+                    "kind_label",
+                    "quantity",
+                    "reason",
+                    "stock_after",
+                    "stock_before",
+                    "unit_cost"
+                ]
+            },
+            "MovementPage": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Movement"
+                        }
+                    }
+                },
+                "required": [
+                    "count",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "results"
                 ]
             },
             "MyCuts": {
@@ -5267,6 +7090,20 @@
                     "total"
                 ]
             },
+            "PhotoUploadRequest": {
+                "type": "object",
+                "description": "Solo que llegue un archivo: el formato, el peso y que sea una imagen real los valida `upload_product_photo`.",
+                "properties": {
+                    "photo": {
+                        "type": "string",
+                        "format": "binary",
+                        "description": "PNG, JPEG o WEBP de hasta 5 MB."
+                    }
+                },
+                "required": [
+                    "photo"
+                ]
+            },
             "PlanUsage": {
                 "type": "object",
                 "properties": {
@@ -5354,6 +7191,347 @@
                     "price"
                 ]
             },
+            "ProductActions": {
+                "type": "object",
+                "properties": {
+                    "edit": {
+                        "type": "boolean"
+                    },
+                    "delete": {
+                        "type": "boolean"
+                    },
+                    "adjust": {
+                        "type": "boolean",
+                        "description": "Entrada, ajuste y traslado: con inventario.ajustar y una sede."
+                    },
+                    "branch_price": {
+                        "type": "boolean",
+                        "description": "Fijar o quitar el precio de la sede: con una sede."
+                    }
+                },
+                "required": [
+                    "adjust",
+                    "branch_price",
+                    "delete",
+                    "edit"
+                ]
+            },
+            "ProductCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "category": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "product_type": {
+                        "$ref": "#/components/schemas/ProductTypeEnum"
+                    },
+                    "purchase_cost": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "sale_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "minimum_stock": {
+                        "type": "integer",
+                        "maximum": 1000000,
+                        "minimum": 0,
+                        "nullable": true
+                    },
+                    "expiration_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "supplier": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 120
+                    },
+                    "initial_stock": {
+                        "type": "integer",
+                        "maximum": 1000000,
+                        "minimum": 0,
+                        "default": 0,
+                        "description": "Entra en la sede del alcance."
+                    }
+                },
+                "required": [
+                    "name",
+                    "product_type",
+                    "purchase_cost",
+                    "sale_price"
+                ]
+            },
+            "ProductDeleted": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                },
+                "required": [
+                    "id"
+                ]
+            },
+            "ProductDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/CategoryRef"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "product_type": {
+                        "$ref": "#/components/schemas/ProductTypeEnum"
+                    },
+                    "type_label": {
+                        "type": "string"
+                    },
+                    "photo": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "La ruta de la foto en la API; sin foto, null."
+                    },
+                    "stock": {
+                        "type": "integer",
+                        "description": "En la sede del alcance; en «todas», la suma de las sedes."
+                    },
+                    "price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El precio efectivo: el de la sede o el del catálogo; en «todas», el del catálogo."
+                    },
+                    "minimum_stock": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "low_stock": {
+                        "type": "boolean",
+                        "description": "Alguna sede del alcance está en o bajo el mínimo."
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "levels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StockLevel"
+                        },
+                        "description": "Las existencias de cada sede del alcance."
+                    },
+                    "purchase_cost": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "sale_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "description": "El precio del catálogo."
+                    },
+                    "branch_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$",
+                        "nullable": true,
+                        "description": "El precio propio de la sede; sin él, null."
+                    },
+                    "expiration_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "supplier": {
+                        "type": "string"
+                    },
+                    "branch": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "La sede del alcance; en «todas», null."
+                    },
+                    "movements": {
+                        "$ref": "#/components/schemas/MovementPage"
+                    },
+                    "destinations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Destination"
+                        },
+                        "description": "Las sedes a las que se puede trasladar."
+                    },
+                    "actions": {
+                        "$ref": "#/components/schemas/ProductActions"
+                    },
+                    "needs_branch": {
+                        "type": "boolean",
+                        "description": "Puede mover stock, pero en «todas» primero elige una sede."
+                    }
+                },
+                "required": [
+                    "actions",
+                    "branch",
+                    "branch_price",
+                    "category",
+                    "destinations",
+                    "expiration_date",
+                    "id",
+                    "is_active",
+                    "levels",
+                    "low_stock",
+                    "minimum_stock",
+                    "movements",
+                    "name",
+                    "needs_branch",
+                    "photo",
+                    "price",
+                    "product_type",
+                    "purchase_cost",
+                    "sale_price",
+                    "stock",
+                    "supplier",
+                    "type_label"
+                ]
+            },
+            "ProductList": {
+                "type": "object",
+                "properties": {
+                    "search": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "product_type": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        }
+                    },
+                    "types": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        }
+                    },
+                    "statuses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Option"
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Productos por página."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InventoryProduct"
+                        }
+                    }
+                },
+                "required": [
+                    "categories",
+                    "category",
+                    "count",
+                    "page",
+                    "page_size",
+                    "pages",
+                    "product_type",
+                    "results",
+                    "search",
+                    "status",
+                    "statuses",
+                    "types"
+                ]
+            },
+            "ProductRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "category": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "product_type": {
+                        "$ref": "#/components/schemas/ProductTypeEnum"
+                    },
+                    "purchase_cost": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "sale_price": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,12}(?:\\.\\d{0,2})?$"
+                    },
+                    "minimum_stock": {
+                        "type": "integer",
+                        "maximum": 1000000,
+                        "minimum": 0,
+                        "nullable": true
+                    },
+                    "expiration_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "supplier": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 120
+                    }
+                },
+                "required": [
+                    "name",
+                    "product_type",
+                    "purchase_cost",
+                    "sale_price"
+                ]
+            },
             "ProductRow": {
                 "type": "object",
                 "properties": {
@@ -5381,6 +7559,15 @@
                     "sales",
                     "units"
                 ]
+            },
+            "ProductTypeEnum": {
+                "enum": [
+                    "venta",
+                    "consumible",
+                    "perecedero"
+                ],
+                "type": "string",
+                "description": "* `venta` - Venta\n* `consumible` - Consumible interno\n* `perecedero` - Perecedero"
             },
             "Production": {
                 "type": "object",
@@ -5855,6 +8042,57 @@
                 "type": "string",
                 "description": "* `owner` - Dueño\n* `admin` - Administrador\n* `cashier` - Cajero\n* `barber` - Barbero\n* `viewer` - Consultor"
             },
+            "StockAlerts": {
+                "type": "object",
+                "properties": {
+                    "low_stock": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlertLevel"
+                        },
+                        "description": "Los más bajos primero."
+                    },
+                    "low_stock_count": {
+                        "type": "integer"
+                    },
+                    "expiring": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlertLevel"
+                        },
+                        "description": "Los que vencen antes primero; incluye los vencidos."
+                    },
+                    "expiring_count": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "expiring",
+                    "expiring_count",
+                    "low_stock",
+                    "low_stock_count"
+                ]
+            },
+            "StockLevel": {
+                "type": "object",
+                "properties": {
+                    "branch": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer"
+                    },
+                    "low": {
+                        "type": "boolean",
+                        "description": "En o por debajo del mínimo del producto."
+                    }
+                },
+                "required": [
+                    "branch",
+                    "low",
+                    "quantity"
+                ]
+            },
             "StockedItem": {
                 "type": "object",
                 "properties": {
@@ -5932,6 +8170,37 @@
                 "required": [
                     "value",
                     "variation"
+                ]
+            },
+            "TransferRequest": {
+                "type": "object",
+                "properties": {
+                    "request_key": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "La llave del intento: la misma en cada reintento, otra para un movimiento nuevo."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Obligatorio.",
+                        "maxLength": 200
+                    },
+                    "destination": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Otra sede activa de la barbería."
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "maximum": 1000000,
+                        "description": "Mayor que cero."
+                    }
+                },
+                "required": [
+                    "destination",
+                    "quantity",
+                    "reason",
+                    "request_key"
                 ]
             },
             "Trend": {

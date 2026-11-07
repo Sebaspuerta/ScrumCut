@@ -233,6 +233,310 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inventory/alerts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Stock bajo y perecederos por vencer de las sedes del alcance, cada uno con su producto para abrirlo. */
+        get: operations["inventory_alerts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/categories/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory_categories_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/categories/{public_id}/delete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Regla 37: sus productos quedan sin categoría o se borran con ella, según `delete_products`. */
+        post: operations["inventory_categories_delete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/categories/{public_id}/edit/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance. */
+        post: operations["inventory_categories_edit_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/categories/create/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance. */
+        post: operations["inventory_categories_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description El catálogo con la existencia y el precio de la sede (?q=, ?categoria=, ?tipo=, ?estado=, ?page=). */
+        get: operations["products_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inventory_products_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/active/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance. */
+        post: operations["inventory_products_active_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/adjustment/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Regla 34: con signo y motivo obligatorio; nunca deja la existencia negativa. */
+        post: operations["inventory_products_adjustment_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/branch-price/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Decisión 17: el precio de venta propio de la sede del alcance; sin él, rige el del catálogo. */
+        post: operations["inventory_products_branch_price_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/branch-price/remove/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance. */
+        post: operations["inventory_products_branch_price_remove_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/delete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Regla 35: borrado lógico; sus ventas y movimientos quedan. */
+        post: operations["inventory_products_delete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/edit/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Los datos del catálogo; las existencias no: las cambian solo las entradas, los ajustes y los traslados. */
+        post: operations["inventory_products_edit_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/entry/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Regla 33: cantidad mayor que cero, costo unitario (sin él, el del producto) y motivo. */
+        post: operations["inventory_products_entry_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/photo/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description La foto, solo con sesión e inventario.ver y solo de la barbería de la sesión (si no, 404). Nunca por MEDIA. */
+        get: operations["inventory_products_photo_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/photo/upload/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Multipart con CSRF. Una petición más grande que la foto permitida se rechaza antes de leerla. */
+        post: operations["inventory_products_photo_upload_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/{public_id}/transfer/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sale de la sede del alcance y entra en otra sede activa de la barbería, en una sola transacción. */
+        post: operations["inventory_products_transfer_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/products/create/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cada escritura de un producto responde el producto como queda, leído de nuevo por el alcance. */
+        post: operations["inventory_products_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/": {
         parameters: {
             query?: never;
@@ -594,6 +898,20 @@ export interface components {
          * @enum {string}
          */
         AccessStatusEnum: "active" | "no_barbershop" | "membership_inactive" | "barbershop_suspended" | "barbershop_closed" | "several_barbershops";
+        ActiveRequest: {
+            active: boolean;
+        };
+        AdjustmentRequest: {
+            /**
+             * Format: uuid
+             * @description La llave del intento: la misma en cada reintento, otra para un movimiento nuevo.
+             */
+            request_key: string;
+            /** @description Obligatorio. */
+            reason: string;
+            /** @description Con signo: + suma, − resta. Nunca cero. */
+            quantity: number;
+        };
         AdministrationSummary: {
             /** @description Con sedes.ver. */
             branches: components["schemas"]["PlanUsage"] | null;
@@ -635,6 +953,17 @@ export interface components {
          * @enum {string}
          */
         AlertItemKindEnum: "agotado" | "stock_bajo" | "por_vencer" | "fiado_vencido";
+        AlertLevel: {
+            /** Format: uuid */
+            product: string;
+            name: string;
+            branch: string;
+            quantity: number;
+            minimum_stock: number | null;
+            /** Format: date */
+            expiration_date: string | null;
+            expired: boolean;
+        };
         /** @description La forma de todo error de /api/v1/ (`apps.api.exceptions`): el mensaje, qué pasó y los campos. */
         ApiError: {
             /** @description Para el usuario: un texto fijo o el mensaje de la validación. */
@@ -682,6 +1011,13 @@ export interface components {
             token: string;
             label: string;
             current: boolean;
+        };
+        BranchPriceRequest: {
+            /**
+             * Format: decimal
+             * @description El precio de venta en la sede del alcance.
+             */
+            price: string;
         };
         BranchState: {
             mode: components["schemas"]["BranchModeEnum"];
@@ -842,6 +1178,21 @@ export interface components {
             receivable_payments: components["schemas"]["KindTotal"];
             expenses: components["schemas"]["KindTotal"];
             withdrawals: components["schemas"]["KindTotal"];
+        };
+        CategoryDeleteRequest: {
+            /** @description True borra sus productos; False los deja sin categoría. */
+            delete_products: boolean;
+        };
+        CategoryList: {
+            results: components["schemas"]["CategoryRef"][];
+        };
+        CategoryRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        CategoryRequest: {
+            name: string;
         };
         ChangeClientRequest: {
             /**
@@ -1159,11 +1510,34 @@ export interface components {
             total: string;
             clients: number;
         };
+        Destination: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Lo que ya hay del producto en esa sede. */
+            stock: number;
+        };
         DiscountRequest: {
             /** Format: decimal */
             amount: string;
             /** @default  */
             reason: string;
+        };
+        EntryRequest: {
+            /**
+             * Format: uuid
+             * @description La llave del intento: la misma en cada reintento, otra para un movimiento nuevo.
+             */
+            request_key: string;
+            /** @description Obligatorio. */
+            reason: string;
+            /** @description Mayor que cero. */
+            quantity: number;
+            /**
+             * Format: decimal
+             * @description Sin él, el costo del producto.
+             */
+            unit_cost?: string | null;
         };
         FavoriteBarber: {
             name: string;
@@ -1173,6 +1547,29 @@ export interface components {
             /** Format: decimal */
             value: string;
             variation: components["schemas"]["Variation"] | null;
+        };
+        InventoryProduct: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            category: string | null;
+            product_type: components["schemas"]["ProductTypeEnum"];
+            type_label: string;
+            /** @description La ruta de la foto en la API; sin foto, null. */
+            photo: string | null;
+            /** @description En la sede del alcance; en «todas», la suma de las sedes. */
+            stock: number;
+            /**
+             * Format: decimal
+             * @description El precio efectivo: el de la sede o el del catálogo; en «todas», el del catálogo.
+             */
+            price: string;
+            minimum_stock: number | null;
+            /** @description Alguna sede del alcance está en o bajo el mínimo. */
+            low_stock: boolean;
+            is_active: boolean;
+            /** @description Las existencias de cada sede del alcance. */
+            levels: components["schemas"]["StockLevel"][];
         };
         KindTotal: {
             /** Format: decimal */
@@ -1228,6 +1625,30 @@ export interface components {
             role: components["schemas"]["Role"] | null;
             permissions: string[];
             branch: components["schemas"]["BranchState"] | null;
+        };
+        Movement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            at: string;
+            kind: string;
+            kind_label: string;
+            branch: string;
+            /** @description Con signo: + entra, − sale. */
+            quantity: number;
+            stock_before: number;
+            stock_after: number;
+            /** Format: decimal */
+            unit_cost: string;
+            reason: string;
+            by: string;
+        };
+        MovementPage: {
+            count: number;
+            page: number;
+            pages: number;
+            page_size: number;
+            results: components["schemas"]["Movement"][];
         };
         MyCuts: {
             /** @description El barbero de la sesión; sin uno propio, null. */
@@ -1532,6 +1953,14 @@ export interface components {
             /** @description Fiados con saldo. */
             count: number;
         };
+        /** @description Solo que llegue un archivo: el formato, el peso y que sea una imagen real los valida `upload_product_photo`. */
+        PhotoUploadRequest: {
+            /**
+             * Format: binary
+             * @description PNG, JPEG o WEBP de hasta 5 MB.
+             */
+            photo: string;
+        };
         PlanUsage: {
             active: number;
             limit: number;
@@ -1558,6 +1987,114 @@ export interface components {
              */
             price: string;
         };
+        ProductActions: {
+            edit: boolean;
+            delete: boolean;
+            /** @description Entrada, ajuste y traslado: con inventario.ajustar y una sede. */
+            adjust: boolean;
+            /** @description Fijar o quitar el precio de la sede: con una sede. */
+            branch_price: boolean;
+        };
+        ProductCreateRequest: {
+            name: string;
+            /** Format: uuid */
+            category?: string | null;
+            product_type: components["schemas"]["ProductTypeEnum"];
+            /** Format: decimal */
+            purchase_cost: string;
+            /** Format: decimal */
+            sale_price: string;
+            minimum_stock?: number | null;
+            /** Format: date */
+            expiration_date?: string | null;
+            /** @default  */
+            supplier: string;
+            /**
+             * @description Entra en la sede del alcance.
+             * @default 0
+             */
+            initial_stock: number;
+        };
+        ProductDeleted: {
+            /** Format: uuid */
+            id: string;
+        };
+        ProductDetail: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            category: components["schemas"]["CategoryRef"] | null;
+            product_type: components["schemas"]["ProductTypeEnum"];
+            type_label: string;
+            /** @description La ruta de la foto en la API; sin foto, null. */
+            photo: string | null;
+            /** @description En la sede del alcance; en «todas», la suma de las sedes. */
+            stock: number;
+            /**
+             * Format: decimal
+             * @description El precio efectivo: el de la sede o el del catálogo; en «todas», el del catálogo.
+             */
+            price: string;
+            minimum_stock: number | null;
+            /** @description Alguna sede del alcance está en o bajo el mínimo. */
+            low_stock: boolean;
+            is_active: boolean;
+            /** @description Las existencias de cada sede del alcance. */
+            levels: components["schemas"]["StockLevel"][];
+            /** Format: decimal */
+            purchase_cost: string;
+            /**
+             * Format: decimal
+             * @description El precio del catálogo.
+             */
+            sale_price: string;
+            /**
+             * Format: decimal
+             * @description El precio propio de la sede; sin él, null.
+             */
+            branch_price: string | null;
+            /** Format: date */
+            expiration_date: string | null;
+            supplier: string;
+            /** @description La sede del alcance; en «todas», null. */
+            branch: string | null;
+            movements: components["schemas"]["MovementPage"];
+            /** @description Las sedes a las que se puede trasladar. */
+            destinations: components["schemas"]["Destination"][];
+            actions: components["schemas"]["ProductActions"];
+            /** @description Puede mover stock, pero en «todas» primero elige una sede. */
+            needs_branch: boolean;
+        };
+        ProductList: {
+            search: string;
+            category: string;
+            product_type: string;
+            status: string;
+            categories: components["schemas"]["Option"][];
+            types: components["schemas"]["Option"][];
+            statuses: components["schemas"]["Option"][];
+            count: number;
+            page: number;
+            pages: number;
+            /** @description Productos por página. */
+            page_size: number;
+            results: components["schemas"]["InventoryProduct"][];
+        };
+        ProductRequest: {
+            name: string;
+            /** Format: uuid */
+            category?: string | null;
+            product_type: components["schemas"]["ProductTypeEnum"];
+            /** Format: decimal */
+            purchase_cost: string;
+            /** Format: decimal */
+            sale_price: string;
+            minimum_stock?: number | null;
+            /** Format: date */
+            expiration_date?: string | null;
+            /** @default  */
+            supplier: string;
+        };
         ProductRow: {
             name: string;
             units: number;
@@ -1566,6 +2103,13 @@ export interface components {
             /** Format: decimal */
             margin: string | null;
         };
+        /**
+         * @description * `venta` - Venta
+         *     * `consumible` - Consumible interno
+         *     * `perecedero` - Perecedero
+         * @enum {string}
+         */
+        ProductTypeEnum: "venta" | "consumible" | "perecedero";
         Production: {
             /** @description Comandas cerradas en las que hizo alguna línea. */
             orders: number;
@@ -1756,6 +2300,20 @@ export interface components {
          * @enum {string}
          */
         RoleCodeEnum: "owner" | "admin" | "cashier" | "barber" | "viewer";
+        StockAlerts: {
+            /** @description Los más bajos primero. */
+            low_stock: components["schemas"]["AlertLevel"][];
+            low_stock_count: number;
+            /** @description Los que vencen antes primero; incluye los vencidos. */
+            expiring: components["schemas"]["AlertLevel"][];
+            expiring_count: number;
+        };
+        StockLevel: {
+            branch: string;
+            quantity: number;
+            /** @description En o por debajo del mínimo del producto. */
+            low: boolean;
+        };
         StockedItem: {
             /** Format: uuid */
             id: string;
@@ -1784,6 +2342,22 @@ export interface components {
             /** Format: decimal */
             value: string | null;
             variation: components["schemas"]["Variation"] | null;
+        };
+        TransferRequest: {
+            /**
+             * Format: uuid
+             * @description La llave del intento: la misma en cada reintento, otra para un movimiento nuevo.
+             */
+            request_key: string;
+            /** @description Obligatorio. */
+            reason: string;
+            /**
+             * Format: uuid
+             * @description Otra sede activa de la barbería.
+             */
+            destination: string;
+            /** @description Mayor que cero. */
+            quantity: number;
         };
         Trend: {
             income: string[];
@@ -2399,6 +2973,983 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Dashboard"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_alerts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockAlerts"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_categories_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryList"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_categories_delete_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryDeleteRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryList"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_categories_edit_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryList"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_categories_create_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryList"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    products_list: {
+        parameters: {
+            query?: {
+                /** @description El id de una categoría o «sin». */
+                categoria?: string;
+                /**
+                 * @description * `activos` - Activos
+                 *     * `inactivos` - Inactivos
+                 *     * `todos` - Todos
+                 */
+                estado?: "activos" | "inactivos" | "todos";
+                page?: number;
+                /** @description Nombre o proveedor. */
+                q?: string;
+                /**
+                 * @description * `venta` - Venta
+                 *     * `consumible` - Consumible interno
+                 *     * `perecedero` - Perecedero
+                 */
+                tipo?: "venta" | "consumible" | "perecedero" | "";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductList"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_retrieve: {
+        parameters: {
+            query?: {
+                /** @description La página de movimientos. */
+                page?: number;
+            };
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_active_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActiveRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_adjustment_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustmentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_branch_price_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchPriceRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_branch_price_remove_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_delete_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDeleted"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_edit_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_entry_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_photo_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_photo_upload_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["PhotoUploadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_transfer_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                public_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    inventory_products_create_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             403: {

@@ -1,6 +1,17 @@
 from django.urls import path
 
-from apps.api import cash_views, client_views, my_cuts_views, order_views, receivable_views, views
+from apps.api import (
+    cash_views,
+    client_views,
+    inventory_views,
+    my_cuts_views,
+    order_views,
+    receivable_views,
+    stock_views,
+    views,
+)
+
+PRODUCT = "inventory/products/<uuid:public_id>/"
 
 urlpatterns = [
     path("me/", views.MeView.as_view(), name="api_me"),
@@ -39,4 +50,38 @@ urlpatterns = [
     path("cash/closings/", cash_views.CashClosingsView.as_view(), name="api_cash_closings"),
     path("cash/<uuid:session>/movements/", cash_views.CashMovementView.as_view(), name="api_cash_movement"),
     path("cash/<uuid:session>/close/", cash_views.CashCloseView.as_view(), name="api_cash_close"),
+    path("inventory/categories/", inventory_views.CategoryListView.as_view(), name="api_inventory_categories"),
+    path(
+        "inventory/categories/create/",
+        inventory_views.CategoryCreateView.as_view(),
+        name="api_inventory_category_create",
+    ),
+    path(
+        "inventory/categories/<uuid:public_id>/edit/",
+        inventory_views.CategoryUpdateView.as_view(),
+        name="api_inventory_category_edit",
+    ),
+    path(
+        "inventory/categories/<uuid:public_id>/delete/",
+        inventory_views.CategoryDeleteView.as_view(),
+        name="api_inventory_category_delete",
+    ),
+    path("inventory/alerts/", stock_views.StockAlertsView.as_view(), name="api_inventory_alerts"),
+    path("inventory/products/", inventory_views.ProductListView.as_view(), name="api_products"),
+    path("inventory/products/create/", inventory_views.ProductCreateView.as_view(), name="api_product_create"),
+    path(PRODUCT, inventory_views.ProductDetailView.as_view(), name="api_product"),
+    path(f"{PRODUCT}edit/", inventory_views.ProductUpdateView.as_view(), name="api_product_edit"),
+    path(f"{PRODUCT}active/", inventory_views.ProductActiveView.as_view(), name="api_product_active"),
+    path(f"{PRODUCT}delete/", inventory_views.ProductDeleteView.as_view(), name="api_product_delete"),
+    path(f"{PRODUCT}photo/", inventory_views.ProductPhotoView.as_view(), name="api_product_photo"),
+    path(f"{PRODUCT}photo/upload/", inventory_views.ProductPhotoUploadView.as_view(), name="api_product_photo_upload"),
+    path(f"{PRODUCT}branch-price/", stock_views.BranchPriceView.as_view(), name="api_product_branch_price"),
+    path(
+        f"{PRODUCT}branch-price/remove/",
+        stock_views.BranchPriceRemoveView.as_view(),
+        name="api_product_branch_price_remove",
+    ),
+    path(f"{PRODUCT}entry/", stock_views.EntryView.as_view(), name="api_product_entry"),
+    path(f"{PRODUCT}adjustment/", stock_views.AdjustmentView.as_view(), name="api_product_adjustment"),
+    path(f"{PRODUCT}transfer/", stock_views.TransferView.as_view(), name="api_product_transfer"),
 ]
