@@ -1,20 +1,21 @@
-/* Error de formulario y avisos de la entrada. Sin rojos (docs/diseno/identidad-r1.md). */
+/* Error de formulario y avisos de la entrada, con los tokens de la identidad R1 en claro y oscuro.
+   Sin rojos (docs/diseno/identidad-r1.md). */
 
 .form-error {
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
   padding: var(--space-4) var(--space-4);
-  background: var(--color-espresso-200);
+  background: var(--identity-soft);
   border-radius: var(--radius);
   font-size: var(--text-meta);
-  color: var(--color-text);
+  color: var(--identity-text);
 }
 
 .form-error .icon {
   width: var(--icon-md);
   height: var(--icon-md);
-  color: var(--color-espresso-600);
+  color: var(--identity-accent);
 }
 
 .notices {
@@ -23,32 +24,33 @@
   gap: var(--space-2);
 }
 
-/* Aviso del sistema: el borde izquierdo y el ícono dicen el nivel. Sin rojos: éxito en salvia, lo demás en café. */
+/* Aviso del sistema: el borde izquierdo y el ícono dicen el nivel. Sin rojos: éxito en el tono positivo, atención en
+   el suyo y lo demás en el acento. */
 .notice {
-  --notice-marker: var(--color-text-muted);
+  --notice-marker: var(--identity-muted);
 
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  background: var(--color-panel);
-  border: var(--line-width) solid var(--color-line);
+  background: var(--identity-bg);
+  border: var(--line-width) solid var(--identity-line);
   border-left: var(--marker-width) solid var(--notice-marker);
   border-radius: var(--radius);
   font-size: var(--text-meta);
-  color: var(--color-text);
+  color: var(--identity-text);
 }
 
 .notice--success {
-  --notice-marker: var(--color-accent);
+  --notice-marker: var(--identity-positive);
 }
 
 .notice--warning {
-  --notice-marker: var(--color-espresso-600);
+  --notice-marker: var(--identity-attention);
 }
 
 .notice--error {
-  --notice-marker: var(--color-espresso);
+  --notice-marker: var(--identity-accent);
 }
 
 .notice .icon {
@@ -72,7 +74,7 @@
   background: transparent;
   border: 0;
   border-radius: var(--radius);
-  color: var(--color-text-muted);
+  color: var(--identity-muted);
   cursor: pointer;
 }
 

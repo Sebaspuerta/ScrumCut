@@ -5,6 +5,7 @@ import { usePopover } from "../hooks/usePopover";
 import { useNotifications } from "../hooks/useNotifications";
 import { AlertRow } from "./AlertRow";
 import styles from "./NotificationsMenu.module.css";
+import { LoadError } from "./LoadError";
 import { StatusMessage } from "./StatusMessage";
 
 interface NotificationsMenuProps {
@@ -47,7 +48,7 @@ export function NotificationsMenu({ unread, timeZone }: NotificationsMenuProps) 
             </button>
           </div>
           {notifications.isPending && <StatusMessage kind="loading">Cargando alertas…</StatusMessage>}
-          {notifications.isError && <StatusMessage kind="error">No pudimos cargar las alertas.</StatusMessage>}
+          {notifications.isError && <LoadError error={notifications.error}>No pudimos cargar las alertas.</LoadError>}
           {notifications.data?.groups.length === 0 && (
             <StatusMessage kind="empty">Todo al día: no hay alertas.</StatusMessage>
           )}

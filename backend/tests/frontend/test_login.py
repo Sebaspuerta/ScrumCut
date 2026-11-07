@@ -36,3 +36,10 @@ def test_el_campo_trampa_sigue_oculto_en_el_registro(client, legal_documents):
     page = client.get(reverse("account_signup")).content.decode()
     [trap] = [attrs for tag, attrs, _ in elements(page) if tag == "input" and attrs.get("name") == HONEYPOT_FIELD]
     assert "hidden" in trap
+
+
+@pytest.mark.parametrize("url_name", ["account_login", "account_signup", "account_reset_password"])
+def test_el_logo_de_la_entrada_lleva_sus_clases_propias(client, legal_documents, url_name):
+    """El logo es compartido con las páginas de error: en la entrada sus clases son siempre `entrance__*`."""
+    html = client.get(reverse(url_name)).content.decode()
+    assert '<div class="entrance__logo">' in html and 'class="entrance__mark"' in html

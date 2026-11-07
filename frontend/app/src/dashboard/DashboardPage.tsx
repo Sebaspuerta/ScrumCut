@@ -1,6 +1,7 @@
 import { useSearchParams } from "react-router";
 
 import { StaleCashNotice } from "../cash/StaleCashNotice";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useDashboard } from "../hooks/useDashboard";
 import { useMe } from "../hooks/useMe";
@@ -35,9 +36,9 @@ export function DashboardPage() {
   if (dashboard.isPending) return <DashboardSkeleton />;
   if (dashboard.isError) {
     return (
-      <StatusMessage kind="error" onRetry={() => void dashboard.refetch()}>
+      <LoadError error={dashboard.error} onRetry={() => void dashboard.refetch()}>
         No pudimos cargar el tablero.
-      </StatusMessage>
+      </LoadError>
     );
   }
   const data = dashboard.data;

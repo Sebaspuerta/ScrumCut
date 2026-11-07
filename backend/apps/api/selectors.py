@@ -17,6 +17,7 @@ from apps.core.shell_menus import admin_summary, branch_menu, initials
 from apps.tenancy.branch_scope import BranchScope
 from apps.tenancy.models import Membership
 from apps.tenancy.roles import ALL_PERMISSIONS, role_has_permission
+from apps.tenancy.selectors import AccessState, access_state
 
 # Estado de un ítem: con pantalla, sin pantalla en la barra lateral y sin pantalla en Administración.
 LINK, SOON, COMING = "enlace", "pronto", "proximamente"
@@ -39,13 +40,26 @@ def _user(user: User) -> dict:
     return {"email": user.email, "name": name, "initials": initials(name), "theme": user.theme}
 
 
+def _access(state: AccessState) -> dict:
+    return {"status": state.status, "barbershop": state.barbershop, "support_email": state.support_email}
+
+
 def me(user: User, membership: Membership | None, scope: BranchScope | None) -> dict:
-    """Sin membresía activa (ninguna barbería o varias) solo vuelve la persona."""
+    """Sin membresía activa (ninguna barbería, varias o sin acceso) vuelven la persona y el porqué."""
+    access = _access(access_state(user, membership))
     if membership is None or scope is None:
-        return {"user": _user(user), "barbershop": None, "role": None, "permissions": [], "branch": None}
+        return {
+            "user": _user(user),
+            "access": access,
+            "barbershop": None,
+            "role": None,
+            "permissions": [],
+            "branch": None,
+        }
     shop = membership.barbershop.trade_name
     return {
         "user": _user(user),
+        "access": access,
         "barbershop": {"name": shop, "initials": initials(shop), "timezone": membership.barbershop.timezone},
         "role": {"code": membership.role, "label": membership.get_role_display()},
         "permissions": sorted(code for code in ALL_PERMISSIONS if role_has_permission(membership.role, code)),

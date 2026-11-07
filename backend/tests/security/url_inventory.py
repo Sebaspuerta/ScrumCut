@@ -14,6 +14,7 @@ ADMIN_PREFIX = settings.ADMIN_URL.strip("/") + "/"  # admin de Django: exige is_
 PUBLIC_VIEWS = {
     "health": "Monitoreo: responde un JSON fijo sin datos.",
     "legal_document": "Los documentos legales se leen antes de registrarse.",
+    "account_inactive_retired": "Siempre 404: la pantalla de cuenta inactiva de allauth revelaba que existe (S4).",
 } | {
     pattern.name: "Dirección vieja de una pantalla ya en React: solo redirige a /app/, que exige sesión."
     for pattern in legacy_urls.urlpatterns
@@ -23,7 +24,7 @@ LOGIN_ONLY_VIEWS = {
     "logout_everywhere": "Actúa sobre la propia cuenta, no sobre datos de una barbería.",
     "react_app": "Solo el HTML de la app de React; los datos y sus permisos llegan por la API.",
     "react_app_route": "Igual que react_app, en las subrutas del enrutador del navegador.",
-    "api_me": "La propia persona, su rol y sus permisos; sin barbería activa, solo la persona.",
+    "api_me": "La propia persona, su rol y sus permisos; sin barbería activa, la persona y el porqué.",
     "api_navigation": "Exige membresía; cada ítem ya viene filtrado por su permiso en navigation.py.",
     "api_branch": "Cambia el alcance propio; choose_branch valida la sede contra las permitidas (403 si no).",
     "api_csrf": "El token CSRF de la propia sesión, para las escrituras de la app de React.",

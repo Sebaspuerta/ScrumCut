@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { LogOut, Monitor, ShieldCheck } from "lucide-react";
 import { useId } from "react";
 
-import { api } from "../api/client";
 import type { Me } from "../api/types";
+import { useCsrfToken } from "../hooks/useCsrfToken";
 import { usePopover } from "../hooks/usePopover";
 import { DJANGO_ROUTES } from "../lib/djangoRoutes";
 import styles from "./AccountMenu.module.css";
 import menu from "./Menu.module.css";
+import { SessionForm } from "./SessionForm";
 
 interface AccountMenuProps {
   me: Me;
@@ -19,7 +19,7 @@ interface AccountMenuProps {
 export function AccountMenu({ me, usesSystemTheme, onUseSystemTheme }: AccountMenuProps) {
   const menuId = useId();
   const { open, toggle, containerRef, triggerRef } = usePopover();
-  const csrf = useQuery({ queryKey: ["csrf"], queryFn: () => api.csrfToken(), enabled: open });
+  const csrf = useCsrfToken(open);
   const role = me.role?.label ?? "";
   return (
     <div className={menu.wrapper} ref={containerRef}>
@@ -59,19 +59,13 @@ export function AccountMenu({ me, usesSystemTheme, onUseSystemTheme }: AccountMe
             </button>
           )}
           <div className={menu.separator}>
-            <form method="post" action={DJANGO_ROUTES.logoutEverywhere}>
-              <input type="hidden" name="csrfmiddlewaretoken" value={csrf.data ?? ""} />
-              <button type="submit" className={menu.item} disabled={!csrf.data}>
-                Cerrar sesión en todos los dispositivos
-              </button>
-            </form>
-            <form method="post" action={DJANGO_ROUTES.logout}>
-              <input type="hidden" name="csrfmiddlewaretoken" value={csrf.data ?? ""} />
-              <button type="submit" className={menu.item} disabled={!csrf.data}>
-                <LogOut size={18} aria-hidden="true" />
-                Cerrar sesión
-              </button>
-            </form>
+            <SessionForm action={DJANGO_ROUTES.logoutEverywhere} csrfToken={csrf.data} className={menu.item}>
+              Cerrar sesión en todos los dispositivos
+            </SessionForm>
+            <SessionForm action={DJANGO_ROUTES.logout} csrfToken={csrf.data} className={menu.item}>
+              <LogOut size={18} aria-hidden="true" />
+              Cerrar sesión
+            </SessionForm>
           </div>
         </div>
       )}

@@ -1,0 +1,22 @@
+{# Plantilla de allauth 65.19.7 con sus textos tuteando (fase R6): solo cambia el texto, no la estructura. #}
+{% extends "account/base_manage.html" %}
+{% load i18n %}
+{% load allauth %}
+{% block head_title %}
+    {% trans "Verifica tu correo" %}
+{% endblock head_title %}
+{% block content %}
+    {% element h1 %}
+        {% trans "Verifica tu correo" %}
+    {% endelement %}
+    {% url 'account_email' as email_url %}
+    {% element p %}
+        {% blocktrans %}Para entrar a esta parte necesitamos confirmar que eres tú: verifica que el correo es tuyo.{% endblocktrans %}
+    {% endelement %}
+    {% element p %}
+        {% blocktrans %}Te enviamos un correo de verificación. Abre el enlace que trae. Si no lo ves en tu bandeja de entrada, revisa la carpeta de correo no deseado.{% endblocktrans %}{% if support_email %} {% blocktrans %}Si no te llega en unos minutos, escríbenos a {{ support_email }}.{% endblocktrans %}{% endif %}
+    {% endelement %}
+    {% element p %}
+        {% blocktrans %}<strong>Nota:</strong> todavía puedes <a href="{{ email_url }}">cambiar tu correo</a>.{% endblocktrans %}
+    {% endelement %}
+{% endblock content %}

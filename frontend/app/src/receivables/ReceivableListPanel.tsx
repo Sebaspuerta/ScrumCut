@@ -1,6 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import type { ReceivableList } from "../api/types";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { RECEIVABLE_PARAM } from "../lib/appRoutes";
 import { PAGE_PARAM, withFilter, withParam } from "../lib/searchParams";
@@ -41,9 +42,9 @@ export function ReceivableListPanel({ query, selected, branch, params, onParams 
       </div>
       {query.isPending && <StatusMessage kind="loading">Cargando los fiados…</StatusMessage>}
       {query.isError && (
-        <StatusMessage kind="error" onRetry={() => void query.refetch()}>
+        <LoadError error={query.error} onRetry={() => void query.refetch()}>
           No pudimos cargar los fiados.
-        </StatusMessage>
+        </LoadError>
       )}
       {list && <ReceivableTable rows={list.results} selected={selected} params={params} branch={branch} />}
       {list && (

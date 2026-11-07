@@ -1,6 +1,7 @@
 import { useId } from "react";
 
 import type { OrderDetail } from "../api/types";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useOrder } from "../hooks/useOrders";
 import { AddLineForm } from "./AddLineForm";
@@ -45,9 +46,9 @@ export function OrderDetailPanel({ id, onClose }: OrderDetailPanelProps) {
   if (order.isError) {
     return (
       <section className={styles.panel} aria-label="Detalle de la comanda">
-        <StatusMessage kind="error" onRetry={() => void order.refetch()}>
+        <LoadError error={order.error} onRetry={() => void order.refetch()}>
           No pudimos cargar esta comanda.
-        </StatusMessage>
+        </LoadError>
       </section>
     );
   }

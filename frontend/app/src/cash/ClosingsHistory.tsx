@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router";
 
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useClosings } from "../hooks/useCash";
 import { useTimeZone } from "../hooks/useMe";
@@ -26,9 +27,9 @@ export function ClosingsHistory() {
     >
       {closings.isPending && <StatusMessage kind="loading">Cargando los cierres…</StatusMessage>}
       {closings.isError && (
-        <StatusMessage kind="error" onRetry={() => void closings.refetch()}>
+        <LoadError error={closings.error} onRetry={() => void closings.refetch()}>
           No pudimos cargar los cierres.
-        </StatusMessage>
+        </LoadError>
       )}
       {closings.data?.count === 0 && <p className={table.empty}>Todavía no hay cierres en esta sede.</p>}
       {closings.data && closings.data.count > 0 && (

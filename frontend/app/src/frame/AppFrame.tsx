@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 
 import { useMe } from "../hooks/useMe";
 import { useNavigation } from "../hooks/useNavigation";
 import styles from "./AppFrame.module.css";
+import { AccessPage } from "./AccessPage";
 import { AssistantPanel } from "./AssistantPanel";
+import { ScreenErrorBoundary } from "./ScreenErrorBoundary";
 import { Sidebar } from "./Sidebar";
+import { LoadError } from "./LoadError";
 import { StatusMessage } from "./StatusMessage";
 import { TopBar } from "./TopBar";
 
@@ -15,23 +18,18 @@ export function AppFrame() {
   const navigation = useNavigation(me.data?.barbershop != null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [assistant, setAssistant] = useState(false);
+  const { pathname } = useLocation();
 
   if (me.isPending) return <StatusMessage kind="loading">Cargando tu cuenta…</StatusMessage>;
   if (me.isError) {
     return (
-      <StatusMessage kind="error" onRetry={() => void me.refetch()}>
+      <LoadError error={me.error} onRetry={() => void me.refetch()}>
         No pudimos cargar tu cuenta.
-      </StatusMessage>
+      </LoadError>
     );
   }
   const { barbershop, branch } = me.data;
-  if (barbershop === null || branch === null) {
-    return (
-      <StatusMessage kind="empty">
-        Tu cuenta no tiene una barbería activa. <a href="/">Ir al inicio</a>
-      </StatusMessage>
-    );
-  }
+  if (barbershop === null || branch === null) return <AccessPage access={me.data.access} />;
   return (
     <div className={styles.app}>
       <a className={styles.skip} href="#contenido">
@@ -59,7 +57,9 @@ export function AppFrame() {
         }}
       />
       <main id="contenido" className={styles.content} tabIndex={-1}>
-        <Outlet />
+        <ScreenErrorBoundary key={pathname}>
+          <Outlet />
+        </ScreenErrorBoundary>
       </main>
       {assistant && (
         <AssistantPanel

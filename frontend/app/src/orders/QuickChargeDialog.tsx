@@ -1,3 +1,4 @@
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useOrderCatalog } from "../hooks/useOrders";
 import { FormDialog } from "../ui/FormDialog";
@@ -19,9 +20,9 @@ export function QuickChargeDialog({ onClose }: QuickChargeDialogProps) {
     >
       {catalog.isPending && <StatusMessage kind="loading">Cargando servicios y productos…</StatusMessage>}
       {catalog.isError && (
-        <StatusMessage kind="error" onRetry={() => void catalog.refetch()}>
+        <LoadError error={catalog.error} onRetry={() => void catalog.refetch()}>
           No pudimos cargar los servicios y productos.
-        </StatusMessage>
+        </LoadError>
       )}
       {catalog.data?.needs_branch && (
         <StatusMessage kind="empty">Elige una sede en la barra superior para cobrar.</StatusMessage>

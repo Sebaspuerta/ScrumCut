@@ -1,3 +1,4 @@
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useClient } from "../hooks/useClients";
 import { ClientProfile } from "./ClientProfile";
@@ -19,9 +20,9 @@ export function ClientDetailPanel({ id, branch, onEdit, onClose }: ClientDetailP
         {client.isPending ? (
           <StatusMessage kind="loading">Cargando la ficha…</StatusMessage>
         ) : (
-          <StatusMessage kind="error" onRetry={() => void client.refetch()}>
+          <LoadError error={client.error} onRetry={() => void client.refetch()}>
             No pudimos cargar esta ficha.
-          </StatusMessage>
+          </LoadError>
         )}
       </section>
     );

@@ -80,6 +80,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.csp",
+                "apps.core.context_processors.support",
             ],
         },
     },
@@ -94,7 +95,7 @@ AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    "apps.accounts.auth_backends.ActiveOnlyAuthenticationBackend",
 ]
 
 PASSWORD_HASHERS = [
@@ -120,6 +121,7 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_PREVENT_ENUMERATION = True
 ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
+MFA_ADAPTER = "apps.accounts.adapter.MFAAdapter"
 ACCOUNT_FORMS = {
     "signup": "apps.accounts.forms.ScrumCutSignupForm",
     "reset_password": "apps.accounts.forms.ScrumCutResetPasswordForm",
@@ -148,16 +150,20 @@ AXES_COOLOFF_TIME = timedelta(minutes=15)
 AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
 AXES_USERNAME_FORM_FIELD = "login"
+AXES_LOCKOUT_CALLABLE = "apps.accounts.views.lockout"
 
 LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "react_app"
 LOGOUT_REDIRECT_URL = "account_login"
+# El contacto de ScrumTech que ve el dueño de una barbería suspendida o cerrada. En producción es obligatorio.
+SUPPORT_EMAIL = env.optional("SUPPORT_EMAIL", "")
 
 # --- Sesión y cookies ------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_AGE = 60 * 60 * 12
 CSRF_COOKIE_HTTPONLY = True
+CSRF_FAILURE_VIEW = "apps.core.errors.csrf_failure"
 CSRF_COOKIE_SAMESITE = "Lax"
 # Los avisos ("sesión iniciada") viajan en la sesión y no en una cookie propia: solo cookies esenciales.
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
@@ -204,7 +210,7 @@ ADMIN_URL = env.require("ADMIN_URL")
 # --- API (docs/decisiones/frontend-react.md) ------------------------------
 # Solo la sesión de Django: sin tokens ni basic auth. SessionAuthentication exige CSRF en las escrituras.
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["apps.api.authentication.SessionWithCsrfAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     # Sin la API navegable: solo JSON.
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
@@ -229,6 +235,7 @@ SPECTACULAR_SETTINGS = {
         "RoleCodeEnum": "apps.tenancy.roles.Role",
         "BranchModeEnum": "apps.api.serializers.BRANCH_MODES",
         "NavStatusEnum": "apps.api.serializers.NAV_STATUSES",
+        "AccessStatusEnum": "apps.api.serializers.ACCESS_STATUSES",
         "OrderStatusEnum": "apps.sales.models.OrderStatus",
         "OrderTabEnum": "apps.sales.board.TABS",
         "ClientLevelEnum": "apps.clients.selectors.ClientStatus",

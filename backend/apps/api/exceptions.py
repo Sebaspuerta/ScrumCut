@@ -10,9 +10,11 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException, AuthenticationFailed, NotAuthenticated, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+from apps.api.authentication import CsrfFailed
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,7 @@ GENERIC_MESSAGES = {
     429: "Demasiadas solicitudes. Intenta de nuevo en un momento.",
 }
 DEFAULT_MESSAGE = "No pudimos completar la solicitud."
+CSRF_FAILED_MESSAGE = "Tu sesión cambió. Vuelve a cargar la página."
 # Qué pasó, para que el cliente decida sin leer el texto. Un ValidationError de un service trae el suyo.
 STATUS_CODES = {
     400: "invalid",
@@ -37,6 +40,9 @@ STATUS_CODES = {
     429: "throttled",
 }
 DEFAULT_CODE = "error"
+# Sin sesión, SessionAuthentication responde 403 y no 401: el código dice que falta la sesión, no el permiso,
+# para que la app mande al login solo en ese caso.
+NO_SESSION = (NotAuthenticated, AuthenticationFailed)
 NON_FIELD_KEYS = {"__all__", "non_field_errors"}
 
 
@@ -106,6 +112,14 @@ def _status_body(status_code: int) -> dict:
     }
 
 
+def _body(exc: Exception, status_code: int) -> dict:
+    if isinstance(exc, NO_SESSION):
+        return _status_body(401)
+    if isinstance(exc, CsrfFailed):
+        return {"detail": CSRF_FAILED_MESSAGE, "code": CsrfFailed.default_code, "field_errors": {}}
+    return _status_body(status_code)
+
+
 def generic_error_handler(exc: Exception, context: dict) -> Response | None:
     """Las excepciones que DRF conoce salen con su código y la forma común; las demás siguen a Django (500)."""
     view = context.get("view")
@@ -117,5 +131,5 @@ def generic_error_handler(exc: Exception, context: dict) -> Response | None:
     if isinstance(exc, ValidationError):
         response.data = _validation_body(exc, getattr(view, "error_fields", {}))
     else:
-        response.data = _status_body(response.status_code)
+        response.data = _body(exc, response.status_code)
     return response

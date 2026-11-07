@@ -7,10 +7,14 @@
 }
 
 .retry {
+  display: inline-flex;
+  align-items: center;
   min-height: var(--target-min);
   padding: 0 var(--space-16);
   border: var(--line);
   border-radius: var(--radius);
   background: transparent;
+  color: var(--color-text);
   font-weight: 700;
+  text-decoration: none;
 }

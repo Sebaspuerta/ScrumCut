@@ -2,7 +2,8 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { NAVIGATION, OWNER_ME, stubApi, stubOwnerApi } from "../test/fakeApi";
+import { NAVIGATION, OWNER_ME, stubOwnerApi } from "../test/fakeApi";
+import { stubApi } from "../test/stubApi";
 import { renderApp } from "../test/renderApp";
 
 afterEach(() => {
@@ -65,12 +66,16 @@ describe("marco de la app", () => {
     );
   });
 
-  it("sin barbería activa lo dice y no pide la navegación", async () => {
-    const fetch = stubApi({ "/api/v1/me/": { ...OWNER_ME, barbershop: null, role: null, branch: null } });
+  it("sin barbería activa muestra la pantalla de acceso y no pide la navegación", async () => {
+    const access = { status: "no_barbershop" as const, barbershop: null, support_email: null };
+    const fetch = stubApi({
+      "/api/v1/me/": { ...OWNER_ME, access, barbershop: null, role: null, branch: null },
+      "/api/v1/csrf/": { csrf_token: "token-de-prueba" },
+    });
     renderApp();
 
-    expect(await screen.findByText(/no tiene una barbería activa/)).toBeDefined();
-    expect(fetch.mock.calls.map((call) => call[0])).toEqual(["/api/v1/me/"]);
+    expect(await screen.findByRole("heading", { name: "Tu cuenta no tiene una barbería" })).toBeDefined();
+    expect(fetch.mock.calls.map((call) => call[0])).not.toContain("/api/v1/navigation/");
   });
 
   it("si me falla muestra el error con la opción de reintentar", async () => {

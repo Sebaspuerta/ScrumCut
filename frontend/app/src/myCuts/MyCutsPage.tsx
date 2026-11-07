@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router";
 
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useMe } from "../hooks/useMe";
 import { useMyCuts } from "../hooks/useMyCuts";
@@ -17,9 +18,9 @@ export function MyCutsPage() {
   if (cuts.isPending) return <StatusMessage kind="loading">Cargando tus cortes…</StatusMessage>;
   if (cuts.isError) {
     return (
-      <StatusMessage kind="error" onRetry={() => void cuts.refetch()}>
+      <LoadError error={cuts.error} onRetry={() => void cuts.refetch()}>
         No pudimos cargar tus cortes.
-      </StatusMessage>
+      </LoadError>
     );
   }
   const data = cuts.data;

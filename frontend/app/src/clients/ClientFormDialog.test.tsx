@@ -71,6 +71,22 @@ describe("formulario de cliente", () => {
     });
   });
 
+  it("si el token CSRF falla también en el reintento, el formulario lo avisa sin ir al login ni repetir", async () => {
+    const assign = vi.fn<(url: string) => void>();
+    vi.stubGlobal("location", { assign, pathname: "/app/clientes", search: "?nuevo=1" });
+    const fetch = stubClientsApi();
+    const stale = { detail: "Tu sesión cambió. Vuelve a cargar la página.", code: "csrf_failed", field_errors: {} };
+    respondAt(fetch, CREATE, () => Promise.resolve(new Response(JSON.stringify(stale), { status: 403 })));
+    const { dialog } = await openNew(fetch);
+    await userEvent.type(within(dialog).getByLabelText("Nombre completo"), "Pedro Ríos");
+    await userEvent.click(within(dialog).getByRole("checkbox", { name: /autoriza el tratamiento/ }));
+    await userEvent.click(create(dialog));
+
+    expect((await within(dialog).findByRole("alert")).textContent).toBe(stale.detail);
+    expect(requestsTo(fetch, CREATE, "POST")).toHaveLength(2);
+    expect(assign).not.toHaveBeenCalled();
+  });
+
   it("sin política publicada no muestra el formulario", async () => {
     stubClientsApi({ "/api/v1/clients/": { ...CLIENT_LIST, data_policy: null } });
     renderApp("/clientes?nuevo=1");

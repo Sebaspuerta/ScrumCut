@@ -1,3 +1,4 @@
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useReceivable } from "../hooks/useReceivables";
 import { ReceivableProfile } from "./ReceivableProfile";
@@ -18,9 +19,9 @@ export function ReceivableDetailPanel({ id, onPaid, onClose }: ReceivableDetailP
         {receivable.isPending ? (
           <StatusMessage kind="loading">Cargando el fiado…</StatusMessage>
         ) : (
-          <StatusMessage kind="error" onRetry={() => void receivable.refetch()}>
+          <LoadError error={receivable.error} onRetry={() => void receivable.refetch()}>
             No pudimos cargar este fiado. Si es de otra sede, elígela en la barra superior.
-          </StatusMessage>
+          </LoadError>
         )}
       </section>
     );

@@ -1,0 +1,40 @@
+{# Plantilla de allauth 65.19.7 con sus textos tuteando (fase R6): solo cambia el texto, no la estructura. Sin la rama de llaves de seguridad (webauthn), que no está habilitada (MFA_SUPPORTED_TYPES) y traía un script en línea. #}
+{% extends "mfa/base_entrance.html" %}
+{% load i18n %}
+{% load allauth %}
+{% load allauth static %}
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+{% block content %}
+    {% element h1 %}
+        {% trans "Verificación en dos pasos" %}
+    {% endelement %}
+    {% element p %}
+        {% blocktranslate %}Tu cuenta está protegida con la verificación en dos pasos. Escribe el código de tu aplicación de autenticación:{% endblocktranslate %}
+    {% endelement %}
+    {% url 'mfa_authenticate' as action_url %}
+    {% element form form=form method="post" action=action_url %}
+        {% slot body %}
+            {% csrf_token %}
+            {% element fields form=form unlabeled=True %}
+            {% endelement %}
+        {% endslot %}
+        {% slot actions %}
+            {% element button type="submit" tags="primary,mfa,login" %}
+                {% trans "Sign In" %}
+            {% endelement %}
+            {% if "webauthn" not in MFA_SUPPORTED_TYPES %}
+                {% element button type="submit" form="logout-from-stage" tags="link,mfa,cancel" %}
+                    {% trans "Cancel" %}
+                {% endelement %}
+            {% endif %}
+        {% endslot %}
+    {% endelement %}
+    <form id="logout-from-stage"
+          method="post"
+          action="{% url 'account_logout' %}">
+        <input type="hidden" name="next" value="{% url 'account_login' %}">
+        {% csrf_token %}
+    </form>
+{% endblock content %}

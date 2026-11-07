@@ -69,7 +69,8 @@ La parte interna es React + TypeScript (`frontend/app/`, servida en `/app/`). En
 - Django genera las vistas; todo lo visual vive en frontend/. Nada de HTML, CSS o JS dentro de backend/.
 - HTML: plantillas de Django con partials ({% partialdef %}) en frontend/templates/; allauth usa las suyas a través de frontend/templates/allauth/.
 - JavaScript propio: vanilla, ES modules, sin compilación, en frontend/static/js/modules/. Sin frameworks.
-- CSS propio con los tokens de la identidad R1 (tokens.css, base.css, identity-fonts.css, components/states.css y modules/login.css), con clases propias (`entrance*`, `auth-*`). Sin Bootstrap ni Tailwind.
+- CSS propio con los tokens de la identidad R1 (tokens.css, base.css, identity-fonts.css, components/states.css, modules/login.css y modules/errors.css), con clases propias (`entrance*`, `auth-*`, `error-page*`). Sin Bootstrap ni Tailwind.
+- Las páginas de error (`frontend/templates/errors/`) se pintan sin la petición: nada de sesión, base de datos ni context processors en ellas.
 - Íconos: los SVG de Lucide en frontend/templates/icons/. Librerías de terceros, si alguna vez hacen falta, descargadas en frontend/static/vendor/ con su licencia; sin CDN.
 - Nada de <script> dentro de las plantillas ni atributos onclick: todo el JS en archivos .js (compatible con CSP estricta).
 

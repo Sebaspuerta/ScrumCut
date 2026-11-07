@@ -1,0 +1,109 @@
+/*
+ * Páginas de error de Django (400, 403, 404, 500 y CSRF) con la identidad R1: el layout de la entrada
+ * (logo, panel y pie), sin la foto. Clases propias (error-page*); claro u oscuro según el sistema.
+ */
+
+.error-page {
+  --error-mark-size: 42px;
+  --error-panel-width: 420px;
+  --error-control-height: 44px;
+
+  color-scheme: light dark;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  padding: var(--space-10);
+  background: var(--identity-surface);
+  color: var(--identity-text);
+  font-family: var(--font-body);
+}
+
+.error-page__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.error-page__mark {
+  width: var(--error-mark-size);
+  height: var(--error-mark-size);
+  flex: 0 0 var(--error-mark-size);
+}
+
+.error-page__wordmark {
+  display: block;
+  font: 700 14px var(--font-display);
+  letter-spacing: var(--tracking-group);
+}
+
+.error-page__tagline {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-micro);
+  color: var(--identity-muted);
+}
+
+.error-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: var(--error-panel-width);
+  margin: auto;
+}
+
+.error-page__code {
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--identity-accent);
+}
+
+.error-page__panel h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-login-title);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.error-page__panel p:not(.error-page__code) {
+  color: var(--identity-muted);
+}
+
+.error-page__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--error-control-height);
+  margin-top: var(--space-2);
+  background: var(--identity-accent);
+  border-radius: var(--radius);
+  font-size: var(--text-input);
+  font-weight: 700;
+  color: var(--identity-on-accent);
+}
+
+.error-page__action:hover,
+.error-page__action:focus-visible {
+  background: color-mix(in srgb, var(--identity-accent) 88%, var(--identity-text));
+  color: var(--identity-on-accent);
+}
+
+.error-page a:focus-visible {
+  outline: 2px solid var(--identity-accent);
+  outline-offset: 2px;
+}
+
+.error-page__footer {
+  font-size: var(--text-small);
+  color: var(--identity-muted);
+}
+
+@media (max-width: 900px) {
+  .error-page {
+    padding: var(--space-6) var(--space-4);
+  }
+}

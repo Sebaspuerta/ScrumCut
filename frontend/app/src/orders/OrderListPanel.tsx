@@ -1,6 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import type { OrderList } from "../api/types";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { Pagination } from "../ui/Pagination";
 import { OrderFilters } from "./OrderFilters";
@@ -36,9 +37,9 @@ export function OrderListPanel({ query, selected, params, onParams }: OrderListP
       <OrderFilters params={params} tab={list?.tab ?? null} day={list?.day ?? null} onParams={onParams} />
       {query.isPending && <StatusMessage kind="loading">Cargando las comandas…</StatusMessage>}
       {query.isError && (
-        <StatusMessage kind="error" onRetry={() => void query.refetch()}>
+        <LoadError error={query.error} onRetry={() => void query.refetch()}>
           No pudimos cargar las comandas.
-        </StatusMessage>
+        </LoadError>
       )}
       {list && <Rows list={list} selected={selected} params={params} />}
       {list && (

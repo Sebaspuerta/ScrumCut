@@ -1,6 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import type { ClientList } from "../api/types";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { PAGE_PARAM, withParam } from "../lib/searchParams";
 import { Pagination } from "../ui/Pagination";
@@ -24,9 +25,9 @@ export function ClientListPanel({ query, selected, branch, params, onParams }: C
       <ClientFilters list={list} params={params} onParams={onParams} />
       {query.isPending && <StatusMessage kind="loading">Cargando los clientes…</StatusMessage>}
       {query.isError && (
-        <StatusMessage kind="error" onRetry={() => void query.refetch()}>
+        <LoadError error={query.error} onRetry={() => void query.refetch()}>
           No pudimos cargar los clientes.
-        </StatusMessage>
+        </LoadError>
       )}
       {list && <ClientTable rows={list.results} selected={selected} params={params} branch={branch} />}
       {list && (

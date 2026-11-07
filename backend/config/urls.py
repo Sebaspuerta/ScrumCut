@@ -9,6 +9,8 @@ from apps.reports import views as report_views
 urlpatterns = [
     path(f"{settings.ADMIN_URL.strip('/')}/", admin.site.urls),
     path("cuenta/cerrar-sesiones/", account_views.logout_everywhere, name="logout_everywhere"),
+    # Antes que allauth: su /cuenta/inactive/ queda retirada (hallazgo S4).
+    path("cuenta/inactive/", account_views.inactive_page_retired, name="account_inactive_retired"),
     path("cuenta/", include("allauth.urls")),
     path("legal/", include("apps.legal.urls")),
     path("salud/", core_views.health, name="health"),
@@ -18,3 +20,8 @@ urlpatterns = [
     path("reportes/exportar/", report_views.export, name="reports_export"),
     path("", include("apps.core.legacy_urls")),
 ]
+
+handler400 = "apps.core.errors.bad_request"
+handler403 = "apps.core.errors.permission_denied"
+handler404 = "apps.core.errors.page_not_found"
+handler500 = "apps.core.errors.server_error"

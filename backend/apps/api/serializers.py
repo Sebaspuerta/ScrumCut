@@ -7,10 +7,12 @@ from apps.alerts.models import AlertType
 from apps.api.selectors import COMING, LINK, SOON
 from apps.tenancy.branch_scope import ALL, ONE
 from apps.tenancy.roles import Role
+from apps.tenancy.selectors import Access
 
 # Nombres de los enums en el esquema OpenAPI (SPECTACULAR_SETTINGS["ENUM_NAME_OVERRIDES"]).
 BRANCH_MODES = [ONE, ALL]
 NAV_STATUSES = [LINK, SOON, COMING]
+ACCESS_STATUSES = [access.value for access in Access]
 
 
 class UserSerializer(serializers.Serializer):
@@ -45,8 +47,20 @@ class BranchStateSerializer(serializers.Serializer):
     can_manage = serializers.BooleanField(help_text="Con sedes.gestionar.")
 
 
+class AccessSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=ACCESS_STATUSES)
+    barbershop = serializers.CharField(allow_null=True, help_text="Solo una barbería de la propia persona.")
+    support_email = serializers.EmailField(
+        allow_null=True,
+        help_text=(
+            "El contacto de ScrumTech: para el dueño de una barbería suspendida o cerrada y con varias barberías."
+        ),
+    )
+
+
 class MeSerializer(serializers.Serializer):
     user = UserSerializer()
+    access = AccessSerializer()
     barbershop = BarbershopSerializer(allow_null=True)
     role = RoleSerializer(allow_null=True)
     permissions = serializers.ListField(child=serializers.CharField())

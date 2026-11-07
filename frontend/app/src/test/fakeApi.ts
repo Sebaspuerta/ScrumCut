@@ -1,9 +1,9 @@
-import { vi } from "vitest";
-
 import type { CalendarDay, Dashboard, Me, Navigation } from "../api/types";
+import { stubApi } from "./stubApi";
 
 export const OWNER_ME: Me = {
   user: { email: "dueno@example.com", name: "Laura Peña", initials: "LP", theme: "system" },
+  access: { status: "active", barbershop: "Barbería Demo", support_email: null },
   barbershop: { name: "Barbería Demo", initials: "BD", timezone: "America/Bogota" },
   role: { code: "owner", label: "Dueño" },
   permissions: ["alertas.ver", "caja.ver", "reportes.exportar", "reportes.ver", "sedes.ver"],
@@ -124,22 +124,6 @@ export const DASHBOARD: Dashboard = {
   closings: [],
   alerts: [],
 };
-
-function pathOf(input: RequestInfo | URL): string {
-  const raw = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-  return raw.split("?")[0] ?? raw;
-}
-
-/** fetch falso: cada ruta de la API responde con su cuerpo; una ruta sin cuerpo, 404 (sin reintentos). */
-export function stubApi(bodies: Record<string, unknown>) {
-  const fetch = vi.fn<typeof globalThis.fetch>((input) => {
-    const body = bodies[pathOf(input)];
-    const status = body === undefined ? 404 : 200;
-    return Promise.resolve(new Response(JSON.stringify(body ?? {}), { status }));
-  });
-  vi.stubGlobal("fetch", fetch);
-  return fetch;
-}
 
 /** La API completa de un dueño, con lo que se le quiera cambiar. */
 export function stubOwnerApi(overrides: Record<string, unknown> = {}) {

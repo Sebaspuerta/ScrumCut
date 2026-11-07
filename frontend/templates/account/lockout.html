@@ -1,0 +1,10 @@
+{# Ingreso pausado por intentos (axes): el mismo texto exista o no la cuenta (hallazgo S4). #}
+{% extends "account/base_entrance.html" %}
+{% block head_title %}Ingreso pausado · ScrumCut{% endblock %}
+{% block content %}
+<div class="entrance__intro">
+  <h1>Ingreso pausado</h1>
+  <p>{{ message }}</p>
+</div>
+<p class="entrance__switch"><a href="{% url 'account_reset_password' %}">Recuperar mi contraseña</a></p>
+{% endblock %}

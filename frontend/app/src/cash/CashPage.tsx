@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router";
 
 import type { CashState, Closing } from "../api/types";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { useCash } from "../hooks/useCash";
 import { useMe, useTimeZone } from "../hooks/useMe";
@@ -48,9 +49,9 @@ export function CashPage() {
   if (cash.isPending) return <StatusMessage kind="loading">Cargando la caja…</StatusMessage>;
   if (cash.isError) {
     return (
-      <StatusMessage kind="error" onRetry={() => void cash.refetch()}>
+      <LoadError error={cash.error} onRetry={() => void cash.refetch()}>
         No pudimos cargar la caja.
-      </StatusMessage>
+      </LoadError>
     );
   }
   const state = cash.data;

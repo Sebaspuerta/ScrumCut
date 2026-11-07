@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ApiError, createApiClient, loginUrl } from "./client";
+import { ApiError, createApiClient, OfflineError } from "./client";
 
 type FetchMock = ReturnType<typeof vi.fn<typeof globalThis.fetch>>;
 
@@ -20,6 +20,7 @@ function headersOf(fetch: FetchMock, call: number): Headers {
   return new Headers(fetch.mock.calls[call]?.[1]?.headers);
 }
 
+const CSRF_FAILED = { detail: "Tu sesión cambió. Vuelve a cargar la página.", code: "csrf_failed", field_errors: {} };
 const BRANCH_STATE = { mode: "una", current_label: "Norte", options: [], can_view_all: false, can_manage: false };
 
 describe("cliente HTTP", () => {
@@ -44,16 +45,88 @@ describe("cliente HTTP", () => {
     expect(fetch.mock.calls[1]?.[1]?.body).toBe(JSON.stringify({ sede: "norte" }));
   });
 
-  it.each([401, 403])("ante un %i manda al login de Django y vuelve a la ruta actual", async (status) => {
-    const { client, navigate } = clientWith(jsonResponse({ detail: "No" }, status));
+  it.each([
+    [401, "not_authenticated"],
+    [403, "not_authenticated"],
+  ])("sin sesión (%i, %s) manda al login de Django y vuelve a la ruta actual", async (status, code) => {
+    const { client, navigate } = clientWith(jsonResponse({ detail: "Inicia sesión", code, field_errors: {} }, status));
     await expect(client.get("/api/v1/me/")).rejects.toBeInstanceOf(ApiError);
     expect(navigate).toHaveBeenCalledWith("/cuenta/login/?next=%2Fapp%2Fagenda%3Fdia%3Dhoy");
   });
 
-  it("una escritura rechazada (CSRF vencido) también manda al login", async () => {
-    const { client, navigate } = clientWith(jsonResponse({ csrf_token: "viejo" }), jsonResponse({}, 403));
-    await expect(client.post("/api/v1/branch/", { sede: "norte" })).rejects.toMatchObject({ status: 403 });
-    expect(navigate).toHaveBeenCalledWith(loginUrl("/app/agenda?dia=hoy"));
+  it("un 403 por falta de permiso NO manda al login: la pantalla lo dice", async () => {
+    const denied = { detail: "No tienes permiso para esta acción.", code: "permission_denied", field_errors: {} };
+    const { client, navigate } = clientWith(jsonResponse(denied, 403));
+    await expect(client.get("/api/v1/dashboard/")).rejects.toMatchObject({ status: 403, body: denied });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("con el token CSRF vencido y la sesión viva pide otro y reintenta una vez, sin pasar por el login", async () => {
+    const { client, fetch, navigate } = clientWith(
+      jsonResponse({ csrf_token: "viejo" }),
+      jsonResponse(CSRF_FAILED, 403),
+      jsonResponse({ csrf_token: "nuevo" }),
+      jsonResponse(BRANCH_STATE),
+    );
+
+    await expect(client.post("/api/v1/branch/", { sede: "norte" })).resolves.toEqual(BRANCH_STATE);
+
+    expect(fetch.mock.calls.map((call) => call[0])).toEqual([
+      "/api/v1/csrf/",
+      "/api/v1/branch/",
+      "/api/v1/csrf/",
+      "/api/v1/branch/",
+    ]);
+    expect(headersOf(fetch, 3).get("X-CSRFToken")).toBe("nuevo");
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("si el reintento también falla por CSRF, el error llega a la pantalla sin otro intento ni login", async () => {
+    const { client, fetch, navigate } = clientWith(
+      jsonResponse({ csrf_token: "viejo" }),
+      jsonResponse(CSRF_FAILED, 403),
+      jsonResponse({ csrf_token: "nuevo" }),
+      jsonResponse(CSRF_FAILED, 403),
+    );
+
+    await expect(client.post("/api/v1/branch/", { sede: "norte" })).rejects.toMatchObject({
+      status: 403,
+      body: CSRF_FAILED,
+    });
+
+    expect(fetch).toHaveBeenCalledTimes(4);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("el reintento de un cobro rápido repite la misma llave: no se cobra dos veces", async () => {
+    const charge = {
+      request_key: crypto.randomUUID(),
+      barber: crypto.randomUUID(),
+      service: crypto.randomUUID(),
+      product: null,
+      method: "efectivo",
+      reference: "",
+    };
+    const { client, fetch } = clientWith(
+      jsonResponse({ csrf_token: "viejo" }),
+      jsonResponse(CSRF_FAILED, 403),
+      jsonResponse({ csrf_token: "nuevo" }),
+      jsonResponse({}),
+    );
+
+    await client.post("/api/v1/orders/quick-charge/", charge);
+
+    const [first, retry] = [fetch.mock.calls[1]?.[1]?.body, fetch.mock.calls[3]?.[1]?.body];
+    expect(retry).toBe(first);
+    expect(typeof retry === "string" ? JSON.parse(retry) : null).toMatchObject({ request_key: charge.request_key });
+  });
+
+  it("sin conexión rechaza con OfflineError y no navega", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockRejectedValue(new TypeError("Failed to fetch"));
+    const navigate = vi.fn<(url: string) => void>();
+    const client = createApiClient({ fetch, navigate, currentPath: () => "/app/" });
+    await expect(client.get("/api/v1/me/")).rejects.toBeInstanceOf(OfflineError);
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("un error del servidor no manda al login", async () => {

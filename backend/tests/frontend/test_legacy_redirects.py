@@ -61,3 +61,14 @@ def test_al_cerrar_sesion_se_llega_al_login_sin_pasar_por_las_direcciones_viejas
     client.force_login(make_member("barbero@example.com", make_shop("a"), Role.BARBER))
     response = client.post(reverse("account_logout"))
     assert (response.status_code, response["Location"]) == (302, reverse("account_login"))
+
+
+def test_tras_la_sesion_vencida_el_login_vuelve_a_la_pantalla_de_la_app(client, make_shop, make_member):
+    make_member("barbero@example.com", make_shop("a"), Role.BARBER)
+    back_to = "/app/caja?tipo=gasto"
+
+    response = client.post(
+        f"{reverse('account_login')}?next={back_to}", {"login": "barbero@example.com", "password": TEST_PASSWORD}
+    )
+
+    assert (response.status_code, response["Location"]) == (302, back_to)

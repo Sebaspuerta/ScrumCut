@@ -574,6 +574,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Access: {
+            status: components["schemas"]["AccessStatusEnum"];
+            /** @description Solo una barbería de la propia persona. */
+            barbershop: string | null;
+            /**
+             * Format: email
+             * @description El contacto de ScrumTech: para el dueño de una barbería suspendida o cerrada y con varias barberías.
+             */
+            support_email: string | null;
+        };
+        /**
+         * @description * `active` - active
+         *     * `no_barbershop` - no_barbershop
+         *     * `membership_inactive` - membership_inactive
+         *     * `barbershop_suspended` - barbershop_suspended
+         *     * `barbershop_closed` - barbershop_closed
+         *     * `several_barbershops` - several_barbershops
+         * @enum {string}
+         */
+        AccessStatusEnum: "active" | "no_barbershop" | "membership_inactive" | "barbershop_suspended" | "barbershop_closed" | "several_barbershops";
         AdministrationSummary: {
             /** @description Con sedes.ver. */
             branches: components["schemas"]["PlanUsage"] | null;
@@ -1203,6 +1223,7 @@ export interface components {
         };
         Me: {
             user: components["schemas"]["User"];
+            access: components["schemas"]["Access"];
             barbershop: components["schemas"]["Barbershop"] | null;
             role: components["schemas"]["Role"] | null;
             permissions: string[];

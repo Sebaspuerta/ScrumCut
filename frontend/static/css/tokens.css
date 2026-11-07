@@ -1,21 +1,27 @@
-/* Variables de diseño de las pantallas de Django (la entrada). Sus colores propios viven en
-   modules/login.css; las fuentes, en identity-fonts.css (identidad R1, docs/diseno/identidad-r1.md). */
+/* Variables de diseño de las pantallas de Django: la entrada y las páginas de error. Los colores de la
+   identidad R1 (docs/diseno/identidad-r1.md) están aquí; las fuentes, en identity-fonts.css. */
 
 :root {
-  /* Café espresso y sus tonos: avisos y errores de formulario */
-  --color-espresso: #2e211a;
+  /* Identidad R1 (claro). La foto de la entrada siempre va oscura: su texto es claro en los dos modos. */
+  --identity-bg: #f5f3ee;
+  --identity-surface: #fcfbf8;
+  --identity-line: #d7d3c8;
+  --identity-text: #1b201c;
+  --identity-muted: #62685f;
+  --identity-accent: #876b32;
+  --identity-soft: #e8dfc8;
+  --identity-on-accent: #fff;
+  --identity-positive: #386248;
+  --identity-attention: #8a5b28;
+  --identity-photo-bg: #111311;
+  --identity-photo-text: #fcfbf8;
+  --identity-photo-accent: #c7a85f;
+
+  /* Base de base.css (fondo, texto, foco y enlace al pasar el cursor) */
   --color-espresso-600: #6b5444;
-  --color-espresso-200: #e4dad0;
-
-  /* Acento salvia: lo positivo y el foco. Sin rojos: lo negativo se marca con signo y flecha. */
   --color-accent: #5e7361;
-
-  /* Superficies, líneas y texto */
   --color-background: #eeebe6;
-  --color-panel: #f8f6f3;
-  --color-line: #d9d2c8;
   --color-text: #1e1915;
-  --color-text-muted: #6e655d;
 
   /* Tipografía */
   --font-display: "Libre Baskerville", Georgia, serif;
@@ -53,4 +59,19 @@
   --space-6: 24px;
   --space-10: 40px;
   --space-14: 56px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --identity-bg: #111311;
+    --identity-surface: #181b18;
+    --identity-line: #343832;
+    --identity-text: #f2f0e9;
+    --identity-muted: #a8afa4;
+    --identity-accent: #c7a85f;
+    --identity-soft: #332c1d;
+    --identity-on-accent: #111;
+    --identity-positive: #79a889;
+    --identity-attention: #d6a363;
+  }
 }

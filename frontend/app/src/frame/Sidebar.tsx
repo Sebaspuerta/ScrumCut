@@ -8,6 +8,7 @@ import { useEscape } from "../hooks/useEscape";
 import { BranchSelector } from "./BranchSelector";
 import { NavGroupSection } from "./NavGroupSection";
 import styles from "./Sidebar.module.css";
+import { LoadError } from "./LoadError";
 import { StatusMessage } from "./StatusMessage";
 
 interface SidebarProps {
@@ -23,9 +24,9 @@ function content(navigation: UseQueryResult<Navigation>, onClose: () => void): R
   if (navigation.isPending) return <StatusMessage kind="loading">Cargando el menú…</StatusMessage>;
   if (navigation.isError) {
     return (
-      <StatusMessage kind="error" onRetry={() => void navigation.refetch()}>
+      <LoadError error={navigation.error} onRetry={() => void navigation.refetch()}>
         No pudimos cargar el menú.
-      </StatusMessage>
+      </LoadError>
     );
   }
   if (navigation.data.sidebar.length === 0)

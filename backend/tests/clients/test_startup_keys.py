@@ -25,6 +25,7 @@ FAKE_PROD_ENV = {
     "EMAIL_HOST_USER": "ficticio",
     "EMAIL_HOST_PASSWORD": "ficticio",
     "DEFAULT_FROM_EMAIL": "no-reply@example.test",
+    "SUPPORT_EMAIL": "soporte@example.test",
     "FIELD_HASH_KEY": "clave-hash-ficticia",
 }
 

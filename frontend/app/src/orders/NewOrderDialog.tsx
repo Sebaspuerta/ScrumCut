@@ -5,6 +5,7 @@ import { formErrors } from "../api/errors";
 import type { ClientChoice } from "../api/types";
 import { useWriteMutation } from "../hooks/useWriteMutation";
 import { useOrderCatalog } from "../hooks/useOrders";
+import { LoadError } from "../frame/LoadError";
 import { StatusMessage } from "../frame/StatusMessage";
 import { Button } from "../ui/Button";
 import form from "../ui/Form.module.css";
@@ -67,7 +68,7 @@ export function NewOrderDialog({ onClose, onCreated }: NewOrderDialogProps) {
         )}
         <FormAlert message={errors.fields.client ?? null} />
         {catalog.isPending && <StatusMessage kind="loading">Cargando servicios y productos…</StatusMessage>}
-        {catalog.isError && <StatusMessage kind="error">No pudimos cargar los servicios y productos.</StatusMessage>}
+        {catalog.isError && <LoadError error={catalog.error}>No pudimos cargar los servicios y productos.</LoadError>}
         {catalog.data && (
           <form className={form.form} onSubmit={submit} aria-label="Abrir la comanda">
             <OrderBarberField catalog={catalog.data} value={barber} error={errors.fields.barber} onChange={setBarber} />

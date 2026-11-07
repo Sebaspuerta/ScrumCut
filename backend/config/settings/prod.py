@@ -38,3 +38,4 @@ MAILERS = {
     }
 }
 DEFAULT_FROM_EMAIL = env.require("DEFAULT_FROM_EMAIL")
+SUPPORT_EMAIL = env.require("SUPPORT_EMAIL")

@@ -1,0 +1,28 @@
+{% load static %}<!doctype html>
+{# La incluye cada página de error con code, title, message y, si pide ayuda, ask_support. Se pinta sin la petición (apps/core/errors.py): sin sesión, base de datos ni context processors; support_email sale de settings. #}
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{{ title }} · ScrumCut</title>
+  <link rel="icon" href="{% static 'brand/icon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/identity-fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modules/errors.css' %}">
+</head>
+<body>
+<div class="error-page">
+  <header class="error-page__top">{% include "brand/logo.html" with prefix="error-page" %}</header>
+  <main class="error-page__panel">
+    <p class="error-page__code">{{ code }}</p>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}{% if ask_support and support_email %} Si sigue pasando, escríbenos a {{ support_email }}.{% endif %}</p>
+    {# Enlace fijo: "/" lleva a la app (con sesión) o al login, sin resolver nada en el servidor. #}
+    <a class="error-page__action" href="/">Ir al inicio</a>
+  </main>
+  <footer class="error-page__footer">ScrumCut · por ScrumTech Solutions</footer>
+</div>
+</body>
+</html>

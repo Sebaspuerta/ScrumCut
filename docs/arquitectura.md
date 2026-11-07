@@ -20,7 +20,7 @@ Patrones que no se repiten al portar (regla 1 de `AGENTS.md`). Detalle y defecto
 | S1 | `SECRET_KEY` con valor por defecto en el código: cualquiera puede firmar tokens válidos | `config.py` | `config.env.require`, sin valores por defecto |
 | S2 | JWT en `localStorage`, 8 h de vida, sin revocación; cambiar la contraseña no invalida tokens | `utils/security.py`, frontend | Sesión en cookie `HttpOnly`/`Secure`; rotación al iniciar sesión |
 | S3 | Código maestro global que restablece la contraseña de cualquier usuario, incluido el administrador; su bloqueo también es global | `services/master_code_service.py` | Recuperación por correo verificado (allauth) |
-| S4 | Bloqueo de inicio de sesión solo por usuario (cualquiera bloquea cuentas ajenas) y mensaje distinto para usuario inactivo (revela que existe) | `security_service.authenticate_user` | axes por usuario + IP; mensaje único |
+| S4 | Bloqueo de inicio de sesión solo por usuario (cualquiera bloquea cuentas ajenas) y mensaje distinto para usuario inactivo (revela que existe) | `security_service.authenticate_user` | axes por usuario + IP; mensaje único. Cerrado en R6: una cuenta inactiva con su contraseña recibe el mismo error que cualquier intento fallido y cuenta para axes (`apps/accounts/auth_backends.py`); `/cuenta/inactive/` ya no existe; el bloqueo dice lo mismo exista o no la cuenta (`tests/security/test_account_disclosure.py`) |
 | S5 | Autoridad de dueño decidida por nombre de usuario fijo (`mateo`, `admin`) | `utils/security.require_owner`, `barber_service.is_owner_barber`, `security_service.deactivate_user` | Rol Dueño en `Membership` |
 | S6 | `str(e)` devuelto al usuario | `order_service.close_order` | Mensaje genérico; detalle solo en logs |
 | S7 | Política de contraseñas inconsistente (6 caracteres al cambiarla, 8 en otros flujos) y sin lista de contraseñas comunes | `security_service.change_password` | Validadores de Django en todos los flujos |
@@ -56,12 +56,13 @@ Decisión, razones, costos y reglas en [decisiones/frontend-react.md](decisiones
 
 | Pieza | Dónde |
 |---|---|
-| API (DRF + drf-spectacular) | `backend/apps/api`, en `/api/v1/`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`), `csrf`, el tablero, notificaciones, comandas, cobro rápido, Mis cortes, caja, clientes y fiados. Solo `SessionAuthentication`, permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
+| API (DRF + drf-spectacular) | `backend/apps/api`, en `/api/v1/`: `me`, `navigation`, `branch` (cambio de sede con `choose_branch`), `csrf`, el tablero, notificaciones, comandas, cobro rápido, Mis cortes, caja, clientes y fiados. Solo la sesión (`apps/api/authentication.py`: `SessionAuthentication` con el rechazo por CSRF como `csrf_failed`), permiso `HasRolePermission` sobre `role_has_permission`, alcance de `request.branch_scope`, errores genéricos (`apps/api/exceptions.py`), paginación de 50 y límites de 30/min sin sesión y 300/min con sesión. Sin API navegable ni esquema publicado. |
 | Esquema y tipos | `frontend/app/openapi.json` (de `manage.py spectacular`) y `frontend/app/src/api/schema.d.ts` (de `npm run gen:types`). `tests/api/test_openapi_schema.py` y `src/api/schema.test.ts` fallan si alguno quedó desactualizado. |
 | App | `frontend/app/`: Vite, React Router (base `/app`), TanStack Query. Compila en `frontend/static/app/`. |
 | Página | `apps.core.views.react_app` (`login_required`) en `/app/` y subrutas; lee el manifest de Vite con `apps/core/vite_manifest.py` y pinta `frontend/templates/app/index.html`, sin nada en línea. Al iniciar sesión se llega aquí (`LOGIN_REDIRECT_URL`). |
 | Direcciones viejas | `apps/core/legacy_urls.py`: `/`, `/comandas/`, `/caja/`, `/clientes/` y `/fiados/` (con sus fichas, nueva comanda, cobro rápido y nuevo cliente) redirigen con 301 a su pantalla en `/app/`, con sus filtros. Las acciones POST de esas pantallas ya no existen: son de la API. |
 | Tokens | `frontend/app/src/styles/tokens.css` (identidad R1). |
+| Errores y acceso (R6) | Django: 400, 403, 404, 500 y fallo de CSRF en `apps/core/errors.py`, pintadas sin la petición (sin sesión, base de datos ni context processors); bloqueo por intentos en `apps.accounts.views.lockout`. API: sin sesión responde 403 con `code: not_authenticated` y con el token CSRF vencido, `csrf_failed` (la app pide otro token y reintenta una vez la misma petición, con la misma `request_key`; un segundo fallo se muestra en la pantalla); `me.access` dice por qué no hay barbería activa (`tenancy.selectors.access_state`). React: el cliente va al login solo sin sesión; `LoadError` muestra sin permiso, 429, sin conexión o el aviso de la pantalla; `ScreenErrorBoundary` y `AccessPage` con «Cerrar sesión». |
 
 | Tablero y marco (R1) | `apps/api`: `dashboard` (sobre `executive_dashboard`, `reportes.ver`, consultas constantes), `notifications` (alertas, solo lectura, `alertas.ver`) y `me/preferences` (tema, PATCH con CSRF). `User.theme` (migración `accounts` 0003). En React: marco, paleta de comandos, notificaciones, Administración, tema y tablero en `/app/`. |
 
@@ -73,6 +74,9 @@ Fases:
 - R3. Clientes y Fiados en React — hecha.
 - R4. Cobro rápido y Mis cortes en React — hecha.
 - R5. Retiro de las pantallas de plantillas ya reemplazadas (tablero, comandas, cobro rápido, caja, clientes, fiados y su marco), redirecciones permanentes, htmx retirado y la entrada solo con la identidad R1 — hecha.
+- R6. Páginas de error y de bloqueo, estados de pérdida de acceso y cierre del hallazgo S4 — hecha.
+
+Pendiente para la fase de Configuración: el selector de barbería para quien tiene varias (hoy ve una pantalla que lo explica, con «Cerrar sesión»). El motivo «falta de pago» de una barbería suspendida llega con las suscripciones (v3).
 
 Identidad: [diseno/identidad-r1.md](diseno/identidad-r1.md); la anterior queda como historia en [diseno/historico/](diseno/historico/diseno.md).
 
@@ -93,3 +97,9 @@ Identidad: [diseno/identidad-r1.md](diseno/identidad-r1.md); la anterior queda c
 | Correr la suite completa con un rol sin privilegios, igual al de producción | 4 | Pendiente |
 | Rol de base de datos para migraciones en producción (las migraciones de datos recorren cada barbería con each_barbershop) | 4 | Pendiente |
 | Ficha de Google Business de ScrumTech | Fuera del código | Pendiente |
+| Tutear lo que queda en usted en la entrada: las reglas de contraseña de Django («Su contraseña debe contener…»), «¿Ha olvidado su contraseña?» (ayuda de los formularios de allauth al cambiar la contraseña y confirmar el acceso) y `account/email.html` de allauth, que no se copió porque trae un `<script>` en línea | Frontend | Pendiente |
+
+## Pendientes de mantenimiento
+
+- Al actualizar allauth, revisar `ActiveOnlyAuthenticationBackend` (depende de `_check_password`) y correr `tests/security/test_account_disclosure.py`.
+- Al actualizar allauth, comparar con su versión nueva las plantillas que ScrumCut reemplaza para tutear (`frontend/templates/account/` y `frontend/templates/mfa/`; cada una dice de qué versión salió): solo cambia el texto.

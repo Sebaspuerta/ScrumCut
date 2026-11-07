@@ -7,19 +7,18 @@
  */
 
 .entrance {
-  /* Colores de la identidad (claro). */
-  --auth-bg: #f5f3ee;
-  --auth-surface: #fcfbf8;
-  --auth-line: #d7d3c8;
-  --auth-text: #1b201c;
-  --auth-muted: #62685f;
-  --auth-accent: #876b32;
-  --auth-soft: #e8dfc8;
-  --auth-on-accent: #fff;
-  /* La foto siempre va oscura: su texto es claro en los dos modos. */
-  --auth-photo-bg: #111311;
-  --auth-photo-text: #fcfbf8;
-  --auth-photo-accent: #c7a85f;
+  /* Colores de la identidad (tokens.css, claro y oscuro). */
+  --auth-bg: var(--identity-bg);
+  --auth-surface: var(--identity-surface);
+  --auth-line: var(--identity-line);
+  --auth-text: var(--identity-text);
+  --auth-muted: var(--identity-muted);
+  --auth-accent: var(--identity-accent);
+  --auth-soft: var(--identity-soft);
+  --auth-on-accent: var(--identity-on-accent);
+  --auth-photo-bg: var(--identity-photo-bg);
+  --auth-photo-text: var(--identity-photo-text);
+  --auth-photo-accent: var(--identity-photo-accent);
   --auth-font-brand: "Libre Baskerville", Georgia, serif;
   --auth-font-ui: Manrope, system-ui, sans-serif;
   /* Medidas de esta pantalla. */
@@ -42,15 +41,6 @@
 
 @media (prefers-color-scheme: dark) {
   .entrance {
-    --auth-bg: #111311;
-    --auth-surface: #181b18;
-    --auth-line: #343832;
-    --auth-text: #f2f0e9;
-    --auth-muted: #a8afa4;
-    --auth-accent: #c7a85f;
-    --auth-soft: #332c1d;
-    --auth-on-accent: #111;
-
     color-scheme: dark;
   }
 }

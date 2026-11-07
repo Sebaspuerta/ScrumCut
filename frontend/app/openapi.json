@@ -2309,6 +2309,42 @@
     },
     "components": {
         "schemas": {
+            "Access": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "$ref": "#/components/schemas/AccessStatusEnum"
+                    },
+                    "barbershop": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Solo una barbería de la propia persona."
+                    },
+                    "support_email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true,
+                        "description": "El contacto de ScrumTech: para el dueño de una barbería suspendida o cerrada y con varias barberías."
+                    }
+                },
+                "required": [
+                    "barbershop",
+                    "status",
+                    "support_email"
+                ]
+            },
+            "AccessStatusEnum": {
+                "enum": [
+                    "active",
+                    "no_barbershop",
+                    "membership_inactive",
+                    "barbershop_suspended",
+                    "barbershop_closed",
+                    "several_barbershops"
+                ],
+                "type": "string",
+                "description": "* `active` - active\n* `no_barbershop` - no_barbershop\n* `membership_inactive` - membership_inactive\n* `barbershop_suspended` - barbershop_suspended\n* `barbershop_closed` - barbershop_closed\n* `several_barbershops` - several_barbershops"
+            },
             "AdministrationSummary": {
                 "type": "object",
                 "properties": {
@@ -4213,6 +4249,9 @@
                     "user": {
                         "$ref": "#/components/schemas/User"
                     },
+                    "access": {
+                        "$ref": "#/components/schemas/Access"
+                    },
                     "barbershop": {
                         "allOf": [
                             {
@@ -4245,6 +4284,7 @@
                     }
                 },
                 "required": [
+                    "access",
                     "barbershop",
                     "branch",
                     "permissions",

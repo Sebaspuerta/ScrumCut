@@ -46,6 +46,8 @@ Barra superior de 72 px, barra lateral de 224 px (260 px como panel en el celula
 
 La referencia no trae la entrada; se le aplican los mismos tokens, fuentes y logo sin cambiar su estructura (foto a la izquierda, formulario a la derecha) ni sus clases propias (`entrance*`, `auth-*`, en `static/css/modules/login.css`; fuentes en `static/css/identity-fonts.css`). En el celular (bajo 900 px) la foto no se muestra. El logo 3D de texto y su `login-logo.js` se retiran: los reemplaza el logo SVG. Foto: `frontend/static/img/login-barbero.webp`, de Tim Collins Photography, con uso autorizado: su crédito se conserva.
 
+Las páginas de error de Django (400, 403, 404, 500 y CSRF) usan el mismo layout sin la foto: logo, panel con el código, el título en Libre Baskerville, el mensaje y «Ir al inicio», y el pie (`static/css/modules/errors.css`, clases `error-page*`). Los colores de la identidad viven en `static/css/tokens.css` (`--identity-*`), claros y oscuros según el sistema. Los mensajes de error de la entrada tutean (`apps/accounts/adapter.py`).
+
 ## Formato
 
 - Pesos colombianos sin decimales, con punto de miles y el signo menos tipográfico: `$1.250.000`, `−$8.000`. Sin dato, `—`.

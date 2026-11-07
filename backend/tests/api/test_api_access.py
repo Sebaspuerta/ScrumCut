@@ -28,11 +28,9 @@ def test_sin_sesion_el_cambio_de_sede_responde_401_o_403(client):
 
 def test_el_error_es_generico_y_en_espanol(client):
     response = client.get(reverse("api_me"))
-    assert response.json() == {
-        "detail": GENERIC_MESSAGES[response.status_code],
-        "code": STATUS_CODES[response.status_code],
-        "field_errors": {},
-    }
+    # Sin sesión la respuesta es 403 (SessionAuthentication), con el texto y el código de "falta la sesión".
+    assert response.status_code == 403
+    assert response.json() == {"detail": GENERIC_MESSAGES[401], "code": STATUS_CODES[401], "field_errors": {}}
 
 
 def test_no_acepta_basic_auth(world):

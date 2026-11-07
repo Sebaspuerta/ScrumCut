@@ -51,3 +51,27 @@ def test_la_validacion_trae_el_mensaje_de_cada_campo(world, cashier_client):
     assert response.status_code == 400
     assert response.json()["code"] == "invalid"
     assert list(response.json()["field_errors"]) == ["opening_amount"]
+
+
+def test_sin_sesion_el_codigo_es_not_authenticated_para_que_la_app_vaya_al_login():
+    response = Client().get(reverse("api_navigation"))
+
+    assert response.status_code == 403  # SessionAuthentication no usa 401
+    assert response.json() == {"detail": GENERIC_MESSAGES[401], "code": "not_authenticated", "field_errors": {}}
+
+
+def test_con_sesion_y_sin_permiso_el_codigo_es_permission_denied(world, member):
+    response = post(_viewer(member, world), "api_order_create", {})
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": GENERIC_MESSAGES[403], "code": "permission_denied", "field_errors": {}}
+
+
+def test_el_token_csrf_vencido_tiene_su_propio_codigo(world):
+    strict = Client(enforce_csrf_checks=True)
+    strict.force_login(world.cashier.user)
+
+    response = strict.post(reverse("api_branch"), {"sede": "todas"}, content_type="application/json")
+
+    assert response.status_code == 403
+    assert response.json()["code"] == "csrf_failed"
